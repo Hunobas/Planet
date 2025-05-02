@@ -10,6 +10,7 @@ class UStaticMeshComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UPlayCamera;
+class UOrbitMover;
 class APlanetController;
 
 UCLASS()
@@ -29,16 +30,19 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
 	UCapsuleComponent* Capsule;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
 	UStaticMeshComponent* PlanetMesh;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
 	USpringArmComponent* SpringArm;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
 	UCameraComponent* Camera;
-	UPROPERTY(EditAnywhere)
+	
+	UPROPERTY(EditAnywhere, Category = "Actor Components")
 	UPlayCamera* PlayCamera;
+	UPROPERTY(EditAnywhere, Category = "Actor Components")
+	UOrbitMover* OrbitMover;
 
 	UPROPERTY(EditAnywhere, Category = "Planet")
 	float VisibleDistance = 1500.0f;

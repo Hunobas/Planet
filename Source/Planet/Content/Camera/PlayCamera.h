@@ -4,7 +4,6 @@
 #include "Components/ActorComponent.h"
 #include "PlayCamera.generated.h"
 
-class APawn;
 class USpringArmComponent;
 class UCameraComponent;
 struct FInputActionValue;
@@ -17,13 +16,12 @@ class PLANET_API UPlayCamera : public UActorComponent
 public:
 	UPlayCamera();
 
-	// Pawn::BeginPlay 에서 호출하여 설정
+	// Pawn::BeginPlay 에서 호출
 	UPlayCamera* Initialize(APawn* InOwner, USpringArmComponent* InSpringArm, UCameraComponent* InCamera);
 
-	// 매 프레임 호출
+	// Pawn::Tick 에서 호출
 	void UpdateArmLength(float DeltaTime);
 
-	// EnhancedInput 에서 바인딩
 	void Look(const FInputActionValue& Value);
 	void StartAim();
 	void StopAim();

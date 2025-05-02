@@ -10,6 +10,7 @@
 #include "Components/InputComponent.h"
 
 #include "../Camera/PlayCamera.h"
+#include "PawnMover/OrbitMover.h"
 #include "PlanetController.h"
 
 // Sets default values
@@ -52,7 +53,8 @@ void APlanetPawn::composeComponent()
 	Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
 	Camera->SetupAttachment(SpringArm);
 
-	PlayCamera = CreateDefaultSubobject<UPlayCamera>("PlayCameraComp")->Initialize(this, SpringArm, Camera);
+	PlayCamera = CreateDefaultSubobject<UPlayCamera>("Play Camera")->Initialize(this, SpringArm, Camera);
+	OrbitMover = CreateDefaultSubobject<UOrbitMover>("Orbit Mover");
 }
 
 void APlanetPawn::updatePlanetRotation() const
