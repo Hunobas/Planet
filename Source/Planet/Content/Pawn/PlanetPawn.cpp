@@ -6,14 +6,11 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Components/InputComponent.h"
 
 #include "PlayCamera.h"
 #include "OrbitMover.h"
 #include "PlanetController.h"
 #include "EnemySpawnCelestial.h"
-
-#define DEBUG
 
 APlanetPawn::APlanetPawn()
 {
@@ -26,18 +23,18 @@ void APlanetPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	mPlanetController = Cast<APlanetController>(GetController());
+	cPlanetController = Cast<APlanetController>(GetController());
 	
 	check(EnemySpawnClass);
 	GetWorld()->SpawnActor<AEnemySpawnCelestial>(EnemySpawnClass, GetActorLocation(), GetActorRotation())->Initialize(this);
 }
 
-void APlanetPawn::Tick(float DeltaTime)
+void APlanetPawn::Tick(float _deltaTime)
 {
-	Super::Tick(DeltaTime);
+	Super::Tick(_deltaTime);
 
 	PlayCamera->UpdateSocketOffY();
-	PlayCamera->UpdateArmLength(DeltaTime);
+	PlayCamera->UpdateArmLength(_deltaTime);
 	updatePlanetRotation();
 }
 
@@ -61,25 +58,24 @@ void APlanetPawn::composeComponent()
 
 void APlanetPawn::updatePlanetRotation() const
 {
-	const FVector CameraLoc    = Camera->GetComponentLocation();
-	const FVector CameraForward= Camera->GetForwardVector();
-	const FVector TargetLoc    = CameraLoc + CameraForward * VisibleDistance;
+	const FVector cameraLocation	= Camera->GetComponentLocation();
+	const FVector cameraForward		= Camera->GetForwardVector();
+	const FVector targetLoc			= cameraLocation + cameraForward * VisibleDistance;
+	const FVector meshLocation		= PlanetMesh->GetComponentLocation();
+	const FRotator lookAtRotation	= UKismetMathLibrary::FindLookAtRotation(meshLocation, targetLoc);
 
 #ifdef DEBUG
 	DrawDebugLine(
-		GetWorld(),               // 월드
-		CameraLoc,                // 시작점
-		TargetLoc,                // 끝점
-		FColor::Red,              // 색상
-		false,                    // bPersistentLines
-		0.1f,                     // LifeTime (0.1초)
-		0,                        // DepthPriority
-		0.1f                      // Thickness
+		GetWorld(),
+		cameraLocation,
+		targetLoc,
+		FColor::Red,
+		false,
+		0.1f,
+		0,
+		0.1f
 	);
 #endif
 
-	const FVector MeshLoc      = PlanetMesh->GetComponentLocation();
-	const FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(MeshLoc, TargetLoc);
-
-	PlanetMesh->SetWorldRotation(LookAtRot);
+	PlanetMesh->SetWorldRotation(lookAtRotation);
 }

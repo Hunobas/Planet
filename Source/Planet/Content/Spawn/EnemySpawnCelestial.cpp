@@ -6,55 +6,29 @@
 
 #include "PlanetPawn.h"
 
-#define DEBUG
-
 AEnemySpawnCelestial::AEnemySpawnCelestial()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	int32 PointIndex = 0;
-	for (int32 Row = 0; Row < NumRows; ++Row)
-	{
-		float Pitch = (Row - (NumRows - 1) / 2.0f) * PitchInterval;
-
-		for (int32 PointInRow = 0; PointInRow < PointsPerRow; ++PointInRow)
-		{
-			float Yaw = PointInRow * YawInterval;
-
-			FString SpawnPointName = FString::Printf(TEXT("Spawn Point %02d"), PointIndex++ + 1);
-			USceneComponent* SpawnPoint = CreateDefaultSubobject<USceneComponent>(*SpawnPointName);
-			SpawnPoint->SetupAttachment(RootComponent);
-
-			FVector Position;
-			Position.X = SphereRadius * FMath::Cos(FMath::DegreesToRadians(Pitch)) * FMath::Cos(FMath::DegreesToRadians(Yaw));
-			Position.Y = SphereRadius * FMath::Cos(FMath::DegreesToRadians(Pitch)) * FMath::Sin(FMath::DegreesToRadians(Yaw));
-			Position.Z = SphereRadius * FMath::Sin(FMath::DegreesToRadians(Pitch));
-
-			SpawnPoint->SetRelativeLocation(Position);
-            
-			FRotator Rotation = (-Position).Rotation();
-			SpawnPoint->SetRelativeRotation(Rotation);
-
-			SpawnPoints.Add(SpawnPoint);
-		}
-	}
+	composeSpawnPointScenes();
 }
 
-AEnemySpawnCelestial* AEnemySpawnCelestial::Initialize(APawn* InTargetPawn)
+AEnemySpawnCelestial* AEnemySpawnCelestial::Initialize(APawn* _targetPawn)
 {
-	cTargetPawn = InTargetPawn;
-	cTargetCamera = Cast<APlanetPawn>(InTargetPawn)->Camera;
+	cTargetPawn = _targetPawn;
+	cTargetCamera = Cast<APlanetPawn>(_targetPawn)->Camera;
 	mIsPointsActive.Init(false, SpawnPoints.Num());
 
 	return this;
 }
 
-void AEnemySpawnCelestial::Tick(float DeltaTime)
+void AEnemySpawnCelestial::Tick(float _deltaTime)
 {
-	Super::Tick(DeltaTime);
-
-	FVector PawnLocation = cTargetPawn->GetActorLocation();
-	SetActorLocation(PawnLocation);
+	Super::Tick(_deltaTime);
+	
+	check(cTargetPawn);
+	FVector pawnLocation = cTargetPawn->GetActorLocation();
+	SetActorLocation(pawnLocation);
 
 	updateSpawnPointActivation();
 
@@ -65,7 +39,7 @@ void AEnemySpawnCelestial::Tick(float DeltaTime)
 		{
 			DrawDebugBox(
 				GetWorld(),
-				PawnLocation + SpawnPoints[i]->GetRelativeLocation(),
+				pawnLocation + SpawnPoints[i]->GetRelativeLocation(),
 				FVector::OneVector * 100,
 				FColor::Orange,
 				false,
@@ -82,66 +56,93 @@ USceneComponent* AEnemySpawnCelestial::GetRandomActiveSpawnPointOrNull()
 {
 	updateSpawnPointActivation();
 	
-	TArray<USceneComponent*> ActiveSpawnPoints;
+	TArray<USceneComponent*> activeSpawnPoints;
 	for (int32 i = 0; i < SpawnPoints.Num(); i++)
 	{
 		if (mIsPointsActive[i])
 		{
-			ActiveSpawnPoints.Add(SpawnPoints[i]);
+			activeSpawnPoints.Add(SpawnPoints[i]);
 		}
 	}
 
-	if (ActiveSpawnPoints.Num() > 0)
+	if (activeSpawnPoints.Num() > 0)
 	{
-		return ActiveSpawnPoints[FMath::RandRange(0, ActiveSpawnPoints.Num() - 1)];
+		return activeSpawnPoints[FMath::RandRange(0, activeSpawnPoints.Num() - 1)];
 	}
 	return nullptr;
 }
 
 TArray<USceneComponent*> AEnemySpawnCelestial::GetRandomRowSpawnPoints() const
 {
-	int32 TargetRow = FMath::RandRange(1, NumRows);
-	TArray<USceneComponent*> TargetRowPoints;
+	const int32 targetRow	= FMath::RandRange(1, NumRows);
+	const int32 startIndex	= (targetRow - 1) * PointsPerRow / 2;
+	const int32 endIndex	= targetRow * PointsPerRow / 2;
 
-	int32 StartIndex = (TargetRow - 1) * PointsPerRow / 2;
-	int32 EndIndex = TargetRow * PointsPerRow / 2;
-
-	for (int32 i = StartIndex; i < EndIndex && i < SpawnPoints.Num(); i++)
+	TArray<USceneComponent*> targetRowPoints;
+	for (int32 i = startIndex; i < endIndex && i < SpawnPoints.Num(); i++)
 	{
-		TargetRowPoints.Add(SpawnPoints[i]);
+		targetRowPoints.Add(SpawnPoints[i]);
 	}
-	check(!TargetRowPoints.IsEmpty());
 
-	return TargetRowPoints;
+	return targetRowPoints;
 }
 
-void AEnemySpawnCelestial::SetActiveSpawnPoint(USceneComponent* AimPoint, bool Active)
+void AEnemySpawnCelestial::SetActiveSpawnPoint(USceneComponent* _spawnPoint, bool _active)
 {
-	int32 Index = SpawnPoints.Find(AimPoint);
-	if (Index != INDEX_NONE)
+	if (int32 i = SpawnPoints.Find(_spawnPoint) != INDEX_NONE)
 	{
-		mIsPointsActive[Index] = Active;
+		mIsPointsActive[i] = _active;
 	}
 }
 
-void AEnemySpawnCelestial::SetActiveAllSpawnPoints(bool Active)
+void AEnemySpawnCelestial::SetActiveAllSpawnPoints(bool _active)
 {
-	for (bool& Point : mIsPointsActive)
+	for (bool& active : mIsPointsActive)
 	{
-		Point = Active;
+		active = _active;
+	}
+}
+
+void AEnemySpawnCelestial::composeSpawnPointScenes()
+{
+	int32 pointIndex = 0;
+	for (int32 row = 0; row < NumRows; row++)
+	{
+		float pitch = (row - (NumRows - 1) / 2.0f) * PitchInterval;
+
+		for (int32 pointInRow = 0; pointInRow < PointsPerRow; pointInRow++)
+		{
+			float yaw = pointInRow * YawInterval;
+
+			FString spawnPointName = FString::Printf(TEXT("Spawn Point %02d"), pointIndex++ + 1);
+
+			FVector position;
+			position.X = SphereRadius * FMath::Cos(FMath::DegreesToRadians(pitch)) * FMath::Cos(FMath::DegreesToRadians(yaw));
+			position.Y = SphereRadius * FMath::Cos(FMath::DegreesToRadians(pitch)) * FMath::Sin(FMath::DegreesToRadians(yaw));
+			position.Z = SphereRadius * FMath::Sin(FMath::DegreesToRadians(pitch));
+
+			USceneComponent* spawnPoint = CreateDefaultSubobject<USceneComponent>(*spawnPointName);
+			spawnPoint->SetupAttachment(RootComponent);
+			spawnPoint->SetRelativeLocation(position);
+            
+			FRotator rotation = (-position).Rotation();
+			spawnPoint->SetRelativeRotation(rotation);
+
+			SpawnPoints.Add(spawnPoint);
+		}
 	}
 }
 
 void AEnemySpawnCelestial::updateSpawnPointActivation()
 {
-	float CamYaw = cTargetCamera->GetComponentRotation().Yaw;
+	check(cTargetCamera);
+	float camYaw = cTargetCamera->GetComponentRotation().Yaw;
 	
-	for (int32 i = 0; i < SpawnPoints.Num(); ++i)
+	for (int32 i = 0; i < SpawnPoints.Num(); i++)
 	{
-		float PointYaw = SpawnPoints[i]->GetRelativeLocation().Rotation().Yaw;
-		float DeltaYaw = FMath::FindDeltaAngleDegrees(CamYaw, PointYaw);
+		float pointYaw = SpawnPoints[i]->GetRelativeLocation().Rotation().Yaw;
+		float deltaYaw = FMath::FindDeltaAngleDegrees(camYaw, pointYaw);
 
-		mIsPointsActive[i] = FMath::Abs(DeltaYaw) <= HalfFOV;
+		mIsPointsActive[i] = FMath::Abs(deltaYaw) <= HalfFOV;
 	}
 }
-

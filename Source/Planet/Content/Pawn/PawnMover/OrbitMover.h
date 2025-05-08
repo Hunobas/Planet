@@ -18,20 +18,21 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
 	UPROPERTY(EditAnywhere, Category="OrbitMover")
 	AActor* TargetSun;
+	
 	UPROPERTY(EditAnywhere, Category="OrbitMover")
 	int32 NumOrbits = 2;
 
 private:
-	void moveStep(float DeltaTime);
+	void moveStep(float _deltaTime);
 	
 	AActor* cOwner;
+	
 	FVector mTargetLocation = FVector::ZeroVector;
 	float mOrbitRadius;
 	float mOrbitPeriod;
 	float mCurrentAngle;
-	
 };

@@ -18,7 +18,7 @@ class PLANET_API APlanetController : public APlayerController
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void OnPossess(APawn* InPawn) override;
+	virtual void OnPossess(APawn* _pawn) override;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputMappingContext* PlayerIMC;
@@ -28,9 +28,8 @@ protected:
 	UInputAction* AimAction;
 
 private:
-	void bindInputMappings(APawn* InPawn);
+	void bindInputMappings(APawn* _pawn);
 	
 	APlanetPawn* mPlanetPawn;
 	UEnhancedInputLocalPlayerSubsystem* mEISubsystem;
-	
 };

@@ -26,7 +26,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	virtual void Tick(float DeltaTime) override;
+	virtual void Tick(float _deltaTime) override;
 
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
 	UCapsuleComponent* Capsule;
@@ -49,7 +49,7 @@ public:
 	TSubclassOf<AEnemySpawnCelestial> EnemySpawnClass;
 
 private:
-	APlanetController* mPlanetController;
+	APlanetController* cPlanetController;
 	
 	void composeComponent();
 	void updatePlanetRotation() const;

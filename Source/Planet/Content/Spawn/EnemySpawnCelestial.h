@@ -15,37 +15,40 @@ class PLANET_API AEnemySpawnCelestial : public AActor
 	
 public:	
 	AEnemySpawnCelestial();
-	AEnemySpawnCelestial* Initialize(APawn* InTargetPawn);
 	
-	virtual void Tick(float DeltaTime) override;
+	// Pawn::BeginPlay 에서 호출
+	AEnemySpawnCelestial* Initialize(APawn* _targetPawn);
+	
+	virtual void Tick(float _deltaTime) override;
 
 	USceneComponent* GetRandomActiveSpawnPointOrNull();
 	TArray<USceneComponent*> GetRandomRowSpawnPoints() const;
 	
-	void SetActiveSpawnPoint(USceneComponent* AimPoint, bool Active);
-	void SetActiveAllSpawnPoints(bool Active);
+	void SetActiveSpawnPoint(USceneComponent* _spawnPoint, bool _active);
+	void SetActiveAllSpawnPoints(bool _active);
 
 	UPROPERTY(EditAnywhere, Category = "Components")
 	TArray<USceneComponent*> SpawnPoints;
 
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
-	float SphereRadius = 2000.f;
+	float SphereRadius	= 2000.f;
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
-	int32 PointsPerRow = 24;
+	int32 PointsPerRow	= 24;
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
-	int32 NumRows = 5;
+	int32 NumRows		= 5;
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
-	float PitchInterval = 15.0f;
+	float PitchInterval	= 15.0f;
 	UPROPERTY(VisibleAnywhere, Category = "Enemy Spawn")
-	float YawInterval = 360.0f / PointsPerRow;
+	float YawInterval	= 360.0f / PointsPerRow;
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
-	float HalfFOV = 60.0f;
+	float HalfFOV		= 60.0f;
 
 private:
 	APawn* cTargetPawn;
 	UCameraComponent* cTargetCamera;
+	
 	TArray<bool> mIsPointsActive;
 
+	void composeSpawnPointScenes();
 	void updateSpawnPointActivation();
-
 };

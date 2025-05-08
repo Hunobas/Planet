@@ -15,26 +15,26 @@ void APlanetController::BeginPlay()
 	mPlanetPawn = Cast<APlanetPawn>(GetPawn());
 
 	mEISubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
-	check(mEISubsystem != nullptr);
+	check(mEISubsystem);
 	mEISubsystem->AddMappingContext(PlayerIMC, 0);
 }
 
-void APlanetController::OnPossess(APawn* InPawn)
+void APlanetController::OnPossess(APawn* _pawn)
 {
-	Super::OnPossess(InPawn);
+	Super::OnPossess(_pawn);
 
-	bindInputMappings(InPawn);
+	bindInputMappings(_pawn);
 }
 
-void APlanetController::bindInputMappings(APawn* InPawn)
+void APlanetController::bindInputMappings(APawn* _pawn)
 {
 	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
 	{
-		if (UPlayCamera* PlayCamera = InPawn->FindComponentByClass<UPlayCamera>())
+		if (UPlayCamera* playCamera = _pawn->FindComponentByClass<UPlayCamera>())
 		{
-			EIC->BindAction(LookAction, ETriggerEvent::Triggered, PlayCamera, &UPlayCamera::Look);
-			EIC->BindAction(AimAction,  ETriggerEvent::Started,   PlayCamera, &UPlayCamera::StartAim);
-			EIC->BindAction(AimAction,  ETriggerEvent::Completed, PlayCamera, &UPlayCamera::StopAim);
+			EIC->BindAction(LookAction, ETriggerEvent::Triggered, playCamera, &UPlayCamera::Look);
+			EIC->BindAction(AimAction,  ETriggerEvent::Started,   playCamera, &UPlayCamera::StartAim);
+			EIC->BindAction(AimAction,  ETriggerEvent::Completed, playCamera, &UPlayCamera::StopAim);
 		}
 	}
 }

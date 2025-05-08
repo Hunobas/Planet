@@ -16,15 +16,15 @@ UPlayCamera::UPlayCamera()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-UPlayCamera* UPlayCamera::Initialize(APawn* InOwner, USpringArmComponent* InSpringArm, UCameraComponent* InCamera)
+UPlayCamera* UPlayCamera::Initialize(APawn* _owner, USpringArmComponent* _springArm, UCameraComponent* _camera)
 {
-	cOwner = InOwner;
-	mSpringArm = InSpringArm;
-	mCamera    = InCamera;
+	cOwner = _owner;
+	mSpringArm = _springArm;
+	mCamera = _camera;
 
 	mCurrentArmLength = DefaultArmLength;
-	mRotationalSpeed  = DefaultRotationalSpeed;
-	bIsAiming        = false;
+	mRotationalSpeed = DefaultRotationalSpeed;
+	bIsAiming = false;
 
 	mSpringArm->SetWorldLocation(SpringArmLocation);
 	mSpringArm->SocketOffset = FVector({0, SocketOffYMax, 0});
@@ -38,47 +38,46 @@ UPlayCamera* UPlayCamera::Initialize(APawn* InOwner, USpringArmComponent* InSpri
 
 void UPlayCamera::UpdateSocketOffY()
 {
-	check(cOwner && mSpringArm);
+	check(cOwner && mCamera && mSpringArm);
 	
-	float PawnYaw = cOwner->GetActorRotation().Yaw;
-	float CamYaw  = cOwner->GetController()->GetControlRotation().Yaw;
+	const float pawnYaw	 = cOwner->GetActorRotation().Yaw + 45.0f;
+	const float camYaw	 = mCamera->GetComponentRotation().Yaw;
+	const float deltaYaw = FMath::FindDeltaAngleDegrees(pawnYaw, camYaw);
+	const float absYaw	 = FMath::Abs(deltaYaw);
 
-	float DeltaYaw = FMath::FindDeltaAngleDegrees(PawnYaw, CamYaw);
-	float AbsYaw   = FMath::Abs(DeltaYaw);
+	const float t		 = FMath::Clamp(absYaw / 180.f, 0.f, 1.f);
+	const float targetY	 = FMath::Lerp(SocketOffYMax, SocketOffYMin, t);
 
-	float t = FMath::Clamp(AbsYaw / 90.f, 0.f, 1.f);
-	float TargetY = FMath::Lerp(SocketOffYMax, SocketOffYMin, t);
-
-	mSpringArm->SocketOffset.Y = TargetY;
+	mSpringArm->SocketOffset.Y = targetY;
 }
 
-void UPlayCamera::UpdateArmLength(float DeltaTime)
+void UPlayCamera::UpdateArmLength(float _deltaTime)
 {
 	check(mSpringArm);
 
-	float Target = bIsAiming ? AimedArmLength : DefaultArmLength;
-	mCurrentArmLength = FMath::FInterpTo(mCurrentArmLength, Target, DeltaTime, ArmLengthInterpSpeed);
+	float targetLength = bIsAiming ? AimedArmLength : DefaultArmLength;
+	mCurrentArmLength = FMath::FInterpTo(mCurrentArmLength, targetLength, _deltaTime, ArmLengthInterpSpeed);
 	mSpringArm->TargetArmLength = mCurrentArmLength;
 }
 
-void UPlayCamera::Look(const FInputActionValue& Value)
+void UPlayCamera::Look(const FInputActionValue& _value)
 {
 	check(cOwner);
 	
-	FVector2D Axis = Value.Get<FVector2D>();
-	float Delta = GetWorld()->GetDeltaSeconds();
-	cOwner->AddControllerYawInput  (Axis.X * Delta * mRotationalSpeed);
-	cOwner->AddControllerPitchInput(Axis.Y * Delta * mRotationalSpeed);
+	FVector2D axis = _value.Get<FVector2D>();
+	float deltaTime = GetWorld()->GetDeltaSeconds();
+	cOwner->AddControllerYawInput  (axis.X * deltaTime * mRotationalSpeed);
+	cOwner->AddControllerPitchInput(axis.Y * deltaTime * mRotationalSpeed);
 }
 
 void UPlayCamera::StartAim()
 {
-	bIsAiming       = true;
+	bIsAiming = true;
 	mRotationalSpeed = DefaultRotationalSpeed * 0.5f;
 }
 
 void UPlayCamera::StopAim()
 {
-	bIsAiming        = false;
-	mRotationalSpeed  = DefaultRotationalSpeed;
+	bIsAiming = false;
+	mRotationalSpeed = DefaultRotationalSpeed;
 }

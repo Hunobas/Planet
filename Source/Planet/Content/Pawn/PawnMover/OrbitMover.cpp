@@ -19,11 +19,11 @@ void UOrbitMover::BeginPlay()
 
 	if (!TargetSun)
 	{
-		TArray<AActor*> FoundSuns;
-		UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Sun"), FoundSuns);
-		if (FoundSuns.Num() > 0)
+		TArray<AActor*> foundSuns;
+		UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Sun"), foundSuns);
+		if (foundSuns.Num() > 0)
 		{
-			TargetSun = FoundSuns[0];
+			TargetSun = foundSuns[0];
 			mTargetLocation = TargetSun->GetActorLocation();
 		}
 	}
@@ -33,22 +33,22 @@ void UOrbitMover::BeginPlay()
 	mCurrentAngle = 0.0f;
 }
 
-void UOrbitMover::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UOrbitMover::TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	Super::TickComponent(_deltaTime, _tickType, _thisTickFunction);
 
-	moveStep(DeltaTime);
+	moveStep(_deltaTime);
 }
 
-void UOrbitMover::moveStep(float DeltaTime)
+void UOrbitMover::moveStep(float _deltaTime)
 {
-	mCurrentAngle += (DeltaTime / mOrbitPeriod) * 360.0f;
+	mCurrentAngle += (_deltaTime / mOrbitPeriod) * 360.0f;
 	mCurrentAngle = FMath::Fmod(mCurrentAngle, 360.0f);
-	const float Rad = FMath::DegreesToRadians(mCurrentAngle);
+	
+	const float rad		 = FMath::DegreesToRadians(mCurrentAngle);
+	const float X		 = mTargetLocation.X + mOrbitRadius * FMath::Cos(rad);
+	const float Y		 = mTargetLocation.Y + mOrbitRadius * FMath::Sin(rad);
+	const FVector newPos = FVector(X, Y, mTargetLocation.Z);
 
-	float X = mTargetLocation.X + mOrbitRadius * FMath::Cos(Rad);
-	float Y = mTargetLocation.Y + mOrbitRadius * FMath::Sin(Rad);
-	FVector NewPos = FVector(X, Y, mTargetLocation.Z);
-
-	cOwner->SetActorLocation(NewPos);
+	cOwner->SetActorLocation(newPos);
 }

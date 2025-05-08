@@ -20,6 +20,8 @@ public class Planet : ModuleRules
             Path.Combine(ModuleDirectory, "Content/Spawn"),
             Path.Combine(ModuleDirectory, "System")
         });
+        
+        PublicDefinitions.Add("DEBUG=1");
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
