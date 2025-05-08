@@ -6,7 +6,7 @@
 #include "EnhancedInputSubsystems.h"
 
 #include "PlanetPawn.h"
-#include "../Camera/PlayCamera.h"
+#include "PlayCamera.h"
 
 void APlanetController::BeginPlay()
 {

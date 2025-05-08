@@ -1,11 +1,11 @@
 {
     "Version": "1.2",
     "Data": {
-        "Source": "d:\\huno\\unreal project\\planet\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\base\\iserializersowner.cpp",
+        "Source": "c:\\users\\po127\\unreal projects\\planet\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\base\\iserializersowner.cpp",
         "ProvidedModule": "",
         "Includes": [
-            "d:\\huno\\unreal project\\planet\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\rd\\definitions.h",
-            "d:\\huno\\unreal project\\planet\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\base\\iserializersowner.h",
+            "c:\\users\\po127\\unreal projects\\planet\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\rd\\definitions.h",
+            "c:\\users\\po127\\unreal projects\\planet\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\base\\iserializersowner.h",
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.38.33130\\include\\unordered_set",
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.38.33130\\include\\yvals_core.h",
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.38.33130\\include\\vcruntime.h",
@@ -86,7 +86,7 @@
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.38.33130\\include\\xstring",
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.38.33130\\include\\iosfwd",
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.38.33130\\include\\xnode_handle.h",
-            "d:\\huno\\unreal project\\planet\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\rd_framework_export.h"
+            "c:\\users\\po127\\unreal projects\\planet\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\rd_framework_export.h"
         ],
         "ImportedModules": [],
         "ImportedHeaderUnits": []

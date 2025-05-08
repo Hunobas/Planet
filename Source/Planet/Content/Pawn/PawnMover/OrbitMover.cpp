@@ -1,28 +1,38 @@
 // OrbitMover.cpp
 #include "OrbitMover.h"
 
-#include "../../../System/PlanetConst.h"
+#include "Kismet/GameplayStatics.h"
 
-// Sets default values for this component's properties
+#include "PlanetConst.h"
+
 UOrbitMover::UOrbitMover()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-// Called when the game starts
 void UOrbitMover::BeginPlay()
 {
 	Super::BeginPlay();
 
-	mOwner = GetOwner();
-	check(TargetSun && mOwner);
+	cOwner = GetOwner();
+	check(cOwner);
 
-	mOrbitRadius = (TargetSun->GetActorLocation() - mOwner->GetActorLocation()).Size();
-	mOrbitPeriod = PlanetConst::PLAYTIME;
+	if (!TargetSun)
+	{
+		TArray<AActor*> FoundSuns;
+		UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Sun"), FoundSuns);
+		if (FoundSuns.Num() > 0)
+		{
+			TargetSun = FoundSuns[0];
+			mTargetLocation = TargetSun->GetActorLocation();
+		}
+	}
+	
+	mOrbitRadius = (mTargetLocation - cOwner->GetActorLocation()).Size();
+	mOrbitPeriod = PlanetConst::PLAYTIME / NumOrbits;
 	mCurrentAngle = 0.0f;
 }
 
-// Called every frame
 void UOrbitMover::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -36,10 +46,9 @@ void UOrbitMover::moveStep(float DeltaTime)
 	mCurrentAngle = FMath::Fmod(mCurrentAngle, 360.0f);
 	const float Rad = FMath::DegreesToRadians(mCurrentAngle);
 
-	FVector Center = TargetSun->GetActorLocation();
-	float X = Center.X + mOrbitRadius * FMath::Cos(Rad);
-	float Y = Center.Y + mOrbitRadius * FMath::Sin(Rad);
-	FVector NewPos = FVector(X, Y, Center.Z);
+	float X = mTargetLocation.X + mOrbitRadius * FMath::Cos(Rad);
+	float Y = mTargetLocation.Y + mOrbitRadius * FMath::Sin(Rad);
+	FVector NewPos = FVector(X, Y, mTargetLocation.Z);
 
-	mOwner->SetActorLocation(NewPos);
+	cOwner->SetActorLocation(NewPos);
 }

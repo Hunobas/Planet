@@ -10,16 +10,12 @@ class UInputAction;
 class UEnhancedInputLocalPlayerSubsystem;
 class APlanetPawn;
 
-/**
- * 
- */
 UCLASS()
 class PLANET_API APlanetController : public APlayerController
 {
 	GENERATED_BODY()
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	virtual void OnPossess(APawn* InPawn) override;

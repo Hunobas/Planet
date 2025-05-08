@@ -19,7 +19,7 @@ public:
 	// Pawn::BeginPlay 에서 호출
 	UPlayCamera* Initialize(APawn* InOwner, USpringArmComponent* InSpringArm, UCameraComponent* InCamera);
 
-	// Pawn::Tick 에서 호출
+	void UpdateSocketOffY();
 	void UpdateArmLength(float DeltaTime);
 
 	void Look(const FInputActionValue& Value);
@@ -31,7 +31,9 @@ public:
 	UPROPERTY(EditAnywhere, Category="Spring Arm")
 	FVector SpringArmLocation = {0, 40.f, 70.f};
 	UPROPERTY(EditAnywhere, Category="Spring Arm")
-	FVector SocketOff		  = {0, 100.f, 0};
+	float SocketOffYMax = 100.f;
+	UPROPERTY(EditAnywhere, Category="Spring Arm")
+	float SocketOffYMin = 40.f;
 	UPROPERTY(EditAnywhere, Category="Spring Arm")
 	float DefaultArmLength    = 500.f;
 	UPROPERTY(EditAnywhere, Category="Spring Arm")
@@ -40,7 +42,7 @@ public:
 	float ArmLengthInterpSpeed=   5.f;
 
 private:
-	APawn* mOwner;
+	APawn* cOwner;
 	USpringArmComponent* mSpringArm;
 	UCameraComponent*    mCamera;
 

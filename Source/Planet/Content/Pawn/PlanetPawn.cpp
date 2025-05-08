@@ -6,35 +6,37 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-// EnhancedInput
 #include "Components/InputComponent.h"
 
-#include "../Camera/PlayCamera.h"
-#include "PawnMover/OrbitMover.h"
+#include "PlayCamera.h"
+#include "OrbitMover.h"
 #include "PlanetController.h"
+#include "EnemySpawnCelestial.h"
 
-// Sets default values
+#define DEBUG
+
 APlanetPawn::APlanetPawn()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
 	composeComponent();
 }
 
-// Called when the game starts or when spawned
 void APlanetPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
 	mPlanetController = Cast<APlanetController>(GetController());
+	
+	check(EnemySpawnClass);
+	GetWorld()->SpawnActor<AEnemySpawnCelestial>(EnemySpawnClass, GetActorLocation(), GetActorRotation())->Initialize(this);
 }
 
-// Called every frame
 void APlanetPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	PlayCamera->UpdateSocketOffY();
 	PlayCamera->UpdateArmLength(DeltaTime);
 	updatePlanetRotation();
 }
@@ -62,6 +64,19 @@ void APlanetPawn::updatePlanetRotation() const
 	const FVector CameraLoc    = Camera->GetComponentLocation();
 	const FVector CameraForward= Camera->GetForwardVector();
 	const FVector TargetLoc    = CameraLoc + CameraForward * VisibleDistance;
+
+#ifdef DEBUG
+	DrawDebugLine(
+		GetWorld(),               // 월드
+		CameraLoc,                // 시작점
+		TargetLoc,                // 끝점
+		FColor::Red,              // 색상
+		false,                    // bPersistentLines
+		0.1f,                     // LifeTime (0.1초)
+		0,                        // DepthPriority
+		0.1f                      // Thickness
+	);
+#endif
 
 	const FVector MeshLoc      = PlanetMesh->GetComponentLocation();
 	const FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(MeshLoc, TargetLoc);

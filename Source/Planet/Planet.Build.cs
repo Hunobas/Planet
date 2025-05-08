@@ -1,5 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
-
+using System.IO;
 using UnrealBuildTool;
 
 public class Planet : ModuleRules
@@ -11,6 +11,15 @@ public class Planet : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		
+        PublicIncludePaths.AddRange(new string[] {
+	        Path.Combine(ModuleDirectory, "Content"),
+	        Path.Combine(ModuleDirectory, "Content/Camera"),
+	        Path.Combine(ModuleDirectory, "Content/Pawn"),
+            Path.Combine(ModuleDirectory, "Content/Pawn/PawnMover"),
+            Path.Combine(ModuleDirectory, "Content/Spawn"),
+            Path.Combine(ModuleDirectory, "System")
+        });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

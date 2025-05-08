@@ -1,5 +1,5 @@
 /I "."
-/I "D:\Huno\Unreal Project\Planet\Plugins\Developer\RiderLink\Source\RiderDebuggerSupport\Private"
+/I "C:\Users\po127\Unreal Projects\Planet\Plugins\Developer\RiderLink\Source\RiderDebuggerSupport\Private"
 /I "Runtime\Core\Public"
 /I "Runtime\Core\Internal"
 /I "Runtime\TraceLog\Public"
@@ -282,7 +282,7 @@
 /I "Editor\SceneDepthPickerMode\Public"
 /I "..\Intermediate\Build\Win64\UnrealEditor\Inc\AnimationEditMode\UHT"
 /I "Editor\AnimationEditMode\Public"
-/I "D:\Huno\Unreal Project\Planet\Plugins\Developer\RiderLink\Source"
+/I "C:\Users\po127\Unreal Projects\Planet\Plugins\Developer\RiderLink\Source"
 /external:W0
 /external:I "ThirdParty\LibTiff\Source\Win64"
 /external:I "ThirdParty\LibTiff\Source"

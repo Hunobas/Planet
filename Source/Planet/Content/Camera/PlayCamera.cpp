@@ -3,12 +3,10 @@
 
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "GameFramework/Pawn.h"
 #include "InputActionValue.h"
 
-// Sets default values for this component's properties
 UPlayCamera::UPlayCamera()
-  : mOwner(nullptr)
+  : cOwner(nullptr)
   , mSpringArm(nullptr)
   , mCamera(nullptr)
   , mCurrentArmLength(0.f)
@@ -20,7 +18,7 @@ UPlayCamera::UPlayCamera()
 
 UPlayCamera* UPlayCamera::Initialize(APawn* InOwner, USpringArmComponent* InSpringArm, UCameraComponent* InCamera)
 {
-	mOwner = InOwner;
+	cOwner = InOwner;
 	mSpringArm = InSpringArm;
 	mCamera    = InCamera;
 
@@ -29,7 +27,7 @@ UPlayCamera* UPlayCamera::Initialize(APawn* InOwner, USpringArmComponent* InSpri
 	bIsAiming        = false;
 
 	mSpringArm->SetWorldLocation(SpringArmLocation);
-	mSpringArm->SocketOffset = SocketOff;
+	mSpringArm->SocketOffset = FVector({0, SocketOffYMax, 0});
 	mSpringArm->TargetArmLength = mCurrentArmLength;
 	mSpringArm->bUsePawnControlRotation = true;
 
@@ -38,23 +36,39 @@ UPlayCamera* UPlayCamera::Initialize(APawn* InOwner, USpringArmComponent* InSpri
 	return this;
 }
 
+void UPlayCamera::UpdateSocketOffY()
+{
+	check(cOwner && mSpringArm);
+	
+	float PawnYaw = cOwner->GetActorRotation().Yaw;
+	float CamYaw  = cOwner->GetController()->GetControlRotation().Yaw;
+
+	float DeltaYaw = FMath::FindDeltaAngleDegrees(PawnYaw, CamYaw);
+	float AbsYaw   = FMath::Abs(DeltaYaw);
+
+	float t = FMath::Clamp(AbsYaw / 90.f, 0.f, 1.f);
+	float TargetY = FMath::Lerp(SocketOffYMax, SocketOffYMin, t);
+
+	mSpringArm->SocketOffset.Y = TargetY;
+}
+
 void UPlayCamera::UpdateArmLength(float DeltaTime)
 {
-	if (!mSpringArm) return;
+	check(mSpringArm);
 
 	float Target = bIsAiming ? AimedArmLength : DefaultArmLength;
 	mCurrentArmLength = FMath::FInterpTo(mCurrentArmLength, Target, DeltaTime, ArmLengthInterpSpeed);
 	mSpringArm->TargetArmLength = mCurrentArmLength;
 }
 
-void UPlayCamera::Look(const FInputActionValue& Value)	// const로 삼으면 안됨.
+void UPlayCamera::Look(const FInputActionValue& Value)
 {
-	check(mOwner);
+	check(cOwner);
 	
 	FVector2D Axis = Value.Get<FVector2D>();
 	float Delta = GetWorld()->GetDeltaSeconds();
-	mOwner->AddControllerYawInput  (Axis.X * Delta * mRotationalSpeed);
-	mOwner->AddControllerPitchInput(Axis.Y * Delta * mRotationalSpeed);
+	cOwner->AddControllerYawInput  (Axis.X * Delta * mRotationalSpeed);
+	cOwner->AddControllerPitchInput(Axis.Y * Delta * mRotationalSpeed);
 }
 
 void UPlayCamera::StartAim()

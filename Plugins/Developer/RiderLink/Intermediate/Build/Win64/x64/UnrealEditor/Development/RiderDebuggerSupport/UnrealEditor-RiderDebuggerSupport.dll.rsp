@@ -35,8 +35,8 @@
 /NODEFAULTLIB:"LIBCD"
 /NODEFAULTLIB:"LIBCPD"
 /FUNCTIONPADMIN:6
-"D:\Huno\Unreal Project\Planet\Plugins\Developer\RiderLink\Intermediate\Build\Win64\x64\UnrealEditor\Development\RiderDebuggerSupport\Module.RiderDebuggerSupport.cpp.obj"
-"D:\Huno\Unreal Project\Planet\Plugins\Developer\RiderLink\Intermediate\Build\Win64\x64\UnrealEditor\Development\RiderDebuggerSupport\Default.rc2.res"
+"C:\Users\po127\Unreal Projects\Planet\Plugins\Developer\RiderLink\Intermediate\Build\Win64\x64\UnrealEditor\Development\RiderDebuggerSupport\Module.RiderDebuggerSupport.cpp.obj"
+"C:\Users\po127\Unreal Projects\Planet\Plugins\Developer\RiderLink\Intermediate\Build\Win64\x64\UnrealEditor\Development\RiderDebuggerSupport\Default.rc2.res"
 "..\Intermediate\Build\Win64\x64\UnrealEditor\Development\Core\UnrealEditor-Core.lib"
 "..\Intermediate\Build\Win64\x64\UnrealEditor\Development\CoreUObject\UnrealEditor-CoreUObject.lib"
 "..\Intermediate\Build\Win64\x64\UnrealEditor\Development\Engine\UnrealEditor-Engine.lib"
@@ -65,7 +65,7 @@
 "synchronization.lib"
 "dwmapi.lib"
 "imm32.lib"
-/OUT:"D:\Huno\Unreal Project\Planet\Plugins\Developer\RiderLink\Binaries\Win64\UnrealEditor-RiderDebuggerSupport.dll"
-/IMPLIB:"D:\Huno\Unreal Project\Planet\Plugins\Developer\RiderLink\Intermediate\Build\Win64\x64\UnrealEditor\Development\RiderDebuggerSupport\UnrealEditor-RiderDebuggerSupport.sup.lib"
-/PDB:"D:\Huno\Unreal Project\Planet\Plugins\Developer\RiderLink\Binaries\Win64\UnrealEditor-RiderDebuggerSupport.pdb"
+/OUT:"C:\Users\po127\Unreal Projects\Planet\Plugins\Developer\RiderLink\Binaries\Win64\UnrealEditor-RiderDebuggerSupport.dll"
+/IMPLIB:"C:\Users\po127\Unreal Projects\Planet\Plugins\Developer\RiderLink\Intermediate\Build\Win64\x64\UnrealEditor\Development\RiderDebuggerSupport\UnrealEditor-RiderDebuggerSupport.sup.lib"
+/PDB:"C:\Users\po127\Unreal Projects\Planet\Plugins\Developer\RiderLink\Binaries\Win64\UnrealEditor-RiderDebuggerSupport.pdb"
 /ignore:4078

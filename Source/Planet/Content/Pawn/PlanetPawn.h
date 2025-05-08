@@ -12,6 +12,7 @@ class UCameraComponent;
 class UPlayCamera;
 class UOrbitMover;
 class APlanetController;
+class AEnemySpawnCelestial;
 
 UCLASS()
 class PLANET_API APlanetPawn : public APawn
@@ -19,15 +20,12 @@ class PLANET_API APlanetPawn : public APawn
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
 	APlanetPawn();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
@@ -46,6 +44,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Planet")
 	float VisibleDistance = 1500.0f;
+
+	UPROPERTY(EditAnywhere, Category="Enemy Spawn")
+	TSubclassOf<AEnemySpawnCelestial> EnemySpawnClass;
 
 private:
 	APlanetController* mPlanetController;

@@ -12,26 +12,26 @@ class PLANET_API UOrbitMover : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	UOrbitMover();
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere, Category="OrbitMover")
 	AActor* TargetSun;
+	UPROPERTY(EditAnywhere, Category="OrbitMover")
+	int32 NumOrbits = 2;
 
 private:
 	void moveStep(float DeltaTime);
 	
-	AActor* mOwner;
+	AActor* cOwner;
+	FVector mTargetLocation = FVector::ZeroVector;
 	float mOrbitRadius;
 	float mOrbitPeriod;
-	float mCurrentAngle = 0.0f;
+	float mCurrentAngle;
 	
 };
