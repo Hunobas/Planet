@@ -1,9 +1,7 @@
 // OrbitMover.cpp
 #include "OrbitMover.h"
 
-#include "Kismet/GameplayStatics.h"
-
-#include "PlanetConst.h"
+#include "../Planet.h"
 
 UOrbitMover::UOrbitMover()
 {
@@ -17,19 +15,21 @@ void UOrbitMover::BeginPlay()
 	cOwner = GetOwner();
 	check(cOwner);
 
-	if (!TargetSun)
+	if (SunTag != NAME_None)
 	{
-		TArray<AActor*> foundSuns;
-		UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Sun"), foundSuns);
-		if (foundSuns.Num() > 0)
+		if (TryGetFirstActorWithTag(SunTag, cTargetSun))
 		{
-			TargetSun = foundSuns[0];
-			mTargetLocation = TargetSun->GetActorLocation();
+			mTargetLocation = cTargetSun->GetActorLocation();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("[%s] '%s' 태그를 가진 액터를 찾지 못했습니다."), 
+				*cOwner->GetName(), *SunTag.ToString());
 		}
 	}
 	
 	mOrbitRadius = (mTargetLocation - cOwner->GetActorLocation()).Size();
-	mOrbitPeriod = PlanetConst::PLAYTIME / NumOrbits;
+	mOrbitPeriod = PLAYTIME / NumOrbits;
 	mCurrentAngle = 0.0f;
 }
 

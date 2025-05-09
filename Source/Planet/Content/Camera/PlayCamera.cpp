@@ -38,7 +38,9 @@ UPlayCamera* UPlayCamera::Initialize(APawn* _owner, USpringArmComponent* _spring
 
 void UPlayCamera::UpdateSocketOffY()
 {
-	check(cOwner && mCamera && mSpringArm);
+	check(cOwner);
+	check(mCamera);
+	check(mSpringArm);
 	
 	const float pawnYaw	 = cOwner->GetActorRotation().Yaw + 45.0f;
 	const float camYaw	 = mCamera->GetComponentRotation().Yaw;

@@ -1,4 +1,4 @@
-// ASurvivorGameModeBase.h
+// SurvivorGameModeBase.h
 #pragma once
 
 #include "CoreMinimal.h"

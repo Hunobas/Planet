@@ -45,7 +45,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Planet")
 	float VisibleDistance = 1500.0f;
 
-	UPROPERTY(EditAnywhere, Category="Enemy Spawn")
+	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
 	TSubclassOf<AEnemySpawnCelestial> EnemySpawnClass;
 
 private:

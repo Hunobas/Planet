@@ -1,4 +1,4 @@
-// AEnemySpawnCelestial.cpp
+// EnemySpawnCelestial.cpp
 #include "EnemySpawnCelestial.h"
 
 #include "Components/SceneComponent.h"
@@ -89,7 +89,8 @@ TArray<USceneComponent*> AEnemySpawnCelestial::GetRandomRowSpawnPoints() const
 
 void AEnemySpawnCelestial::SetActiveSpawnPoint(USceneComponent* _spawnPoint, bool _active)
 {
-	if (int32 i = SpawnPoints.Find(_spawnPoint) != INDEX_NONE)
+	int32 i  = SpawnPoints.Find(_spawnPoint);
+	if (i != INDEX_NONE)
 	{
 		mIsPointsActive[i] = _active;
 	}
@@ -105,6 +106,9 @@ void AEnemySpawnCelestial::SetActiveAllSpawnPoints(bool _active)
 
 void AEnemySpawnCelestial::composeSpawnPointScenes()
 {
+	Root = CreateDefaultSubobject<USceneComponent>("Root");
+	RootComponent = Root;
+	
 	int32 pointIndex = 0;
 	for (int32 row = 0; row < NumRows; row++)
 	{

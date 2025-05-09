@@ -7,16 +7,17 @@ public class Planet : ModuleRules
 	public Planet(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PublicDependencyModuleNames.AddRange(new string[]
+			{ "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Niagara" });
 		
         PublicIncludePaths.AddRange(new string[] {
 	        Path.Combine(ModuleDirectory, "Content"),
 	        Path.Combine(ModuleDirectory, "Content/Camera"),
 	        Path.Combine(ModuleDirectory, "Content/Pawn"),
             Path.Combine(ModuleDirectory, "Content/Pawn/PawnMover"),
+            Path.Combine(ModuleDirectory, "Content/Pawn/PawnModule"),
+            Path.Combine(ModuleDirectory, "Content/Pawn/Enemy"),
             Path.Combine(ModuleDirectory, "Content/Spawn"),
             Path.Combine(ModuleDirectory, "System")
         });

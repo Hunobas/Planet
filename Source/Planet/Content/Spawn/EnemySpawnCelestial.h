@@ -1,4 +1,4 @@
-// AEnemySpawnCelestial.h
+// EnemySpawnCelestial.h
 #pragma once
 
 #include "CoreMinimal.h"
@@ -27,6 +27,8 @@ public:
 	void SetActiveSpawnPoint(USceneComponent* _spawnPoint, bool _active);
 	void SetActiveAllSpawnPoints(bool _active);
 
+	UPROPERTY(EditAnywhere, Category = "Components")
+	USceneComponent* Root;
 	UPROPERTY(EditAnywhere, Category = "Components")
 	TArray<USceneComponent*> SpawnPoints;
 

@@ -1,5 +1,6 @@
 // PlayCamera.h
 #pragma once
+
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "PlayCamera.generated.h"
@@ -26,10 +27,11 @@ public:
 	void StartAim();
 	void StopAim();
 
-	UPROPERTY(EditAnywhere, Category="Spring Arm")
-	FVector SpringArmLocation		= {0, 40.f, 70.f};
 	UPROPERTY(EditAnywhere, Category="Transform")
 	float DefaultRotationalSpeed	= 100.f;
+
+	UPROPERTY(EditAnywhere, Category="Spring Arm")
+	FVector SpringArmLocation		= {0, 40.f, 70.f};
 	UPROPERTY(EditAnywhere, Category="Spring Arm")
 	float SocketOffYMax				= 120.f;
 	UPROPERTY(EditAnywhere, Category="Spring Arm")
