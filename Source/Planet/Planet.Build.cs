@@ -18,7 +18,7 @@ public class Planet : ModuleRules
             Path.Combine(ModuleDirectory, "Content/Pawn/PawnMover"),
             Path.Combine(ModuleDirectory, "Content/Pawn/PawnModule"),
             Path.Combine(ModuleDirectory, "Content/Pawn/Enemy"),
-            Path.Combine(ModuleDirectory, "Content/Spawn"),
+            Path.Combine(ModuleDirectory, "Content/Wave"),
             Path.Combine(ModuleDirectory, "System")
         });
         

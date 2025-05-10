@@ -3,8 +3,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "../Planet.h"
 #include "OrbitMover.generated.h"
-
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PLANET_API UOrbitMover : public UActorComponent
@@ -21,7 +21,7 @@ public:
 	virtual void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
 	UPROPERTY(EditAnywhere, Category = "Orbit Mover")
-	FName SunTag	= TEXT("Sun");
+	FName SunTag	= DEFAULT_SUN_TAG;
 	UPROPERTY(EditAnywhere, Category = "Orbit Mover")
 	int32 NumOrbits	= 2;
 

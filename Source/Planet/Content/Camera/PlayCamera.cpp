@@ -6,7 +6,7 @@
 #include "InputActionValue.h"
 
 UPlayCamera::UPlayCamera()
-  : cOwner(nullptr)
+  : mOwner(nullptr)
   , mSpringArm(nullptr)
   , mCamera(nullptr)
   , mCurrentArmLength(0.f)
@@ -18,7 +18,7 @@ UPlayCamera::UPlayCamera()
 
 UPlayCamera* UPlayCamera::Initialize(APawn* _owner, USpringArmComponent* _springArm, UCameraComponent* _camera)
 {
-	cOwner = _owner;
+	mOwner = _owner;
 	mSpringArm = _springArm;
 	mCamera = _camera;
 
@@ -38,11 +38,11 @@ UPlayCamera* UPlayCamera::Initialize(APawn* _owner, USpringArmComponent* _spring
 
 void UPlayCamera::UpdateSocketOffY()
 {
-	check(cOwner);
+	check(mOwner);
 	check(mCamera);
 	check(mSpringArm);
 	
-	const float pawnYaw	 = cOwner->GetActorRotation().Yaw + 45.0f;
+	const float pawnYaw	 = mOwner->GetActorRotation().Yaw + 45.0f;
 	const float camYaw	 = mCamera->GetComponentRotation().Yaw;
 	const float deltaYaw = FMath::FindDeltaAngleDegrees(pawnYaw, camYaw);
 	const float absYaw	 = FMath::Abs(deltaYaw);
@@ -64,12 +64,12 @@ void UPlayCamera::UpdateArmLength(float _deltaTime)
 
 void UPlayCamera::Look(const FInputActionValue& _value)
 {
-	check(cOwner);
+	check(mOwner);
 	
 	FVector2D axis = _value.Get<FVector2D>();
 	float deltaTime = GetWorld()->GetDeltaSeconds();
-	cOwner->AddControllerYawInput  (axis.X * deltaTime * mRotationalSpeed);
-	cOwner->AddControllerPitchInput(axis.Y * deltaTime * mRotationalSpeed);
+	mOwner->AddControllerYawInput  (axis.X * deltaTime * mRotationalSpeed);
+	mOwner->AddControllerPitchInput(axis.Y * deltaTime * mRotationalSpeed);
 }
 
 void UPlayCamera::StartAim()

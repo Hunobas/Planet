@@ -52,6 +52,13 @@ void AEnemySpawnCelestial::Tick(float _deltaTime)
 #endif
 }
 
+USceneComponent* AEnemySpawnCelestial::GetRandomSpawnPoint()
+{
+	updateSpawnPointActivation();
+
+	return SpawnPoints[FMath::RandRange(0, SpawnPoints.Num() - 1)];
+}
+
 USceneComponent* AEnemySpawnCelestial::GetRandomActiveSpawnPointOrNull()
 {
 	updateSpawnPointActivation();

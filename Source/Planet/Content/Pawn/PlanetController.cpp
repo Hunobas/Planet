@@ -26,7 +26,7 @@ void APlanetController::OnPossess(APawn* _pawn)
 	bindInputMappings(_pawn);
 }
 
-void APlanetController::bindInputMappings(APawn* _pawn)
+void APlanetController::bindInputMappings(const APawn* _pawn)
 {
 	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
 	{

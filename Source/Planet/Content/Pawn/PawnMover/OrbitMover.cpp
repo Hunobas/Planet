@@ -17,7 +17,7 @@ void UOrbitMover::BeginPlay()
 
 	if (SunTag != NAME_None)
 	{
-		if (TryGetFirstActorWithTag(SunTag, cTargetSun))
+		if (TryGetFirstActorWithTag(GetWorld(), SunTag, cTargetSun))
 		{
 			mTargetLocation = cTargetSun->GetActorLocation();
 		}

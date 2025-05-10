@@ -12,7 +12,6 @@ class UCameraComponent;
 class UPlayCamera;
 class UOrbitMover;
 class APlanetController;
-class AEnemySpawnCelestial;
 
 UCLASS()
 class PLANET_API APlanetPawn : public APawn
@@ -44,9 +43,6 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Planet")
 	float VisibleDistance = 1500.0f;
-
-	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
-	TSubclassOf<AEnemySpawnCelestial> EnemySpawnClass;
 
 private:
 	APlanetController* cPlanetController;

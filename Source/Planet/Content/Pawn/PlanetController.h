@@ -28,7 +28,7 @@ protected:
 	UInputAction* AimAction;
 
 private:
-	void bindInputMappings(APawn* _pawn);
+	void bindInputMappings(const APawn* _pawn);
 	
 	APlanetPawn* mPlanetPawn;
 	UEnhancedInputLocalPlayerSubsystem* mEISubsystem;

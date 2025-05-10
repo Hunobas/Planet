@@ -44,7 +44,7 @@ public:
 	float ArmLengthInterpSpeed		= 5.f;
 
 private:
-	APawn* cOwner;
+	APawn* mOwner;
 	USpringArmComponent* mSpringArm;
 	UCameraComponent* mCamera;
 

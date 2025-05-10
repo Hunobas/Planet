@@ -11,10 +11,10 @@ struct PLANET_API FEnemySetting
 
 	FEnemySetting()
 		: HP(100.0f)
-		, Damage(10.f)
-		, Speed(100.f)
-		, XPDrop(5.f)
-		, FieldScore(1)
+		, Damage(10.0f)
+		, Speed(100.0f)
+		, XPDrop(5.0f)
+		, FieldScore(1.0f)
 	{}
 
 	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
@@ -26,5 +26,5 @@ struct PLANET_API FEnemySetting
 	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
 	float XPDrop;
 	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
-	int32 FieldScore;
+	float FieldScore;
 };

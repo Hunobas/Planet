@@ -2,7 +2,6 @@
 #include "FiringComponent.h"
 
 #include "Kismet/GameplayStatics.h"
-#include "NiagaraFunctionLibrary.h"
 #include "Engine/DamageEvents.h"
 
 #include "../Planet.h"
@@ -12,12 +11,6 @@
 UFiringComponent::UFiringComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
-}
-
-void UFiringComponent::BeginPlay()
-{
-	Super::BeginPlay();
 
 	setOwnerParams();
 	setTargetParams();
@@ -43,33 +36,21 @@ void UFiringComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FAc
 
 void UFiringComponent::StartFireSequence()
 {
-	UNiagaraFunctionLibrary::SpawnSystemAttached(
-		JustAimTemplate,
-		mMuzzlePoint,
-		NAME_None,
-		FVector::ZeroVector,
-		FRotator::ZeroRotator,
-		EAttachLocation::SnapToTarget,
-		true
-	);
+	check(cOwner);
+	
+	SpawnSystemAttachedFacingForward(JustAimTemplate, mMuzzlePoint);
 
 	cOwner->GetWorldTimerManager().SetTimer(mJustAimWindowTimerHandle, this, &UFiringComponent::startJustAimWindow, JustAimDelay, false);
 	cOwner->GetWorldTimerManager().SetTimer(mFireTimerHandle, this, &UFiringComponent::Fire, FireDelay, false);
 }
 
-void UFiringComponent::Fire()
+void UFiringComponent::Fire() const
 {
-	UNiagaraFunctionLibrary::SpawnSystemAttached(
-		MuzzleTemplate,
-		mMuzzlePoint,
-		NAME_None,
-		FVector::ZeroVector,
-		FRotator::ZeroRotator,
-		EAttachLocation::SnapToTarget,
-		true
-	);
-
+	check(cOwner);
 	check(cTargetPawn);
+	
+	SpawnSystemAttachedFacingForward(MuzzleTemplate, mMuzzlePoint);
+	// TODO: mMuzzlePoint로부터 cTargetPawn을 찾을 때까지 레이캐스팅 한 뒤 피격 이펙트 소환
 	
 	const float damage = getOwnerDamage();
 	
@@ -97,8 +78,7 @@ void UFiringComponent::setTargetParams()
 {
 	if (TargetPlayer != EAutoReceiveInput::Disabled)
 	{
-		const int32 playerIndex = int32(TargetPlayer.GetValue()) - 1;
-		cTargetPawn = UGameplayStatics::GetPlayerPawn(this, playerIndex);
+		cTargetPawn = GetTargetPlayerPawn(TargetPlayer, this);
 	}
 	else if (cWeaponOwner)
 	{
@@ -121,11 +101,11 @@ float UFiringComponent::getOwnerDamage() const
 {
 	if (cEnemyOwner)
 	{
-		return CalculateDamage(cEnemyOwner->RuntimeSettings.Damage, 0.0f/*, WaveManager->AttackMultiplier*/);
+		return CalculateDamage(cEnemyOwner->RuntimeSettings.Damage, 0.0f/*, WaveManager->DamageScale*/);
 	}
 	// else if (cWeaponOwner)
 	// {
-	// return CalculateDamage(cWeaponOwner->Setting.Attack, cWeaponOwner->Setting.Attack, WaveManager->AttackMultiplier);
+	// return CalculateDamage(cWeaponOwner->Setting.Attack, cWeaponOwner->Setting.Attack, WaveManager->DamageScale);
 	// }
 	return 0.0f;
 }

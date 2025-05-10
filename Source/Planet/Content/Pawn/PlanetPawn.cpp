@@ -10,7 +10,6 @@
 #include "PlayCamera.h"
 #include "OrbitMover.h"
 #include "PlanetController.h"
-#include "EnemySpawnCelestial.h"
 
 APlanetPawn::APlanetPawn()
 {
@@ -24,9 +23,6 @@ void APlanetPawn::BeginPlay()
 	Super::BeginPlay();
 
 	cPlanetController = Cast<APlanetController>(GetController());
-	
-	check(EnemySpawnClass);
-	GetWorld()->SpawnActor<AEnemySpawnCelestial>(EnemySpawnClass, GetActorLocation(), GetActorRotation())->Initialize(this);
 }
 
 void APlanetPawn::Tick(float _deltaTime)

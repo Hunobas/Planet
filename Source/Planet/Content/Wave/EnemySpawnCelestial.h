@@ -21,6 +21,7 @@ public:
 	
 	virtual void Tick(float _deltaTime) override;
 
+	USceneComponent* GetRandomSpawnPoint();
 	USceneComponent* GetRandomActiveSpawnPointOrNull();
 	TArray<USceneComponent*> GetRandomRowSpawnPoints() const;
 	

@@ -20,5 +20,5 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float XPDropBase	 = 5.0f;
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	int32 FieldScoreBase = 1;
+	float FieldScoreBase = 1;
 };
