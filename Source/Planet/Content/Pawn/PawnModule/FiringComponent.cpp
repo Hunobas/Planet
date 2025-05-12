@@ -1,16 +1,22 @@
 // FiringComponent.cpp
 #include "FiringComponent.h"
 
-#include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
 
 #include "../Planet.h"
 #include "PlanetPawn.h"
 #include "EnemyPawn.h"
+#include "WaveManagerComponent.h"
 
 UFiringComponent::UFiringComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+
+}
+
+void UFiringComponent::BeginPlay()
+{
+	Super::BeginPlay();
 
 	setOwnerParams();
 	setTargetParams();
@@ -22,7 +28,7 @@ void UFiringComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FAc
 
 	if (APlanetPawn* TargetPlanet = Cast<APlanetPawn>(cTargetPawn))
 	{
-		if (cEnemyOwner && bIsInJustAimWindow /* && TargetPlanet->JustAimManager->HasJustAimed()*/)
+		if (cEnemyOwner && bIsInJustAimWindow && false /* && TargetPlanet->JustAimManager->HasJustAimed()*/)
 		{
 			FDamageEvent damageEvent;
 			cEnemyOwner->TakeDamage(JustAimDamage, damageEvent, TargetPlanet->GetController(), cEnemyOwner);
@@ -63,7 +69,8 @@ void UFiringComponent::setOwnerParams()
 	cOwner = Cast<APawn>(GetOwner());
 	cEnemyOwner = Cast<AEnemyPawn>(GetOwner());
 	// cWeaponOwner = Cast<AWeaponPawn>(GetOwner());
-	
+
+	check(MuzzlePointTag != NAME_None);
 	if (cOwner && MuzzlePointTag != NAME_None)
 	{
 		if (!TryGetFirstComponentWithTag(cOwner, MuzzlePointTag, mMuzzlePoint))
@@ -71,6 +78,7 @@ void UFiringComponent::setOwnerParams()
 			UE_LOG(LogTemp, Error, TEXT("[%s] '%s' 태그를 가진 컴포넌트를 찾지 못했습니다."), 
 				*cOwner->GetName(), *MuzzlePointTag.ToString());
 		}
+		check(mMuzzlePoint != nullptr);
 	}
 }
 
@@ -101,11 +109,11 @@ float UFiringComponent::getOwnerDamage() const
 {
 	if (cEnemyOwner)
 	{
-		return CalculateDamage(cEnemyOwner->RuntimeSettings.Damage, 0.0f/*, WaveManager->DamageScale*/);
+		return CalculateDamage(cEnemyOwner->RuntimeSettings.Damage, 0.0f, cEnemyOwner->ActiveBuffs.DamageScale);
 	}
 	// else if (cWeaponOwner)
 	// {
-	// return CalculateDamage(cWeaponOwner->Setting.Attack, cWeaponOwner->Setting.Attack, WaveManager->DamageScale);
+	// return CalculateDamage(cWeaponOwner->Setting.Attack, cWeaponOwner->Setting.Attack, 1.0f);
 	// }
 	return 0.0f;
 }

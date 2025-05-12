@@ -15,9 +15,17 @@ AEnemySpawnCelestial::AEnemySpawnCelestial()
 
 AEnemySpawnCelestial* AEnemySpawnCelestial::Initialize(APawn* _targetPawn)
 {
-	cTargetPawn = _targetPawn;
-	cTargetCamera = Cast<APlanetPawn>(_targetPawn)->Camera;
+	cPlayerPawn = _targetPawn;
+	PlayerCamera = Cast<APlanetPawn>(_targetPawn)->Camera;
 	mIsPointsActive.Init(false, SpawnPoints.Num());
+
+	FAttachmentTransformRules attachmentRules(
+		EAttachmentRule::SnapToTarget,
+		EAttachmentRule::KeepWorld,
+		EAttachmentRule::KeepWorld,
+		false
+	);
+	AttachToComponent(cPlayerPawn->GetRootComponent(), attachmentRules);
 
 	return this;
 }
@@ -25,13 +33,9 @@ AEnemySpawnCelestial* AEnemySpawnCelestial::Initialize(APawn* _targetPawn)
 void AEnemySpawnCelestial::Tick(float _deltaTime)
 {
 	Super::Tick(_deltaTime);
+
+	updatePlayerFacingSpawnPoint();
 	
-	check(cTargetPawn);
-	FVector pawnLocation = cTargetPawn->GetActorLocation();
-	SetActorLocation(pawnLocation);
-
-	updateSpawnPointActivation();
-
 #ifdef DEBUG
 	for (int32 i = 0; i < SpawnPoints.Num(); i++)
 	{
@@ -39,7 +43,7 @@ void AEnemySpawnCelestial::Tick(float _deltaTime)
 		{
 			DrawDebugBox(
 				GetWorld(),
-				pawnLocation + SpawnPoints[i]->GetRelativeLocation(),
+				SpawnPoints[i]->GetComponentLocation(),
 				FVector::OneVector * 100,
 				FColor::Orange,
 				false,
@@ -54,14 +58,14 @@ void AEnemySpawnCelestial::Tick(float _deltaTime)
 
 USceneComponent* AEnemySpawnCelestial::GetRandomSpawnPoint()
 {
-	updateSpawnPointActivation();
+	updatePlayerFacingSpawnPoint();
 
 	return SpawnPoints[FMath::RandRange(0, SpawnPoints.Num() - 1)];
 }
 
 USceneComponent* AEnemySpawnCelestial::GetRandomActiveSpawnPointOrNull()
 {
-	updateSpawnPointActivation();
+	updatePlayerFacingSpawnPoint();
 	
 	TArray<USceneComponent*> activeSpawnPoints;
 	for (int32 i = 0; i < SpawnPoints.Num(); i++)
@@ -82,8 +86,23 @@ USceneComponent* AEnemySpawnCelestial::GetRandomActiveSpawnPointOrNull()
 TArray<USceneComponent*> AEnemySpawnCelestial::GetRandomRowSpawnPoints() const
 {
 	const int32 targetRow	= FMath::RandRange(1, NumRows);
-	const int32 startIndex	= (targetRow - 1) * PointsPerRow / 2;
-	const int32 endIndex	= targetRow * PointsPerRow / 2;
+	const int32 startIndex	= (targetRow - 1) * PointsPerRow;
+	const int32 endIndex	= targetRow * PointsPerRow;
+
+	TArray<USceneComponent*> targetRowPoints;
+	for (int32 i = startIndex; i < endIndex && i < SpawnPoints.Num(); i++)
+	{
+		targetRowPoints.Add(SpawnPoints[i]);
+	}
+
+	return targetRowPoints;
+}
+
+TArray<USceneComponent*> AEnemySpawnCelestial::GetNthRowSpawnPoints(const int& n) const
+{
+	check(n > 0 && n <= NumRows);
+	const int32 startIndex	= (n - 1) * PointsPerRow;
+	const int32 endIndex	= n * PointsPerRow;
 
 	TArray<USceneComponent*> targetRowPoints;
 	for (int32 i = startIndex; i < endIndex && i < SpawnPoints.Num(); i++)
@@ -144,10 +163,10 @@ void AEnemySpawnCelestial::composeSpawnPointScenes()
 	}
 }
 
-void AEnemySpawnCelestial::updateSpawnPointActivation()
+void AEnemySpawnCelestial::updatePlayerFacingSpawnPoint()
 {
-	check(cTargetCamera);
-	float camYaw = cTargetCamera->GetComponentRotation().Yaw;
+	check(PlayerCamera);
+	float camYaw = PlayerCamera->GetComponentRotation().Yaw;
 	
 	for (int32 i = 0; i < SpawnPoints.Num(); i++)
 	{

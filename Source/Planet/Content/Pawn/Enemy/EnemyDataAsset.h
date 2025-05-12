@@ -5,7 +5,7 @@
 #include "Engine/DataAsset.h"
 #include "EnemyDataAsset.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class PLANET_API UEnemyDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
@@ -20,5 +20,5 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float XPDropBase	 = 5.0f;
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	float FieldScoreBase = 1;
+	float FieldScoreBase = 1.0f;
 };

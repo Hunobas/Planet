@@ -42,14 +42,14 @@ void APlanetPawn::composeComponent()
 	PlanetMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Planet Mesh"));
 	PlanetMesh->SetupAttachment(RootComponent);
 
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>("Spring Arm");
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 	SpringArm->SetupAttachment(RootComponent);
 
-	Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
 
-	PlayCamera = CreateDefaultSubobject<UPlayCamera>("Play Camera")->Initialize(this, SpringArm, Camera);
-	OrbitMover = CreateDefaultSubobject<UOrbitMover>("Orbit Mover");
+	PlayCamera = CreateDefaultSubobject<UPlayCamera>(TEXT("Play Camera"))->Initialize(this, SpringArm, Camera);
+	OrbitMover = CreateDefaultSubobject<UOrbitMover>(TEXT("Orbit Mover"));
 }
 
 void APlanetPawn::updatePlanetRotation() const

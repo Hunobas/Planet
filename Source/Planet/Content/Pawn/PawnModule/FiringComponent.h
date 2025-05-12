@@ -19,6 +19,8 @@ class PLANET_API UFiringComponent : public UActorComponent
 public:	
 	UFiringComponent();
 
+	virtual void BeginPlay() override;
+
 	virtual void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
 	void StartFireSequence();
@@ -29,10 +31,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Firing")
 	FName MuzzlePointTag;
 	
-	UPROPERTY(EditAnywhere, Category = "Firing")
-	float FireDelay		= 2.0f;
-	UPROPERTY(EditAnywhere, Category = "Firing")
-	float JustAimDelay	= 1.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Firing")
+	float FireDelay		= ENEMY_FIRE_DELAY;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Firing")
+	float JustAimDelay	= ENEMY_FIRE_DELAY - 0.5f;
 	UPROPERTY(EditAnywhere, Category = "Firing")
 	float JustAimDamage	= 40.0f;
 

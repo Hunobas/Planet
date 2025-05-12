@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "EnemySetting.h"
+#include "EnemyScaleSetting.h"
 #include "EnemyPawn.generated.h"
 
 struct FEnemyScaleSetting;
@@ -27,7 +28,7 @@ class PLANET_API AEnemyPawn : public APawn
 public:
 	AEnemyPawn();
 
-	void ResetToDefaultSettings(FEnemyScaleSetting _scaleSetting);
+	void ResetToDefaultSettings(const FEnemyScaleSetting& scaleSettings);
 
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
 	UCapsuleComponent* BodyCollisionCapsule;
@@ -41,5 +42,7 @@ public:
 	UEnemyDataAsset* BaseSettings;
 	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
 	FEnemySetting RuntimeSettings;
+	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
+	FEnemyScaleSetting ActiveBuffs;
 
 };

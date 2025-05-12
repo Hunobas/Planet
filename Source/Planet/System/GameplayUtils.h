@@ -7,13 +7,21 @@
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
 
+#include "SurvivorGameModeBase.h"
+
 namespace GameplayUtils
 {
 #pragma region Gameplay Formulations
 	
-	inline float CalculateDamage(float _pawnDamage, float _weaponDamage = 0.0f, float _damageScale = 1.0f)
+	inline float CalculateDamage(const float& _pawnDamage, const float& _weaponDamage = 0.0f, const float& _activeBuffScale = 1.0f)
 	{
-		return (_pawnDamage + _weaponDamage) * _damageScale;
+		return (_pawnDamage + _weaponDamage) * _activeBuffScale;
+	}
+
+	inline float CalulateDefaultSigmoid(const float& roughStart, const float& roughEnd, const float& _inclination, const float& _inflectionPoint, const float& x)
+	{
+		return roughStart + (roughEnd - roughStart)
+			/ (1 + FMath::Exp(_inclination * (_inflectionPoint - x)));
 	}
 	
 #pragma endregion
@@ -21,6 +29,16 @@ namespace GameplayUtils
 
 #pragma region Actor & Component Helpers
 
+	/**
+	 * 게임 모드를 가져옵니다.
+	 * @param _worldContextObject	꺼내올 게임 모드의 월드 컨텍스트에 속한 오브젝트
+	 * @return						우리 게임 모드
+	 */
+	inline ASurvivorGameModeBase* GetPlanetGameMode(const UObject* _worldContextObject)
+	{
+		return Cast<ASurvivorGameModeBase>(UGameplayStatics::GetGameMode(_worldContextObject));
+	}
+	
 	/**
 	 * EAutoReceiveInput 기준으로 플레이어 폰을 가져옵니다.
 	 * @param _targetPlayer			EAutoReceiveInput enum 값 (Player0~3, Disabled 시 에러)
@@ -32,8 +50,8 @@ namespace GameplayUtils
 		check(_worldContextObject);
 		check(_targetPlayer != EAutoReceiveInput::Disabled);
 
-		const int32 PlayerIndex = static_cast<int32>(_targetPlayer.GetValue()) - 1;
-		return UGameplayStatics::GetPlayerPawn(_worldContextObject, PlayerIndex);
+		const int32 playerIndex = static_cast<int32>(_targetPlayer.GetValue()) - 1;
+		return UGameplayStatics::GetPlayerPawn(_worldContextObject, playerIndex);
 	}
 	
 	/**
@@ -77,12 +95,12 @@ namespace GameplayUtils
 		if (!_world)
 			return false;
 
-		TArray<AActor*> FoundActors;
-		UGameplayStatics::GetAllActorsWithTag(_world, _actorTag, FoundActors);
+		TArray<AActor*> foundActors;
+		UGameplayStatics::GetAllActorsWithTag(_world, _actorTag, foundActors);
 
-		if (FoundActors.Num() > 0)
+		if (foundActors.Num() > 0)
 		{
-			out_actor = FoundActors[0];
+			out_actor = foundActors[0];
 			return true;
 		}
 
@@ -114,5 +132,48 @@ namespace GameplayUtils
 		);
 	}
 	
+#pragma endregion
+
+
+#pragma region Name Parsing
+
+	/**
+	 * 월드 컨텍스트로부터 레벨 이름 "/Game/Maps/Level_3"을 얻어서 "Level_3" 에서 뒤쪽 숫자 3만 파싱합니다.
+	 * 실패 시 -1 반환
+	 * @param _world	파싱할 월드 컨텍스트
+	 * @return			현재 레벨 인덱스, 실패하면 -1
+	 */
+	inline int32 ParseLevelIndex(const UWorld* _world)
+	{
+		if (!_world)
+			return -1;
+		
+		FString fullMapName = _world->GetMapName();
+		FString levelName;
+		if (!fullMapName.Split(TEXT("/"), nullptr, &levelName, ESearchCase::IgnoreCase, ESearchDir::FromEnd))
+		{
+			levelName = fullMapName;
+		}
+
+		int32 endIdx = levelName.Len() - 1;
+		int32 startIdx = endIdx;
+		while (startIdx >= 0 && levelName[startIdx] != '_' && FChar::IsDigit(levelName[startIdx]))
+		{
+			startIdx--;
+		}
+		UE_LOG(LogTemp, Display, TEXT("Level Name: %s [%d %d]"), *levelName, startIdx, endIdx);
+		
+		if (startIdx == endIdx)
+		{
+			return -1;
+		}
+
+		int32 numStart = startIdx + 1;
+		int32 numLength = endIdx - startIdx;
+
+		const FString numberStr = levelName.Mid(numStart, numLength);
+		return FCString::Atoi(*numberStr);
+	}
+
 #pragma endregion
 }

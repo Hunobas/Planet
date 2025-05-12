@@ -28,7 +28,7 @@ public:
 	void StopAim();
 
 	UPROPERTY(EditAnywhere, Category="Transform")
-	float DefaultRotationalSpeed	= 100.f;
+	float DefaultRotationalSpeed	= 30.f;
 
 	UPROPERTY(EditAnywhere, Category="Spring Arm")
 	FVector SpringArmLocation		= {0, 40.f, 70.f};

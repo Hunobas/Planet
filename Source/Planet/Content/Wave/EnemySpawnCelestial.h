@@ -24,6 +24,7 @@ public:
 	USceneComponent* GetRandomSpawnPoint();
 	USceneComponent* GetRandomActiveSpawnPointOrNull();
 	TArray<USceneComponent*> GetRandomRowSpawnPoints() const;
+	TArray<USceneComponent*> GetNthRowSpawnPoints(const int& n) const;
 	
 	void SetActiveSpawnPoint(USceneComponent* _spawnPoint, bool _active);
 	void SetActiveAllSpawnPoints(bool _active);
@@ -46,12 +47,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
 	float HalfFOV		= 60.0f;
 
+	UCameraComponent* PlayerCamera;
+	
 private:
-	APawn* cTargetPawn;
-	UCameraComponent* cTargetCamera;
+	APawn* cPlayerPawn;
 	
 	TArray<bool> mIsPointsActive;
 
 	void composeSpawnPointScenes();
-	void updateSpawnPointActivation();
+	void updatePlayerFacingSpawnPoint();
 };
