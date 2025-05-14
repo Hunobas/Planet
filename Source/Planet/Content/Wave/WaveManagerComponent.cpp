@@ -40,8 +40,8 @@ void UWaveManagerComponent::BeginPlay()
 	}
 	mFireManager->Initialize(mEnemySpawn);
 
-	// PlayWaveMode1();
-	PlayWaveMode2();
+	PlayWaveMode1();
+	// PlayWaveMode2();
 }
 
 void UWaveManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -55,6 +55,9 @@ void UWaveManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void UWaveManagerComponent::PlayWaveMode1()
 {
+	updateSpawnableEnemyListByGameTime();
+	SpawnEnemyWave();
+	
 	GetWorld()->GetTimerManager().SetTimer(
 		mWaveTimerHandle,
 		this,
@@ -63,19 +66,19 @@ void UWaveManagerComponent::PlayWaveMode1()
 		true
 	);
 
-	GetWorld()->GetTimerManager().SetTimer(
-		mDifficultyTimerHandle,
-		this,
-		&UWaveManagerComponent::updateMaxFieldScoreByGameTime,
-		Config_DifficultyInterval,
-		true
-	);
+	// GetWorld()->GetTimerManager().SetTimer(
+	// 	mDifficultyTimerHandle,
+	// 	this,
+	// 	&UWaveManagerComponent::updateMaxFieldScoreByGameTime,
+	// 	Config_DifficultyInterval,
+	// 	true
+	// );
 
 	GetWorld()->GetTimerManager().SetTimer(
 		mListTimerHandle,
 		this,
 		&UWaveManagerComponent::updateSpawnableEnemyListByGameTime,
-		Config_EnemySpawnInterval,
+		Config_DifficultyInterval,
 		true
 	);
 }
@@ -88,10 +91,7 @@ void UWaveManagerComponent::PlayWaveMode2()
 	{
 		for (USceneComponent* spawnPoint : mEnemySpawn->GetNthRowSpawnPoints(i))
 		{
-			AEnemyPawn* spawnedEnemy = spawnEnemyOrNull(mRuntimeSpawnableList[0], spawnPoint);
-			check(spawnedEnemy);
-			
-			mFireManager->AddEnemy(spawnedEnemy, spawnPoint);
+			spawnEnemyOrNull(mRuntimeSpawnableList[0], spawnPoint);
 		}
 	}
 }
@@ -100,10 +100,10 @@ void UWaveManagerComponent::SpawnEnemyWave()
 {
 	check(mEnemySpawn);
 	
-	if (mRuntimeSpawnableList.IsEmpty() || mFieldScore > mMaxFieldScore)
+	if (mRuntimeSpawnableList.IsEmpty() || mCurrentFieldScore > CurrentMaxFieldScore)
 		return;
 
-	while (mFieldScore < mMaxFieldScore)
+	while (mCurrentFieldScore < CurrentMaxFieldScore)
 	{
 		TSubclassOf<AEnemyPawn> enemyClass = mRuntimeSpawnableList[FMath::RandRange(0, mRuntimeSpawnableList.Num() - 1)];
 		
@@ -116,8 +116,6 @@ void UWaveManagerComponent::SpawnEnemyWave()
 		AEnemyPawn* spawnedEnemy = spawnEnemyOrNull(enemyClass, spawnPoint);
 		if (spawnedEnemy == nullptr)
 			return;
-
-		mFireManager->AddEnemy(spawnedEnemy, spawnPoint);
 	}
 }
 
@@ -138,13 +136,13 @@ void UWaveManagerComponent::SpawnEnemiesAtRandomRow(const TSubclassOf<AEnemyPawn
 
 void UWaveManagerComponent::EnemyDied(AEnemyPawn* _deadEnemy)
 {
-	mFieldScore -= _deadEnemy->RuntimeSettings.FieldScore;
+	mCurrentFieldScore -= _deadEnemy->RuntimeSettings.FieldScore;
 	mPool->Release(_deadEnemy);
 
 	mFireManager->RemoveEnemy(_deadEnemy);
 }
 
-AEnemyPawn* UWaveManagerComponent::spawnEnemyOrNull(const TSubclassOf<AEnemyPawn>& _enemyClass, const USceneComponent* _spawnPoint)
+AEnemyPawn* UWaveManagerComponent::spawnEnemyOrNull(const TSubclassOf<AEnemyPawn>& _enemyClass, USceneComponent* _spawnPoint)
 {
 	const FTransform spawnTx( _spawnPoint->GetComponentRotation(), _spawnPoint->GetComponentLocation() );
 
@@ -153,7 +151,8 @@ AEnemyPawn* UWaveManagerComponent::spawnEnemyOrNull(const TSubclassOf<AEnemyPawn
 	if (spawnedEnemy)
 	{
 		spawnedEnemy->ResetToDefaultSettings(Config_ScaleSettings);
-		mFieldScore += spawnedEnemy->RuntimeSettings.FieldScore;
+		mCurrentFieldScore += spawnedEnemy->RuntimeSettings.FieldScore;
+		mFireManager->AddEnemy(spawnedEnemy, _spawnPoint);
 	}
 	return spawnedEnemy;
 }
@@ -173,11 +172,11 @@ void UWaveManagerComponent::updateMaxFieldScoreByGameTime()
 
 	if (Config_MaxFieldScoreCurve.GetRichCurveConst())
 	{
-		mMaxFieldScore = Config_MaxFieldScoreCurve.GetRichCurveConst()->Eval(elapsedTime);
+		CurrentMaxFieldScore = Config_MaxFieldScoreCurve.GetRichCurveConst()->Eval(elapsedTime);
 	}
 	else
 	{
-		mMaxFieldScore = CalulateDefaultSigmoid(Config_StartMaxScore, Config_EndMaxScore, Config_Inclination, Config_InflectionPoint, elapsedTime);
+		CurrentMaxFieldScore = CalulateDefaultSigmoid(Config_StartMaxScore, Config_EndMaxScore, Config_Inclination, Config_InflectionPoint, elapsedTime);
 	}
 }
 
@@ -185,12 +184,16 @@ void UWaveManagerComponent::updateSpawnableEnemyListByGameTime()
 {
 	const float elapsedTime = UGameplayStatics::GetTimeSeconds(this);
 
-	for (const auto& [enemyClass, unlockTime] : Config_SpawnInfos)
+	for (const auto& [enemyClass, unlockTime, lockTime] : Config_SpawnInfos)
 	{
-		// if (elapsedTime >= unlockTime)
-		// {
+		if (elapsedTime >= lockTime)
+		{
+			mRuntimeSpawnableList.RemoveSingle(enemyClass);
+		}
+		else if (elapsedTime >= unlockTime)
+		{
 			mRuntimeSpawnableList.AddUnique(enemyClass);
-		// }
+		}
 	}
 }
 

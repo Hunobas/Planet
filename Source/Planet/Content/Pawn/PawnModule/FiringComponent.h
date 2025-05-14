@@ -6,10 +6,11 @@
 #include "../Planet.h"
 #include "FiringComponent.generated.h"
 
-class UNiagaraSystem;
 class AEnemyPawn;
 class AWeaponPawn;
+class APlanetPawn;
 class USceneComponent;
+class UNiagaraSystem;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PLANET_API UFiringComponent : public UActorComponent
@@ -21,42 +22,47 @@ public:
 
 	virtual void BeginPlay() override;
 
-	virtual void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
-
-	void StartFireSequence();
-	void Fire() const;
+	void StartFireSequence(const TFunction<void(const UFiringComponent*)>& _callback = TFunction<void(const UFiringComponent*)>());
+	void Fire();
+	void HandleJustAim();
 
 	UPROPERTY(EditAnywhere, Category = "Firing")
 	TEnumAsByte<EAutoReceiveInput::Type> TargetPlayer;
 	UPROPERTY(EditAnywhere, Category = "Firing")
 	FName MuzzlePointTag;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Firing")
+	UPROPERTY(EditAnywhere, Category = "Firing")
 	float FireDelay		= ENEMY_FIRE_DELAY;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Firing")
-	float JustAimDelay	= ENEMY_FIRE_DELAY - 0.5f;
+	UPROPERTY(VisibleAnywhere, Category = "Firing")
+	float JustAimDelay	= ENEMY_FIRE_DELAY - JUSTAIM_WINDOW_DURATION;
 	UPROPERTY(EditAnywhere, Category = "Firing")
 	float JustAimDamage	= 40.0f;
 
 	UPROPERTY(EditAnywhere, Category = "FX")
-	UNiagaraSystem* JustAimTemplate;
+	UNiagaraSystem* JustAimDefaultNS;
 	UPROPERTY(EditAnywhere, Category = "FX")
 	UNiagaraSystem* MuzzleTemplate;
+
+	USceneComponent* MuzzlePoint;
+	APawn* TargetPawn;
 
 private:
 	void setOwnerParams();
 	void setTargetParams();
 	void startJustAimWindow();
 	void endJustAimWindow();
+	void invokeDequeueCallback();
 	float getOwnerDamage() const;
 	
-	APawn* cOwner;
-	AEnemyPawn* cEnemyOwner;
+	APawn* mOwner;
+	AEnemyPawn* mEnemyOwner;
 	AWeaponPawn* cWeaponOwner;
-	APawn* cTargetPawn;
-	USceneComponent* mMuzzlePoint;
+	APlanetPawn* mTargetPlanet;
+	TFunction<void(const UFiringComponent*)> mDequeueCallback;
 
 	FTimerHandle mJustAimWindowTimerHandle;
 	FTimerHandle mFireTimerHandle;
 	bool bIsInJustAimWindow = false;
+	bool bIsJustAimHighlighted = false;
+	
 };

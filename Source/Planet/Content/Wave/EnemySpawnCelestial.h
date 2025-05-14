@@ -18,15 +18,13 @@ public:
 	
 	// Pawn::BeginPlay 에서 호출
 	AEnemySpawnCelestial* Initialize(APawn* _targetPawn);
-	
-	virtual void Tick(float _deltaTime) override;
 
 	USceneComponent* GetRandomSpawnPoint();
 	USceneComponent* GetRandomActiveSpawnPointOrNull();
 	TArray<USceneComponent*> GetRandomRowSpawnPoints() const;
 	TArray<USceneComponent*> GetNthRowSpawnPoints(const int& n) const;
 	
-	void SetActiveSpawnPoint(USceneComponent* _spawnPoint, bool _active);
+	void SetOccupiedSpawnPoint(USceneComponent* _spawnPoint, bool _active);
 	void SetActiveAllSpawnPoints(bool _active);
 
 	UPROPERTY(EditAnywhere, Category = "Components")
@@ -35,7 +33,7 @@ public:
 	TArray<USceneComponent*> SpawnPoints;
 
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
-	float SphereRadius	= 2000.f;
+	float EnemySpawnRadius	= 2000.f;
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
 	int32 PointsPerRow	= 24;
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
@@ -53,6 +51,7 @@ private:
 	APawn* cPlayerPawn;
 	
 	TArray<bool> mIsPointsActive;
+	TArray<bool> mIsPointsOccupied;
 
 	void composeSpawnPointScenes();
 	void updatePlayerFacingSpawnPoint();

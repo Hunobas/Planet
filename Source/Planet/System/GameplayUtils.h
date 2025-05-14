@@ -41,7 +41,7 @@ namespace GameplayUtils
 	
 	/**
 	 * EAutoReceiveInput 기준으로 플레이어 폰을 가져옵니다.
-	 * @param _targetPlayer			EAutoReceiveInput enum 값 (Player0~3, Disabled 시 에러)
+	 * @param _targetPlayer			EAutoReceiveInput enum 값 (Player0~, Disabled 시 에러)
 	 * @param _worldContextObject	GetPlayerPawn 호출에 사용할 컨텍스트 오브젝트 (e.g. this)
 	 * @return						유효한 PlayerPawn
 	 */
@@ -85,23 +85,33 @@ namespace GameplayUtils
 
 	/**
 	 * 월드 컨텍스트에서 지정한 태그의 액터를 모두 찾은 뒤, 첫 번째 것만 반환합니다.
+	 * @tparam T		AActor로부터 파생된 클래스 타입
 	 * @param _world	찾을 액터가 속한 월드 컨텍스트
 	 * @param _actorTag	찾을 액터의 태그
 	 * @param out_actor	찾은 액터 포인터
 	 * @return			찾으면 true, 못 찾으면 false
 	 */
-	inline bool TryGetFirstActorWithTag(const UWorld* _world, const FName& _actorTag, AActor*& out_actor)
+	template<typename T>
+	inline bool TryGetFirstActorWithTag(const UWorld* _world, const FName& _actorTag, T*& out_actor)
 	{
 		if (!_world)
 			return false;
 
+		static_assert(TIsDerivedFrom<T, AActor>::Value, "TryGetFirstActorWithTag<T>: T는 AActor로부터 파생된 클래스여야 함.");
+
 		TArray<AActor*> foundActors;
 		UGameplayStatics::GetAllActorsWithTag(_world, _actorTag, foundActors);
+		
+		if (foundActors.Num() == 0)
+			return false;
 
-		if (foundActors.Num() > 0)
+		for (AActor* actor : foundActors)
 		{
-			out_actor = foundActors[0];
-			return true;
+			if (T* typedActor = Cast<T>(actor))
+			{
+				out_actor = typedActor;
+				return true;
+			}
 		}
 
 		return false;
@@ -111,22 +121,23 @@ namespace GameplayUtils
 	 * 이펙트를 소환해 컴포넌트 하위에 붙이고, 이펙트의 트랜스폼을 컴포넌트의 위치 및 정면 방향으로 조정합니다.
 	 * @param _systemTemplate		소환할 Niagara 시스템 템플릿
 	 * @param _attachToComponent	이펙트를 붙일 SceneComponent
+	 * @return						소환된 이펙트 컴포넌트
 	 */
-	inline void SpawnSystemAttachedFacingForward(UNiagaraSystem* _systemTemplate, USceneComponent* _attachToComponent)
+	inline UNiagaraComponent* SpawnSystemAttachedFacingForward(UNiagaraSystem* _systemTemplate, USceneComponent* _attachToComponent)
 	{
 		if (_systemTemplate == nullptr)
-			return;
+			return nullptr;
 		
 		check(_attachToComponent);
 
-		// const FRotator ForwardRotation = _attachToComponent->GetComponentRotation();
+		const FRotator forwardRotation = _attachToComponent->GetComponentRotation();
 
-		UNiagaraFunctionLibrary::SpawnSystemAttached(
+		return UNiagaraFunctionLibrary::SpawnSystemAttached(
 			_systemTemplate,
 			_attachToComponent,
 			NAME_None,
 			FVector::ZeroVector,
-			FRotator::ZeroRotator,
+			forwardRotation,
 			EAttachLocation::SnapToTarget,
 			true
 		);

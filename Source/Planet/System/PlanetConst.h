@@ -18,6 +18,7 @@ namespace PlanetConst
 	static constexpr EAutoReceiveInput::Type SINGLEPLAYER_INDEX	= EAutoReceiveInput::Player0;
 
 	static constexpr float ENEMY_FIRE_DELAY						= 2.0f;
+	static constexpr float JUSTAIM_WINDOW_DURATION				= 0.3f;
 	
 #pragma endregion
 
@@ -26,6 +27,7 @@ namespace PlanetConst
 	
 	inline const FName DEFAULT_SUN_TAG(TEXT("Sun"));
 	inline const FName OBJECT_POOL_TAG(TEXT("Object Pool"));
+	inline const FName DEFAULT_ENEMY_SPAWN_TAG(TEXT("Enemy Spawn Celestial"));
 	inline const FName FIRE_MANAGER_TAG(TEXT("Fire Manager"));
 	
 #pragma endregion

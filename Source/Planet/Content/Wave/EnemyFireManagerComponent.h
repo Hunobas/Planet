@@ -18,19 +18,23 @@ public:
 	UEnemyFireManagerComponent();
 	UEnemyFireManagerComponent* Initialize(AEnemySpawnCelestial* _enemySpawn);
 
-protected:
-	virtual void BeginPlay() override;
-
-public:
+	virtual void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
+	
 	UFUNCTION(BlueprintCallable, Category="Fire Manager")
-	UFiringComponent* FireRandomFacingEnemy();
+	void FireRandomFacingEnemy();
 	
 	void AddEnemy(AEnemyPawn* _spawnedEnemy, USceneComponent* _spawnPoint);
 	void RemoveEnemy(AEnemyPawn* _deadEnemy);
+	void EnqueueFireComponent(UFiringComponent* _fireComponent);
+	void DequeueFireComponent(const UFiringComponent* _firedComponent);
 
 private:
 	TArray<AEnemyPawn*> getPlayerFacingEnemies();
 	
 	AEnemySpawnCelestial* mEnemySpawn;
 	TArray<AEnemyPawn*> mRangedEnemies;
+
+	FCriticalSection mQueueCriticalSection;
+	TQueue<UFiringComponent*> mFireComponentQueue;
+	TSet<UFiringComponent*> mActiveFireComponents;
 };

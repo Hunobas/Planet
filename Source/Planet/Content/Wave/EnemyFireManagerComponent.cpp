@@ -19,10 +19,32 @@ UEnemyFireManagerComponent* UEnemyFireManagerComponent::Initialize(AEnemySpawnCe
 	return this;
 }
 
-void UEnemyFireManagerComponent::BeginPlay()
+void UEnemyFireManagerComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction)
 {
-	Super::BeginPlay();
+	Super::TickComponent(_deltaTime, _tickType, _thisTickFunction);
 
+	UFiringComponent* currentFireComponent = nullptr;
+	if (mFireComponentQueue.Peek(currentFireComponent))
+	{
+		currentFireComponent->HandleJustAim();
+
+#ifdef DEBUG
+		if (APawn* cPlayerPawn = currentFireComponent->TargetPawn)
+		{
+			const FVector PlayerForwardPos = cPlayerPawn->GetActorLocation() + mEnemySpawn->PlayerCamera->GetForwardVector() * mEnemySpawn->EnemySpawnRadius;
+			DrawDebugLine(
+				GetWorld(),
+				PlayerForwardPos,
+				currentFireComponent->MuzzlePoint->GetComponentLocation(),
+				FColor::Yellow,
+				false,
+				0.1f,
+				0,
+				5.0f
+			);
+		}
+#endif
+	}
 }
 
 void UEnemyFireManagerComponent::AddEnemy(AEnemyPawn* _spawnedEnemy, USceneComponent* _spawnPoint)
@@ -31,7 +53,7 @@ void UEnemyFireManagerComponent::AddEnemy(AEnemyPawn* _spawnedEnemy, USceneCompo
 		return;
 
 	_spawnedEnemy->AttachToComponent(_spawnPoint, FAttachmentTransformRules::KeepWorldTransform);
-	mEnemySpawn->SetActiveSpawnPoint(_spawnPoint, false);
+	mEnemySpawn->SetOccupiedSpawnPoint(_spawnPoint, true);
 	mRangedEnemies.Add(_spawnedEnemy);
 }
 
@@ -43,30 +65,61 @@ void UEnemyFireManagerComponent::RemoveEnemy(AEnemyPawn* _deadEnemy)
 	USceneComponent* spawnPoint = _deadEnemy->GetRootComponent()->GetAttachParent();
 	check(spawnPoint);
 	
-	mEnemySpawn->SetActiveSpawnPoint(spawnPoint, true);
+	mEnemySpawn->SetOccupiedSpawnPoint(spawnPoint, false);
 	mRangedEnemies.RemoveSingleSwap(_deadEnemy);
 }
 
-UFiringComponent* UEnemyFireManagerComponent::FireRandomFacingEnemy()
+void UEnemyFireManagerComponent::EnqueueFireComponent(UFiringComponent* _fireComponent)
+{
+	FScopeLock Lock(&mQueueCriticalSection);
+	mFireComponentQueue.Enqueue(_fireComponent);
+	mActiveFireComponents.Add(_fireComponent);
+}
+
+void UEnemyFireManagerComponent::DequeueFireComponent(const UFiringComponent* _firedComponent)
+{
+	FScopeLock Lock(&mQueueCriticalSection);
+	
+	UFiringComponent* result;
+	mFireComponentQueue.Dequeue(result);
+	mActiveFireComponents.Remove(result);
+
+	checkf(result == _firedComponent, TEXT("[UEnemyFireManagerComponent] dQ 실패: 예상 %s, 실제 %s"), 
+			*_firedComponent->GetName(), *GetNameSafe(result));
+}
+
+void UEnemyFireManagerComponent::FireRandomFacingEnemy()
 {
 	TArray<AEnemyPawn*> facingEnemies = getPlayerFacingEnemies();
 
-	if (facingEnemies.IsEmpty())
+	TArray<UFiringComponent*> allFirePoints;
+	for (AEnemyPawn* enemy : facingEnemies)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No facing enemies found"));
-		return nullptr;
+		TArray<UFiringComponent*> firePoints;
+		enemy->GetComponents<UFiringComponent>(firePoints);
+		allFirePoints.Append(firePoints);
 	}
 
-	AEnemyPawn* enemy = facingEnemies[FMath::RandRange(0, facingEnemies.Num() - 1)];
+	TArray<UFiringComponent*> availableFirePoints;
+	for (UFiringComponent* fp : allFirePoints)
+	{
+		if (!mActiveFireComponents.Contains(fp))
+		{
+			availableFirePoints.Add(fp);
+		}
+	}
 
-	TArray<UFiringComponent*> firePoints;
-	enemy->GetComponents<UFiringComponent>(firePoints);
-	check(!firePoints.IsEmpty());
+	if (availableFirePoints.IsEmpty())
+	{
+		UE_LOG(LogTemp, Display, TEXT("[EnemyFireManagerComponent] 가용한 fire point가 없음."));
+		return;
+	}
 
-	UFiringComponent* firePoint = firePoints[FMath::RandRange(0, firePoints.Num() - 1)];
-	firePoint->StartFireSequence();
-
-	return firePoint;
+	UFiringComponent* selectedFirePoint = availableFirePoints[FMath::RandRange(0, availableFirePoints.Num()-1)];
+	EnqueueFireComponent(selectedFirePoint);
+	selectedFirePoint->StartFireSequence([this](const UFiringComponent* _firedComponent){
+		DequeueFireComponent(_firedComponent);
+	});
 }
 
 TArray<AEnemyPawn*> UEnemyFireManagerComponent::getPlayerFacingEnemies()

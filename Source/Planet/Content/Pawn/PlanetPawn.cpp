@@ -9,6 +9,7 @@
 
 #include "PlayCamera.h"
 #include "OrbitMover.h"
+#include "JustAimManagerComponent.h"
 #include "PlanetController.h"
 
 APlanetPawn::APlanetPawn()
@@ -16,13 +17,6 @@ APlanetPawn::APlanetPawn()
 	PrimaryActorTick.bCanEverTick = true;
 	
 	composeComponent();
-}
-
-void APlanetPawn::BeginPlay()
-{
-	Super::BeginPlay();
-
-	cPlanetController = Cast<APlanetController>(GetController());
 }
 
 void APlanetPawn::Tick(float _deltaTime)
@@ -50,6 +44,7 @@ void APlanetPawn::composeComponent()
 
 	PlayCamera = CreateDefaultSubobject<UPlayCamera>(TEXT("Play Camera"))->Initialize(this, SpringArm, Camera);
 	OrbitMover = CreateDefaultSubobject<UOrbitMover>(TEXT("Orbit Mover"));
+	JustAimManager = CreateDefaultSubobject<UJustAimManagerComponent>(TEXT("Just Aim Manager"));
 }
 
 void APlanetPawn::updatePlanetRotation() const
@@ -61,16 +56,16 @@ void APlanetPawn::updatePlanetRotation() const
 	const FRotator lookAtRotation	= UKismetMathLibrary::FindLookAtRotation(meshLocation, targetLoc);
 
 #ifdef DEBUG
-	DrawDebugLine(
-		GetWorld(),
-		cameraLocation,
-		targetLoc,
-		FColor::Red,
-		false,
-		0.1f,
-		0,
-		0.1f
-	);
+	// DrawDebugLine(
+	// 	GetWorld(),
+	// 	cameraLocation,
+	// 	targetLoc,
+	// 	FColor::Red,
+	// 	false,
+	// 	0.1f,
+	// 	0,
+	// 	0.1f
+	// );
 #endif
 
 	PlanetMesh->SetWorldRotation(lookAtRotation);

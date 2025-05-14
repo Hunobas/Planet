@@ -46,6 +46,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Wave Config")
 	TArray<UWaveConfigDataAsset*> WaveConfigDatas;
 
+	UPROPERTY(EditAnywhere, Category = "Wave Config")
+	float CurrentMaxFieldScore = 10.0f;
+
 	TArray<FSpawnInfo>	Config_SpawnInfos;
 	float				Config_EnemySpawnInterval;
 	float				Config_DifficultyInterval;
@@ -57,7 +60,7 @@ public:
 	FEnemyScaleSetting	Config_ScaleSettings;
 
 private:
-	AEnemyPawn* spawnEnemyOrNull(const TSubclassOf<AEnemyPawn>& _enemyClass, const USceneComponent* _spawnPoint);
+	AEnemyPawn* spawnEnemyOrNull(const TSubclassOf<AEnemyPawn>& _enemyClass, USceneComponent* _spawnPoint);
 	USceneComponent* getRandomPointForTypeOrNull(const EEnemyType& _type) const;
 	void updateMaxFieldScoreByGameTime();
 	void updateSpawnableEnemyListByGameTime();
@@ -72,6 +75,5 @@ private:
 	FTimerHandle mDifficultyTimerHandle;
 	FTimerHandle mListTimerHandle;
 
-	float mMaxFieldScore;
-	float mFieldScore;
+	float mCurrentFieldScore;
 };

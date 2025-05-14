@@ -18,6 +18,8 @@ struct FSpawnInfo
 	TSubclassOf<AEnemyPawn> EnemyClass;
 	UPROPERTY(EditAnywhere, Category = "Wave Config", meta=(ClampMin="0"))
 	int32 UnlockTime = 0;
+	UPROPERTY(EditAnywhere, Category = "Wave Config", meta=(ClampMin="0"))
+	int32 LockTime = PLAYTIME;
 };
 
 UCLASS(Blueprintable)

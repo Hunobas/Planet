@@ -1,6 +1,7 @@
 // EnemySpawnCelestial.cpp
 #include "EnemySpawnCelestial.h"
 
+#include "EnemyPawn.h"
 #include "Components/SceneComponent.h"
 #include "Camera/CameraComponent.h"
 
@@ -18,6 +19,7 @@ AEnemySpawnCelestial* AEnemySpawnCelestial::Initialize(APawn* _targetPawn)
 	cPlayerPawn = _targetPawn;
 	PlayerCamera = Cast<APlanetPawn>(_targetPawn)->Camera;
 	mIsPointsActive.Init(false, SpawnPoints.Num());
+	mIsPointsOccupied.Init(false, SpawnPoints.Num());
 
 	FAttachmentTransformRules attachmentRules(
 		EAttachmentRule::SnapToTarget,
@@ -28,32 +30,6 @@ AEnemySpawnCelestial* AEnemySpawnCelestial::Initialize(APawn* _targetPawn)
 	AttachToComponent(cPlayerPawn->GetRootComponent(), attachmentRules);
 
 	return this;
-}
-
-void AEnemySpawnCelestial::Tick(float _deltaTime)
-{
-	Super::Tick(_deltaTime);
-
-	updatePlayerFacingSpawnPoint();
-	
-#ifdef DEBUG
-	for (int32 i = 0; i < SpawnPoints.Num(); i++)
-	{
-		if (mIsPointsActive[i])
-		{
-			DrawDebugBox(
-				GetWorld(),
-				SpawnPoints[i]->GetComponentLocation(),
-				FVector::OneVector * 100,
-				FColor::Orange,
-				false,
-				0.1f,
-				0,
-				1.0f
-			);
-		}
-	}
-#endif
 }
 
 USceneComponent* AEnemySpawnCelestial::GetRandomSpawnPoint()
@@ -70,7 +46,7 @@ USceneComponent* AEnemySpawnCelestial::GetRandomActiveSpawnPointOrNull()
 	TArray<USceneComponent*> activeSpawnPoints;
 	for (int32 i = 0; i < SpawnPoints.Num(); i++)
 	{
-		if (mIsPointsActive[i])
+		if (mIsPointsActive[i] && !mIsPointsOccupied[i])
 		{
 			activeSpawnPoints.Add(SpawnPoints[i]);
 		}
@@ -78,6 +54,22 @@ USceneComponent* AEnemySpawnCelestial::GetRandomActiveSpawnPointOrNull()
 
 	if (activeSpawnPoints.Num() > 0)
 	{
+#ifdef DEBUG
+		for (USceneComponent* spawnPoint : activeSpawnPoints)
+		{
+			DrawDebugBox(
+				GetWorld(),
+				spawnPoint->GetComponentLocation(),
+				FVector::OneVector * 100,
+				FColor::Orange,
+				false,
+				1.0f,
+				0,
+				1.0f
+			);
+		}
+#endif
+		
 		return activeSpawnPoints[FMath::RandRange(0, activeSpawnPoints.Num() - 1)];
 	}
 	return nullptr;
@@ -113,12 +105,12 @@ TArray<USceneComponent*> AEnemySpawnCelestial::GetNthRowSpawnPoints(const int& n
 	return targetRowPoints;
 }
 
-void AEnemySpawnCelestial::SetActiveSpawnPoint(USceneComponent* _spawnPoint, bool _active)
+void AEnemySpawnCelestial::SetOccupiedSpawnPoint(USceneComponent* _spawnPoint, bool _active)
 {
 	int32 i  = SpawnPoints.Find(_spawnPoint);
 	if (i != INDEX_NONE)
 	{
-		mIsPointsActive[i] = _active;
+		mIsPointsOccupied[i] = _active;
 	}
 }
 
@@ -147,9 +139,9 @@ void AEnemySpawnCelestial::composeSpawnPointScenes()
 			FString spawnPointName = FString::Printf(TEXT("Spawn Point %02d"), pointIndex++ + 1);
 
 			FVector position;
-			position.X = SphereRadius * FMath::Cos(FMath::DegreesToRadians(pitch)) * FMath::Cos(FMath::DegreesToRadians(yaw));
-			position.Y = SphereRadius * FMath::Cos(FMath::DegreesToRadians(pitch)) * FMath::Sin(FMath::DegreesToRadians(yaw));
-			position.Z = SphereRadius * FMath::Sin(FMath::DegreesToRadians(pitch));
+			position.X = EnemySpawnRadius * FMath::Cos(FMath::DegreesToRadians(pitch)) * FMath::Cos(FMath::DegreesToRadians(yaw));
+			position.Y = EnemySpawnRadius * FMath::Cos(FMath::DegreesToRadians(pitch)) * FMath::Sin(FMath::DegreesToRadians(yaw));
+			position.Z = EnemySpawnRadius * FMath::Sin(FMath::DegreesToRadians(pitch));
 
 			USceneComponent* spawnPoint = CreateDefaultSubobject<USceneComponent>(*spawnPointName);
 			spawnPoint->SetupAttachment(RootComponent);
@@ -172,7 +164,7 @@ void AEnemySpawnCelestial::updatePlayerFacingSpawnPoint()
 	{
 		float pointYaw = SpawnPoints[i]->GetRelativeLocation().Rotation().Yaw;
 		float deltaYaw = FMath::FindDeltaAngleDegrees(camYaw, pointYaw);
-
+		
 		mIsPointsActive[i] = FMath::Abs(deltaYaw) <= HalfFOV;
 	}
 }

@@ -5,12 +5,14 @@
 #include "GameFramework/Pawn.h"
 #include "PlanetPawn.generated.h"
 
+struct FInputActionValue;
 class UCapsuleComponent;
 class UStaticMeshComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UPlayCamera;
 class UOrbitMover;
+class UJustAimManagerComponent;
 class APlanetController;
 
 UCLASS()
@@ -21,10 +23,6 @@ class PLANET_API APlanetPawn : public APawn
 public:
 	APlanetPawn();
 
-protected:
-	virtual void BeginPlay() override;
-
-public:	
 	virtual void Tick(float _deltaTime) override;
 
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
@@ -40,12 +38,13 @@ public:
 	UPlayCamera* PlayCamera;
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
 	UOrbitMover* OrbitMover;
+	UPROPERTY(EditAnywhere, Category = "Actor Components")
+	UJustAimManagerComponent* JustAimManager;
 
 	UPROPERTY(EditAnywhere, Category = "Planet")
-	float VisibleDistance = 1500.0f;
-
+	float VisibleDistance = 3000.0f;
+	
 private:
-	APlanetController* cPlanetController;
 	
 	void composeComponent();
 	void updatePlanetRotation() const;

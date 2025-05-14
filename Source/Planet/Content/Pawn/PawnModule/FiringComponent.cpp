@@ -7,6 +7,7 @@
 #include "PlanetPawn.h"
 #include "EnemyPawn.h"
 #include "WaveManagerComponent.h"
+#include "JustAimManagerComponent.h"
 
 UFiringComponent::UFiringComponent()
 {
@@ -20,65 +21,84 @@ void UFiringComponent::BeginPlay()
 
 	setOwnerParams();
 	setTargetParams();
+
+#ifdef DEBUG
+	FString newName = FString::Printf(TEXT("FireComponent_%d"), GetUniqueID());
+	this->Rename(*newName);
+#endif
 }
 
-void UFiringComponent::TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction)
+void UFiringComponent::StartFireSequence(const TFunction<void(const UFiringComponent*)>& _callback)
 {
-	Super::TickComponent(_deltaTime, _tickType, _thisTickFunction);
-
-	if (APlanetPawn* TargetPlanet = Cast<APlanetPawn>(cTargetPawn))
+	check(mOwner);
+    
+	if (!SpawnSystemAttachedFacingForward(JustAimDefaultNS, MuzzlePoint))
 	{
-		if (cEnemyOwner && bIsInJustAimWindow && false /* && TargetPlanet->JustAimManager->HasJustAimed()*/)
-		{
-			FDamageEvent damageEvent;
-			cEnemyOwner->TakeDamage(JustAimDamage, damageEvent, TargetPlanet->GetController(), cEnemyOwner);
-			// TargetPlanet->JustAimManager->SucceedJustAim(cOwner);
-        
-			cEnemyOwner->GetWorldTimerManager().ClearTimer(mFireTimerHandle);
-			bIsInJustAimWindow = false;
-		}
+		check(false);
 	}
+
+	mOwner->GetWorldTimerManager().SetTimer(mJustAimWindowTimerHandle, this, &UFiringComponent::startJustAimWindow, JustAimDelay, false);
+	mOwner->GetWorldTimerManager().SetTimer(mFireTimerHandle, this, &UFiringComponent::Fire, FireDelay, false);
+
+	mDequeueCallback = _callback;
 }
 
-void UFiringComponent::StartFireSequence()
+void UFiringComponent::Fire()
 {
-	check(cOwner);
+	check(mOwner);
+	check(TargetPawn);
 	
-	SpawnSystemAttachedFacingForward(JustAimTemplate, mMuzzlePoint);
-
-	cOwner->GetWorldTimerManager().SetTimer(mJustAimWindowTimerHandle, this, &UFiringComponent::startJustAimWindow, JustAimDelay, false);
-	cOwner->GetWorldTimerManager().SetTimer(mFireTimerHandle, this, &UFiringComponent::Fire, FireDelay, false);
-}
-
-void UFiringComponent::Fire() const
-{
-	check(cOwner);
-	check(cTargetPawn);
-	
-	SpawnSystemAttachedFacingForward(MuzzleTemplate, mMuzzlePoint);
+	SpawnSystemAttachedFacingForward(MuzzleTemplate, MuzzlePoint);
 	// TODO: mMuzzlePoint로부터 cTargetPawn을 찾을 때까지 레이캐스팅 한 뒤 피격 이펙트 소환
 	
 	const float damage = getOwnerDamage();
 	
 	FDamageEvent damageEvent;
-	cTargetPawn->TakeDamage(damage, damageEvent, cOwner->GetController(), cOwner);
+	TargetPawn->TakeDamage(damage, damageEvent, mOwner->GetController(), mOwner);
+
+	if (mTargetPlanet)
+	{
+		mTargetPlanet->JustAimManager->FailJustAim();
+	}
+
+	invokeDequeueCallback();
+}
+
+void UFiringComponent::HandleJustAim()
+{
+	if (!mEnemyOwner)
+		return;
+	
+	check(mTargetPlanet);
+
+	if (bIsInJustAimWindow && mTargetPlanet->JustAimManager->HasJustAimed(MuzzlePoint))
+	{
+		FDamageEvent damageEvent;
+		mEnemyOwner->TakeDamage(JustAimDamage, damageEvent, mTargetPlanet->GetController(), mEnemyOwner);
+		mTargetPlanet->JustAimManager->SucceedJustAim(MuzzlePoint);
+
+		invokeDequeueCallback();
+    
+		mEnemyOwner->GetWorldTimerManager().ClearTimer(mFireTimerHandle);
+		bIsInJustAimWindow = false;
+	}
 }
 
 void UFiringComponent::setOwnerParams()
 {
-	cOwner = Cast<APawn>(GetOwner());
-	cEnemyOwner = Cast<AEnemyPawn>(GetOwner());
+	mOwner = Cast<APawn>(GetOwner());
+	mEnemyOwner = Cast<AEnemyPawn>(GetOwner());
 	// cWeaponOwner = Cast<AWeaponPawn>(GetOwner());
 
 	check(MuzzlePointTag != NAME_None);
-	if (cOwner && MuzzlePointTag != NAME_None)
+	if (mOwner)
 	{
-		if (!TryGetFirstComponentWithTag(cOwner, MuzzlePointTag, mMuzzlePoint))
+		if (!TryGetFirstComponentWithTag(mOwner, MuzzlePointTag, MuzzlePoint))
 		{
-			UE_LOG(LogTemp, Error, TEXT("[%s] '%s' 태그를 가진 컴포넌트를 찾지 못했습니다."), 
-				*cOwner->GetName(), *MuzzlePointTag.ToString());
+			UE_LOG(LogTemp, Error, TEXT("[UFiringComponent] %s->'%s' 태그를 가진 컴포넌트를 찾지 못했습니다."), 
+				*mOwner->GetName(), *MuzzlePointTag.ToString());
 		}
-		check(mMuzzlePoint != nullptr);
+		check(MuzzlePoint != nullptr);
 	}
 }
 
@@ -86,7 +106,8 @@ void UFiringComponent::setTargetParams()
 {
 	if (TargetPlayer != EAutoReceiveInput::Disabled)
 	{
-		cTargetPawn = GetTargetPlayerPawn(TargetPlayer, this);
+		TargetPawn = GetTargetPlayerPawn(TargetPlayer, this);
+		mTargetPlanet = Cast<APlanetPawn>(TargetPawn);
 	}
 	else if (cWeaponOwner)
 	{
@@ -97,7 +118,7 @@ void UFiringComponent::setTargetParams()
 void UFiringComponent::startJustAimWindow()
 {
 	bIsInJustAimWindow = true;
-	cOwner->GetWorldTimerManager().SetTimer(mJustAimWindowTimerHandle, this, &UFiringComponent::endJustAimWindow, FireDelay - JustAimDelay - 0.01f, false);
+	mOwner->GetWorldTimerManager().SetTimer(mJustAimWindowTimerHandle, this, &UFiringComponent::endJustAimWindow, FireDelay - JustAimDelay - 0.01f, false);
 }
 
 void UFiringComponent::endJustAimWindow()
@@ -105,11 +126,20 @@ void UFiringComponent::endJustAimWindow()
 	bIsInJustAimWindow = false;
 }
 
+void UFiringComponent::invokeDequeueCallback()
+{
+	if (!mDequeueCallback)
+		return;
+		
+	mDequeueCallback(this);
+	mDequeueCallback = nullptr;
+}
+
 float UFiringComponent::getOwnerDamage() const
 {
-	if (cEnemyOwner)
+	if (mEnemyOwner)
 	{
-		return CalculateDamage(cEnemyOwner->RuntimeSettings.Damage, 0.0f, cEnemyOwner->ActiveBuffs.DamageScale);
+		return CalculateDamage(mEnemyOwner->RuntimeSettings.Damage, 0.0f, mEnemyOwner->ActiveBuffs.DamageScale);
 	}
 	// else if (cWeaponOwner)
 	// {
