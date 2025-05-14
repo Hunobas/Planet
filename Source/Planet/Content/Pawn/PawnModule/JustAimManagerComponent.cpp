@@ -7,6 +7,7 @@
 #include "PlanetPawn.h"
 #include "EnemySpawnCelestial.h"
 #include "PlanetController.h"
+#include "PlayCamera.h"
 
 UJustAimManagerComponent::UJustAimManagerComponent()
 {
@@ -21,9 +22,6 @@ void UJustAimManagerComponent::BeginPlay()
 
 	cPlayerPawn = Cast<APlanetPawn>(GetOwner());
 	check(cPlayerPawn);
-
-	cPlayerController = Cast<APlanetController>(cPlayerPawn->GetController());
-	check(cPlayerController);
 
 	AEnemySpawnCelestial* enemySpawn;
 	TryGetFirstActorWithTag(GetWorld(), DEFAULT_ENEMY_SPAWN_TAG, enemySpawn);
@@ -46,8 +44,9 @@ bool UJustAimManagerComponent::HasJustAimed(const USceneComponent* _firePoint)
 	}
     
 	// 2. 플레이어의 현재 시선 입력을 3D 벡터로 변환
-	check(cPlayerController);
-	const FVector2D currentAverageInput = cPlayerController->GetEMAInput();
+	APlanetController* playerController = Cast<APlanetController>(cPlayerPawn->GetController());
+	check(playerController);
+	const FVector2D currentAverageInput = playerController->GetEMAInput();
 	const FVector inputDirection		= FVector(currentAverageInput.X, currentAverageInput.Y, 0.0f).GetSafeNormal();
     
 	// 3. 플레이어 카메라의 우측 및 상단 벡터
@@ -75,13 +74,9 @@ void UJustAimManagerComponent::SucceedJustAim(USceneComponent* _firePoint)
 	check(_firePoint);
 
 	IsInJustAimWindow = false;
+	cPlayerPawn->PlayCamera->OnJustAimSuccess(_firePoint->GetComponentLocation());
+	
 	SpawnSystemAttachedFacingForward(JustAimSuccessTemplate, _firePoint);
-
-	const FVector CameraLookAtDirection	= _firePoint->GetComponentLocation() - cPlayerPawn->GetActorLocation();
-	const FRotator NewRotation			= CameraLookAtDirection.Rotation();
-
-	check(cPlayerController);
-	cPlayerController->SetControlRotation(NewRotation);
 }
 
 void UJustAimManagerComponent::FailJustAim()

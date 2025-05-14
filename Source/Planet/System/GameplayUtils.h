@@ -12,7 +12,7 @@
 namespace GameplayUtils
 {
 #pragma region Gameplay Formulations
-	
+
 	inline float CalculateDamage(const float& _pawnDamage, const float& _weaponDamage = 0.0f, const float& _activeBuffScale = 1.0f)
 	{
 		return (_pawnDamage + _weaponDamage) * _activeBuffScale;
@@ -187,4 +187,42 @@ namespace GameplayUtils
 	}
 
 #pragma endregion
+
+	
+#pragma region Game Math
+
+	inline float EaseOut(float num, int32 exp)
+	{
+		return 1 - FMath::Pow(1 - num, exp);
+	}
+
+	inline float EaseOutTetri(float num)
+	{
+		return EaseOut(num, 3);
+	}
+
+	inline float EaseOutQuint(float num)
+	{
+		return EaseOut(num, 5);
+	}
+
+	inline float NormalizeAngle(float degree)
+	{
+		while (degree > 180.f)
+			degree -= 360.f;
+		while (degree < -180.f)
+			degree += 360.f;
+		return degree;
+	}
+
+	inline FRotator LerpAngle(FRotator a, FRotator b, float x)
+	{
+		const float pitch = NormalizeAngle(a.Pitch + NormalizeAngle(b.Pitch - a.Pitch) * x);
+		const float yaw = NormalizeAngle(a.Yaw + NormalizeAngle(b.Yaw - a.Yaw) * x);
+		const float roll = NormalizeAngle(a.Roll + NormalizeAngle(b.Roll - a.Roll) * x);
+		return FRotator(pitch, yaw, roll);
+	}
+	
+#pragma endregion
+	
 }

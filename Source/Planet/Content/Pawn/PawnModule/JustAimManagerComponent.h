@@ -28,13 +28,13 @@ public:
 	void FailJustAim();
 
 	UPROPERTY(EditAnywhere, Category = "Just Aim")
-	float JustAimWindowRadius = 3000.0f;
+	float JustAimWindowRadius = 2000.0f;
 	UPROPERTY(VisibleAnywhere, Category = "Just Aim")
 	float JustAimWindowDuration = JUSTAIM_WINDOW_DURATION;
 	UPROPERTY(EditAnywhere, Category = "Just Aim")
-	float JustAimWindowAngle = 60.0f;
+	float JustAimWindowAngle = 80.0f;
 	UPROPERTY(EditAnywhere, Category = "Just Aim")
-	float JustAimInputSpeedThreshold = 0.1f;
+	float JustAimInputSpeedThreshold = 0.25f;
 
 	UPROPERTY(EditAnywhere, Category = "FX")
 	UNiagaraSystem* JustAimSuccessTemplate;
@@ -43,7 +43,6 @@ public:
 	
 private:
 	APlanetPawn* cPlayerPawn;
-	APlanetController* cPlayerController;
 	
 	float mDistanceToSpawnCelestial;
 	FVector mCachedDestinationNorm;

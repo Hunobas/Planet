@@ -20,12 +20,15 @@ public:
 	// Pawn::생성자 에서 호출
 	UPlayCamera* Initialize(APawn* _owner, USpringArmComponent* _springArm, UCameraComponent* _camera);
 
-	void UpdateSocketOffY();
-	void UpdateArmLength(float _deltaTime);
+protected:
+	virtual void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 
+public:
 	void Look(const FInputActionValue& _value);
 	void StartAim();
 	void StopAim();
+
+	void OnJustAimSuccess(const FVector& _targetLocation);
 
 	UPROPERTY(EditAnywhere, Category="Transform")
 	float DefaultRotationalSpeed	= 30.f;
@@ -41,9 +44,18 @@ public:
 	UPROPERTY(EditAnywhere, Category="Spring Arm")
 	float AimedArmLength			= 250.f;
 	UPROPERTY(EditAnywhere, Category="Spring Arm")
-	float ArmLengthInterpSpeed		= 5.f;
+	float ArmLengthInterpSpeed		= 5.0f;
+	UPROPERTY(EditAnywhere, Category="Spring Arm")
+	float DefaultRotationLagSpeed	= 30.0f;
+
+	UPROPERTY(EditAnywhere, Category="Just Aim")
+	float JustAimingDuration	= 0.08f;
 
 private:
+	void updateSocketOffY();
+	void updateArmLength(float _deltaTime);
+	void updateJustAimRotation(float _deltaTime);
+	
 	APawn* mOwner;
 	USpringArmComponent* mSpringArm;
 	UCameraComponent* mCamera;
@@ -51,4 +63,9 @@ private:
 	float mCurrentArmLength;
 	float mRotationalSpeed;
 	bool bIsAiming;
+
+	FRotator mStartControlRotation;
+	FRotator mTargetControlRotation;
+	float mJustAimingElapsedTime = 0.0f;
+	bool bIsJustAimRotating = false;
 };

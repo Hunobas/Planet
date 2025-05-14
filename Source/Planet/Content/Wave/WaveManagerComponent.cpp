@@ -40,8 +40,8 @@ void UWaveManagerComponent::BeginPlay()
 	}
 	mFireManager->Initialize(mEnemySpawn);
 
-	PlayWaveMode1();
-	// PlayWaveMode2();
+	// PlayWaveMode1();
+	PlayWaveMode2();
 }
 
 void UWaveManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -87,12 +87,9 @@ void UWaveManagerComponent::PlayWaveMode2()
 {
 	updateSpawnableEnemyListByGameTime();
 
-	for (int32 i = 2; i < 5; i++)
+	for (USceneComponent* spawnPoint : mEnemySpawn->GetNthRowSpawnPoints(3))
 	{
-		for (USceneComponent* spawnPoint : mEnemySpawn->GetNthRowSpawnPoints(i))
-		{
-			spawnEnemyOrNull(mRuntimeSpawnableList[0], spawnPoint);
-		}
+		spawnEnemyOrNull(mRuntimeSpawnableList[0], spawnPoint);
 	}
 }
 

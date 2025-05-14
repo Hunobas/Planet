@@ -23,8 +23,6 @@ void APlanetPawn::Tick(float _deltaTime)
 {
 	Super::Tick(_deltaTime);
 
-	PlayCamera->UpdateSocketOffY();
-	PlayCamera->UpdateArmLength(_deltaTime);
 	updatePlanetRotation();
 }
 

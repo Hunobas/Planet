@@ -35,7 +35,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	int32 InputBufferSize = 5;
 	UPROPERTY(EditAnywhere, Category = "Input")
-	float RecentInputWeight = 0.7f;
+	float RecentInputWeight = 0.6f;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	float InputResetDelay = 0.2f;
 	
