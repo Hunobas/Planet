@@ -5,6 +5,7 @@
 #include "Components/ActorComponent.h"
 #include "PlayCamera.generated.h"
 
+class APlanetPawn;
 class USpringArmComponent;
 class UCameraComponent;
 struct FInputActionValue;
@@ -16,9 +17,8 @@ class PLANET_API UPlayCamera : public UActorComponent
 
 public:
 	UPlayCamera();
-
-	// Pawn::생성자 에서 호출
-	UPlayCamera* Initialize(APawn* _owner, USpringArmComponent* _springArm, UCameraComponent* _camera);
+	
+	virtual void BeginPlay() override;
 
 protected:
 	virtual void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
@@ -56,7 +56,7 @@ private:
 	void updateArmLength(float _deltaTime);
 	void updateJustAimRotation(float _deltaTime);
 	
-	APawn* mOwner;
+	APlanetPawn* mPlayerPawn;
 	USpringArmComponent* mSpringArm;
 	UCameraComponent* mCamera;
 

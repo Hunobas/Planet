@@ -7,10 +7,9 @@
 #include "EnemySpawnCelestial.h"
 #include "FiringComponent.h"
 
-UEnemyFireManagerComponent::UEnemyFireManagerComponent()
+UEnemyFireManagerComponent::UEnemyFireManagerComponent(): mEnemySpawn(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
 }
 
 UEnemyFireManagerComponent* UEnemyFireManagerComponent::Initialize(AEnemySpawnCelestial* _enemySpawn)

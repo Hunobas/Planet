@@ -9,10 +9,14 @@
 #include "WaveManagerComponent.h"
 #include "JustAimManagerComponent.h"
 
-UFiringComponent::UFiringComponent()
+UFiringComponent::UFiringComponent(): TargetPlayer(EAutoReceiveInput::Disabled), JustAimDefaultNS(nullptr), MuzzleTemplate(nullptr),
+                                      MuzzlePoint(nullptr),
+                                      TargetPawn(nullptr),
+                                      mOwner(nullptr), mEnemyOwner(nullptr),
+                                      cWeaponOwner(nullptr),
+                                      mTargetPlanet(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
 }
 
 void UFiringComponent::BeginPlay()

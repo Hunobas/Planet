@@ -1,7 +1,6 @@
 // EnemySpawnCelestial.cpp
 #include "EnemySpawnCelestial.h"
 
-#include "EnemyPawn.h"
 #include "Components/SceneComponent.h"
 #include "Camera/CameraComponent.h"
 

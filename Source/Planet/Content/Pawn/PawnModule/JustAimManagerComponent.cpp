@@ -9,10 +9,10 @@
 #include "PlanetController.h"
 #include "PlayCamera.h"
 
-UJustAimManagerComponent::UJustAimManagerComponent()
+UJustAimManagerComponent::UJustAimManagerComponent(): JustAimSuccessTemplate(nullptr), cPlayerPawn(nullptr),
+                                                      mDistanceToSpawnCelestial(2000.0f)
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
 }
 
 
@@ -32,6 +32,8 @@ void UJustAimManagerComponent::BeginPlay()
 
 bool UJustAimManagerComponent::HasJustAimed(const USceneComponent* _firePoint)
 {
+	check(cPlayerPawn);
+	
 	// 1. 플레이어에서 발사 지점으로 향하는 벡터
 	check(_firePoint);
 	const FVector playerForwardPos		= cPlayerPawn->GetActorLocation() + cPlayerPawn->Camera->GetForwardVector() * mDistanceToSpawnCelestial;

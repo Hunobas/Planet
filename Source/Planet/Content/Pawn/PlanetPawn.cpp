@@ -10,7 +10,6 @@
 #include "PlayCamera.h"
 #include "OrbitMover.h"
 #include "JustAimManagerComponent.h"
-#include "PlanetController.h"
 
 APlanetPawn::APlanetPawn()
 {
@@ -40,7 +39,7 @@ void APlanetPawn::composeComponent()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
 
-	PlayCamera = CreateDefaultSubobject<UPlayCamera>(TEXT("Play Camera"))->Initialize(this, SpringArm, Camera);
+	PlayCamera = CreateDefaultSubobject<UPlayCamera>(TEXT("Play Camera"));
 	OrbitMover = CreateDefaultSubobject<UOrbitMover>(TEXT("Orbit Mover"));
 	JustAimManager = CreateDefaultSubobject<UJustAimManagerComponent>(TEXT("Just Aim Manager"));
 }

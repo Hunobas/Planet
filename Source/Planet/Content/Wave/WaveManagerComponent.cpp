@@ -10,10 +10,16 @@
 #include "EnemySpawnCelestial.h"
 #include "ObjectPoolManagerComponent.h"
 
-UWaveManagerComponent::UWaveManagerComponent()
+UWaveManagerComponent::UWaveManagerComponent(): Config_EnemySpawnInterval(5.0f), Config_DifficultyInterval(5.0f),
+                                                Config_StartMaxScore(0),
+                                                Config_EndMaxScore(0),
+                                                Config_InflectionPoint(PLAYTIME / 2), Config_Inclination(0),
+                                                mEnemySpawn(nullptr),
+                                                mPool(nullptr),
+                                                mFireManager(nullptr),
+                                                mCurrentFieldScore(0)
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	
 }
 
 // Called when the game starts

@@ -3,7 +3,7 @@
 
 #include "../Planet.h"
 
-UOrbitMover::UOrbitMover()
+UOrbitMover::UOrbitMover(): cOwner(nullptr), cTargetSun(nullptr), mOrbitRadius(0), mOrbitPeriod(PLAYTIME), mCurrentAngle(0)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }

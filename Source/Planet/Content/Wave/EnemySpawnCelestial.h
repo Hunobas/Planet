@@ -33,7 +33,7 @@ public:
 	TArray<USceneComponent*> SpawnPoints;
 
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
-	float EnemySpawnRadius	= 2000.f;
+	float EnemySpawnRadius	= 2000.0f;
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
 	int32 PointsPerRow	= 24;
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
