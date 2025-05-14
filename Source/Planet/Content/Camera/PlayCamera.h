@@ -8,6 +8,7 @@
 class APlanetPawn;
 class USpringArmComponent;
 class UCameraComponent;
+class UCameraShakeBase; 
 struct FInputActionValue;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -30,26 +31,30 @@ public:
 
 	void OnJustAimSuccess(const FVector& _targetLocation);
 
-	UPROPERTY(EditAnywhere, Category="Transform")
-	float DefaultRotationalSpeed	= 30.f;
+	UPROPERTY(EditAnywhere, Category = "Look")
+	float DefaultRotationalSpeed	= 30.0f;
 
-	UPROPERTY(EditAnywhere, Category="Spring Arm")
+	UPROPERTY(EditAnywhere, Category = "Spring Arm")
 	FVector SpringArmLocation		= {0, 40.f, 70.f};
-	UPROPERTY(EditAnywhere, Category="Spring Arm")
+	UPROPERTY(EditAnywhere, Category = "Spring Arm")
 	float SocketOffYMax				= 120.f;
-	UPROPERTY(EditAnywhere, Category="Spring Arm")
+	UPROPERTY(EditAnywhere, Category = "Spring Arm")
 	float SocketOffYMin				= 215.f;
-	UPROPERTY(EditAnywhere, Category="Spring Arm")
+	UPROPERTY(EditAnywhere, Category = "Spring Arm")
 	float DefaultArmLength			= 500.f;
-	UPROPERTY(EditAnywhere, Category="Spring Arm")
+	UPROPERTY(EditAnywhere, Category = "Spring Arm")
 	float AimedArmLength			= 250.f;
-	UPROPERTY(EditAnywhere, Category="Spring Arm")
+	UPROPERTY(EditAnywhere, Category = "Spring Arm")
 	float ArmLengthInterpSpeed		= 5.0f;
-	UPROPERTY(EditAnywhere, Category="Spring Arm")
+	UPROPERTY(EditAnywhere, Category = "Spring Arm")
 	float DefaultRotationLagSpeed	= 30.0f;
 
-	UPROPERTY(EditAnywhere, Category="Just Aim")
-	float JustAimingDuration	= 0.08f;
+	UPROPERTY(EditAnywhere, Category = "Just Aim")
+	float JustAimingDuration		= 0.08f;
+	UPROPERTY(EditAnywhere, Category = "Spring Arm")
+	float JustAimedArmLength		= 350.f;
+	UPROPERTY(EditAnywhere, Category = "Just Aim")
+	TSubclassOf<UCameraShakeBase> JustAimCameraShakeClass;
 
 private:
 	void updateSocketOffY();
@@ -67,5 +72,5 @@ private:
 	FRotator mStartControlRotation;
 	FRotator mTargetControlRotation;
 	float mJustAimingElapsedTime = 0.0f;
-	bool bIsJustAimRotating = false;
+	bool bIsJustAiming = false;
 };

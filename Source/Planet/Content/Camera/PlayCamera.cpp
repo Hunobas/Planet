@@ -1,11 +1,13 @@
 // PlayCamera.cpp
 #include "PlayCamera.h"
 
-#include "../Planet.h"
-#include "PlanetPawn.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "InputActionValue.h"
+#include "Kismet/GameplayStatics.h"
+
+#include "../Planet.h"
+#include "PlanetPawn.h"
 
 UPlayCamera::UPlayCamera(): mPlayerPawn(nullptr), mSpringArm(nullptr), mCamera(nullptr), mCurrentArmLength(0),
                             mRotationalSpeed(0),
@@ -19,6 +21,8 @@ void UPlayCamera::BeginPlay()
 	Super::BeginPlay();
 
 	mPlayerPawn = Cast<APlanetPawn>(GetOwner());
+	check(mPlayerPawn);
+	
 	mSpringArm = mPlayerPawn->SpringArm;
 	mCamera = mPlayerPawn->Camera;
 
@@ -26,7 +30,7 @@ void UPlayCamera::BeginPlay()
 	mRotationalSpeed = DefaultRotationalSpeed;
 	bIsAiming = false;
 
-	mSpringArm->SetWorldLocation(SpringArmLocation);
+	mSpringArm->SetRelativeLocation(SpringArmLocation);
 	mSpringArm->SocketOffset = FVector({0, SocketOffYMax, 0});
 	mSpringArm->TargetArmLength = mCurrentArmLength;
 	mSpringArm->bUsePawnControlRotation = true;
@@ -77,7 +81,20 @@ void UPlayCamera::OnJustAimSuccess(const FVector& _targetLocation)
 	mStartControlRotation = mPlayerPawn->GetControlRotation();
 	mTargetControlRotation = (_targetLocation - cameraLocation).Rotation();
 	mJustAimingElapsedTime = 0.0f;
-	bIsJustAimRotating = true;
+	mSpringArm->TargetArmLength = JustAimedArmLength;
+	bIsJustAiming = true;
+
+	if (JustAimCameraShakeClass)
+	{
+		if (APlayerController* PC = Cast<APlayerController>(mPlayerPawn->GetController()))
+		{
+			PC->PlayerCameraManager->StartCameraShake(JustAimCameraShakeClass);
+		}
+		else
+		{
+			check(false);
+		}
+	}
 }
 
 void UPlayCamera::updateSocketOffY()
@@ -99,6 +116,9 @@ void UPlayCamera::updateSocketOffY()
 
 void UPlayCamera::updateArmLength(float _deltaTime)
 {
+	if (bIsJustAiming)
+		return;
+	
 	check(mSpringArm);
 
 	float targetLength = bIsAiming ? AimedArmLength : DefaultArmLength;
@@ -108,7 +128,7 @@ void UPlayCamera::updateArmLength(float _deltaTime)
 
 void UPlayCamera::updateJustAimRotation(float _deltaTime)
 {
-	if (!bIsJustAimRotating)
+	if (!bIsJustAiming)
 		return;
 
 	check(mPlayerPawn);
@@ -124,9 +144,12 @@ void UPlayCamera::updateJustAimRotation(float _deltaTime)
     
 	mPlayerPawn->GetController()->SetControlRotation(NewRotation);
 
+	mCurrentArmLength = FMath::FInterpTo(JustAimedArmLength, DefaultArmLength, _deltaTime, ArmLengthInterpSpeed);
+	mSpringArm->TargetArmLength = mCurrentArmLength;
+
 	if (t >= 1.0f)
 	{
 		mPlayerPawn->GetController()->SetControlRotation(mTargetControlRotation);
-		bIsJustAimRotating = false;
+		bIsJustAiming = false;
 	}
 }

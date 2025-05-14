@@ -46,8 +46,8 @@ void UWaveManagerComponent::BeginPlay()
 	}
 	mFireManager->Initialize(mEnemySpawn);
 
-	// PlayWaveMode1();
-	PlayWaveMode2();
+	PlayWaveMode1();
+	// PlayWaveMode2();
 }
 
 void UWaveManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -61,16 +61,9 @@ void UWaveManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void UWaveManagerComponent::PlayWaveMode1()
 {
+	// updateMaxFieldScoreByGameTime();
 	updateSpawnableEnemyListByGameTime();
 	SpawnEnemyWave();
-	
-	GetWorld()->GetTimerManager().SetTimer(
-		mWaveTimerHandle,
-		this,
-		&UWaveManagerComponent::SpawnEnemyWave,
-		Config_EnemySpawnInterval,
-		true
-	);
 
 	// GetWorld()->GetTimerManager().SetTimer(
 	// 	mDifficultyTimerHandle,
@@ -85,6 +78,14 @@ void UWaveManagerComponent::PlayWaveMode1()
 		this,
 		&UWaveManagerComponent::updateSpawnableEnemyListByGameTime,
 		Config_DifficultyInterval,
+		true
+		);
+	
+	GetWorld()->GetTimerManager().SetTimer(
+		mWaveTimerHandle,
+		this,
+		&UWaveManagerComponent::SpawnEnemyWave,
+		Config_EnemySpawnInterval,
 		true
 	);
 }

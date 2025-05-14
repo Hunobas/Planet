@@ -21,6 +21,7 @@ void APlanetController::OnPossess(APawn* _pawn)
 {
 	Super::OnPossess(_pawn);
 
+	SetViewTarget(_pawn);
 	bindInputMappings(_pawn);
 }
 

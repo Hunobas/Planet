@@ -11,6 +11,7 @@
 
 namespace GameplayUtils
 {
+	
 #pragma region Gameplay Formulations
 
 	inline float CalculateDamage(const float& _pawnDamage, const float& _weaponDamage = 0.0f, const float& _activeBuffScale = 1.0f)
@@ -187,7 +188,7 @@ namespace GameplayUtils
 	}
 
 #pragma endregion
-
+	
 	
 #pragma region Game Math
 
