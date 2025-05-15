@@ -1,0 +1,23 @@
+Engine version:    Unreal 5.4.4
+IDE version:       JetBrains Rider 2025.1
+
+<General>
+- 헤더 파일에는 기본 라이브러리를 제외하고 어떤 경로도 include 하지 말 것. 전방 선언 적극 활용
+- 인클루드 순서는 해당 클래스 헤더 > 엔진/타사 헤더 > 프로젝트 모듈 헤더
+- 주석은 최소화할 것. RIder IDE가 많은 걸 대신 설명해줌.
+
+<메서드>
+- public 메서드는 PascalCase / private 메서드는 camelCase(_ 접두어 파라미터)
+- Output Parameter는 항상 out_ 접두어를 붙일 것
+- 포인터를 리턴하는 메서드는 최대한 널을 뱉지 않도록 ─ 의도적으로 뱉어야 하면 OrNull 접미어를 붙여 네이밍
+- 액터 컴포넌트의 멤버 변수 동적 초기화는 항상 BeginPlay / 생성자 Member Initializer List는 Rider가 작성해주는대로
+- if 중괄호는 얼리 리턴, 얼리 컨티뉴일 경우 생략 ─ 그 외의 경우에는 한 줄이라도 중괄호를 쓸 것
+- 불변 메서드는 반드시 const 선언
+
+<변수>
+- UPROPERTY 노출된 변수는 항상 public (언리얼 권한은 스크립트 권한 범위보다 좁다는 전제)
+- c 접두어: private 포인터 변수 중 외부에서 받아오되 수정할 권한이 없는 변수 (포인터 오른쪽 const 붙이면 되지만 동적으로 받아야되는 경우 컴파일 에러가 난다..)
+- m 접두어: private 이외 변수는 
+- b 접두어: private 불 변수
+- 함수 내 지역변수는 캐멀 케이스 ─ 상징 문자(X, Y)나 축약어는 예외
+- constexpr 변수는 전부 UpperCase
