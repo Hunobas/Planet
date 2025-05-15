@@ -62,6 +62,7 @@ void UObjectPoolManagerComponent::Release(UObject* _obj)
 
 	if (AActor* A = Cast<AActor>(_obj))
 	{
+		A->SetActorTickEnabled(false);
 		A->SetActorHiddenInGame(true);
 		A->SetActorEnableCollision(false);
 	}

@@ -3,7 +3,7 @@
 
 #include "../Planet.h"
 
-UOrbitMover::UOrbitMover(): cOwner(nullptr), cTargetSun(nullptr), mOrbitRadius(0), mOrbitPeriod(PLAYTIME), mCurrentAngle(0)
+UOrbitMover::UOrbitMover(): cTargetSun(nullptr), mOwner(nullptr), mOrbitRadius(0), mOrbitPeriod(PLAYTIME), mCurrentAngle(0)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -12,8 +12,8 @@ void UOrbitMover::BeginPlay()
 {
 	Super::BeginPlay();
 
-	cOwner = GetOwner();
-	check(cOwner);
+	mOwner = GetOwner();
+	check(mOwner);
 
 	if (SunTag != NAME_None)
 	{
@@ -24,11 +24,11 @@ void UOrbitMover::BeginPlay()
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("[%s] '%s' 태그를 가진 액터를 찾지 못했습니다."), 
-				*cOwner->GetName(), *SunTag.ToString());
+				*mOwner->GetName(), *SunTag.ToString());
 		}
 	}
 	
-	mOrbitRadius = (mTargetLocation - cOwner->GetActorLocation()).Size();
+	mOrbitRadius = (mTargetLocation - mOwner->GetActorLocation()).Size();
 	mOrbitPeriod = PLAYTIME / NumOrbits;
 	mCurrentAngle = 0.0f;
 }
@@ -50,5 +50,5 @@ void UOrbitMover::moveStep(float _deltaTime)
 	const float Y		 = mTargetLocation.Y + mOrbitRadius * FMath::Sin(rad);
 	const FVector newPos = FVector(X, Y, mTargetLocation.Z);
 
-	cOwner->SetActorLocation(newPos);
+	mOwner->SetActorLocation(newPos);
 }

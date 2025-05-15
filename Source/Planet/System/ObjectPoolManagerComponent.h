@@ -57,6 +57,7 @@ public:
 		if (AActor* A = Cast<AActor>(obj))
 		{
 			A->SetActorTransform(_spawnTransform);
+			A->SetActorTickEnabled(true);
 			A->SetActorHiddenInGame(false);
 			A->SetActorEnableCollision(true);
 		}

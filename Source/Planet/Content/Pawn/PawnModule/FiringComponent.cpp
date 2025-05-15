@@ -36,10 +36,7 @@ void UFiringComponent::StartFireSequence(const TFunction<void(const UFiringCompo
 {
 	check(mOwner);
     
-	if (!SpawnSystemAttachedFacingForward(JustAimDefaultNS, MuzzlePoint))
-	{
-		check(false);
-	}
+	SpawnSystemAttachedFacingForward(JustAimDefaultNS, MuzzlePoint);
 
 	mOwner->GetWorldTimerManager().SetTimer(mJustAimWindowTimerHandle, this, &UFiringComponent::startJustAimWindow, JustAimDelay, false);
 	mOwner->GetWorldTimerManager().SetTimer(mFireTimerHandle, this, &UFiringComponent::Fire, FireDelay, false);

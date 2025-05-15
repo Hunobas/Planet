@@ -28,8 +28,8 @@ public:
 private:
 	void moveStep(float _deltaTime);
 	
-	AActor* cOwner;
 	AActor* cTargetSun;
+	AActor* mOwner;
 	
 	FVector mTargetLocation = FVector::ZeroVector;
 	float mOrbitRadius;

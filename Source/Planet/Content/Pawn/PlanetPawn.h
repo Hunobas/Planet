@@ -45,7 +45,6 @@ public:
 	float VisibleDistance = 3000.0f;
 	
 private:
-	
 	void composeComponent();
 	void updatePlanetRotation() const;
 };

@@ -29,6 +29,8 @@ namespace PlanetConst
 	inline const FName OBJECT_POOL_TAG(TEXT("Object Pool"));
 	inline const FName DEFAULT_ENEMY_SPAWN_TAG(TEXT("Enemy Spawn Celestial"));
 	inline const FName FIRE_MANAGER_TAG(TEXT("Fire Manager"));
+	inline const FName FLYING_MOVER_TAG(TEXT("Flying Mover"));
+	inline const FName FOLLOW_MOVER_TAG(TEXT("Follow Mover"));
 	
 #pragma endregion
 	

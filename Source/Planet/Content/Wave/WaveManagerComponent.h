@@ -70,6 +70,7 @@ private:
 	UObjectPoolManagerComponent* mPool;
 	UEnemyFireManagerComponent* mFireManager;
 	TArray<TSubclassOf<AEnemyPawn>> mRuntimeSpawnableList;
+	APawn* cTargetPlayer;
 
 	FTimerHandle mWaveTimerHandle;
 	FTimerHandle mDifficultyTimerHandle;

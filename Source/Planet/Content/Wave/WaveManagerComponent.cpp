@@ -16,7 +16,7 @@ UWaveManagerComponent::UWaveManagerComponent(): Config_EnemySpawnInterval(5.0f),
                                                 Config_InflectionPoint(PLAYTIME / 2), Config_Inclination(0),
                                                 mEnemySpawn(nullptr),
                                                 mPool(nullptr),
-                                                mFireManager(nullptr),
+                                                mFireManager(nullptr), cTargetPlayer(nullptr),
                                                 mCurrentFieldScore(0)
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -29,12 +29,12 @@ void UWaveManagerComponent::BeginPlay()
 
 	loadWaveConfigForCurrentLevel();
 
-	APawn* playerPawn = GetTargetPlayerPawn(TargetPlayer, this);
-	check(playerPawn);
-	const FTransform playerTx( playerPawn->GetActorRotation(), playerPawn->GetActorLocation() );
+	cTargetPlayer = GetTargetPlayerPawn(TargetPlayer, this);
+	check(cTargetPlayer);
+	const FTransform playerTx( cTargetPlayer->GetActorRotation(), cTargetPlayer->GetActorLocation() );
 	
 	check(EnemySpawnClass);
-	mEnemySpawn = GetWorld()->SpawnActor<AEnemySpawnCelestial>(EnemySpawnClass, playerTx)->Initialize(playerPawn);
+	mEnemySpawn = GetWorld()->SpawnActor<AEnemySpawnCelestial>(EnemySpawnClass, playerTx)->Initialize(cTargetPlayer);
 	
 	if (!TryGetFirstComponentWithTag(GetOwner(), OBJECT_POOL_TAG, mPool))
 	{
@@ -154,7 +154,7 @@ AEnemyPawn* UWaveManagerComponent::spawnEnemyOrNull(const TSubclassOf<AEnemyPawn
 
 	if (spawnedEnemy)
 	{
-		spawnedEnemy->ResetToDefaultSettings(Config_ScaleSettings);
+		spawnedEnemy->ResetToDefaultSettings(Config_ScaleSettings, cTargetPlayer);
 		mCurrentFieldScore += spawnedEnemy->RuntimeSettings.FieldScore;
 		mFireManager->AddEnemy(spawnedEnemy, _spawnPoint);
 	}

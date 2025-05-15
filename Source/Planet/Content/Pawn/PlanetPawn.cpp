@@ -53,16 +53,16 @@ void APlanetPawn::updatePlanetRotation() const
 	const FRotator lookAtRotation	= UKismetMathLibrary::FindLookAtRotation(meshLocation, targetLoc);
 
 #ifdef DEBUG
-	// DrawDebugLine(
-	// 	GetWorld(),
-	// 	cameraLocation,
-	// 	targetLoc,
-	// 	FColor::Red,
-	// 	false,
-	// 	0.1f,
-	// 	0,
-	// 	0.1f
-	// );
+	DrawDebugLine(
+		GetWorld(),
+		cameraLocation,
+		targetLoc,
+		FColor::Green,
+		false,
+		0.05f,
+		0,
+		0.05f
+	);
 #endif
 
 	PlanetMesh->SetWorldRotation(lookAtRotation);

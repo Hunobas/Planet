@@ -63,6 +63,5 @@ private:
 	FTimerHandle mJustAimWindowTimerHandle;
 	FTimerHandle mFireTimerHandle;
 	bool bIsInJustAimWindow = false;
-	bool bIsJustAimHighlighted = false;
 	
 };

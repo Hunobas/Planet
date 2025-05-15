@@ -10,6 +10,8 @@
 struct FEnemyScaleSetting;
 class UCapsuleComponent;
 class UEnemyDataAsset;
+class UFollowMover;
+class UFlyingMover;
 
 UENUM(BlueprintType)
 enum class EEnemyType : uint8
@@ -28,7 +30,12 @@ class PLANET_API AEnemyPawn : public APawn
 public:
 	AEnemyPawn();
 
-	void ResetToDefaultSettings(const FEnemyScaleSetting& scaleSettings);
+protected:
+	virtual void BeginPlay() override;
+
+public:
+	virtual void Tick(float _deltaTime) override;
+	void ResetToDefaultSettings(const FEnemyScaleSetting& _scaleSettings, APawn* _targetPlayer = nullptr);
 
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
 	UCapsuleComponent* BodyCollisionCapsule;
@@ -45,4 +52,8 @@ public:
 	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
 	FEnemyScaleSetting ActiveBuffs;
 
+private:
+	APawn* cTargetPawn;
+	UFlyingMover* mFlyingMover;
+	UFollowMover* mFollowMover;
 };
