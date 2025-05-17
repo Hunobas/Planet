@@ -64,7 +64,7 @@ private:
 	USceneComponent* getRandomPointForTypeOrNull(const EEnemyType& _type) const;
 	void updateMaxFieldScoreByGameTime();
 	void updateSpawnableEnemyListByGameTime();
-	void loadWaveConfigForCurrentLevel();
+	bool loadWaveConfigForCurrentLevel();
 	
 	AEnemySpawnCelestial* mEnemySpawn;
 	UObjectPoolManagerComponent* mPool;

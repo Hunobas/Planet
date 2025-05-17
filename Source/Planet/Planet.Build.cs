@@ -22,7 +22,8 @@ public class Planet : ModuleRules
             Path.Combine(ModuleDirectory, "System")
         });
         
-        PublicDefinitions.Add("DEBUG=1");
+        PublicDefinitions.Add("ENABLE_DRAW_DEBUG=1");
+        PublicDefinitions.Add("DEBUG=0");
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

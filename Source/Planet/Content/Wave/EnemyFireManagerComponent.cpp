@@ -27,7 +27,7 @@ void UEnemyFireManagerComponent::TickComponent(float _deltaTime, ELevelTick _tic
 	{
 		currentFireComponent->HandleJustAim();
 
-#ifdef DEBUG
+// #ifdef DEBUG
 		if (APawn* cPlayerPawn = currentFireComponent->TargetPawn)
 		{
 			const FVector PlayerForwardPos = cPlayerPawn->GetActorLocation() + mEnemySpawn->PlayerCamera->GetForwardVector() * mEnemySpawn->EnemySpawnRadius;
@@ -42,7 +42,7 @@ void UEnemyFireManagerComponent::TickComponent(float _deltaTime, ELevelTick _tic
 				5.0f
 			);
 		}
-#endif
+// #endif
 	}
 }
 

@@ -27,7 +27,8 @@ void UWaveManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	loadWaveConfigForCurrentLevel();
+	if (loadWaveConfigForCurrentLevel() == false)
+		return;
 
 	cTargetPlayer = GetTargetPlayerPawn(TargetPlayer, this);
 	check(cTargetPlayer);
@@ -201,10 +202,15 @@ void UWaveManagerComponent::updateSpawnableEnemyListByGameTime()
 	}
 }
 
-void UWaveManagerComponent::loadWaveConfigForCurrentLevel()
+bool UWaveManagerComponent::loadWaveConfigForCurrentLevel()
 {
 	int32 levelIndex = ParseLevelIndex(GetWorld());
-	checkf(levelIndex > 0 && levelIndex <= WaveConfigDatas.Num(), TEXT("[WaveManager]: 레벨 인덱스 파싱 실패: %d"), levelIndex);
+
+	if (levelIndex <= 0 || levelIndex > WaveConfigDatas.Num())
+	{
+		UE_LOG(LogTemp, Error, TEXT("[WaveManager]: 레벨 인덱스 파싱 실패: %d"), levelIndex);
+		return false;
+	}
 
 	UWaveConfigDataAsset* waveConfig = WaveConfigDatas[levelIndex - 1];
 
@@ -217,5 +223,7 @@ void UWaveManagerComponent::loadWaveConfigForCurrentLevel()
 	Config_Inclination			= waveConfig->Inclination;
 	Config_MaxFieldScoreCurve	= waveConfig->MaxFieldScoreCurve;
 	Config_ScaleSettings		= waveConfig->ScaleSettings;
+
+	return true;
 }
 

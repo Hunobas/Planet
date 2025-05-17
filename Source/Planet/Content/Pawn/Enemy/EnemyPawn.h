@@ -9,6 +9,7 @@
 
 struct FEnemyScaleSetting;
 class UCapsuleComponent;
+class UStaticMeshComponent;
 class UEnemyDataAsset;
 class UFollowMover;
 class UFlyingMover;
@@ -39,6 +40,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
 	UCapsuleComponent* BodyCollisionCapsule;
+	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
+	UStaticMeshComponent* EnemyMesh;
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
 	UCapsuleComponent* HitDetectionCapsule;
 

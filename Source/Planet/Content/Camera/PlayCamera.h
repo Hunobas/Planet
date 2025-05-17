@@ -51,7 +51,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Just Aim")
 	float JustAimingDuration		= 0.08f;
-	UPROPERTY(EditAnywhere, Category = "Spring Arm")
+	UPROPERTY(EditAnywhere, Category = "Just Aim")
 	float JustAimedArmLength		= 350.f;
 	UPROPERTY(EditAnywhere, Category = "Just Aim")
 	TSubclassOf<UCameraShakeBase> JustAimCameraShakeClass;

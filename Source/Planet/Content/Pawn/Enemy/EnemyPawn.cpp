@@ -2,6 +2,7 @@
 #include "EnemyPawn.h"
 
 #include "Components/CapsuleComponent.h"
+#include "Components/StaticMeshComponent.h"
 
 #include "EnemySetting.h"
 #include "EnemyScaleSetting.h"
@@ -15,9 +16,12 @@ AEnemyPawn::AEnemyPawn()
 
 	BodyCollisionCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Body Collision Capsule"));
 	RootComponent = BodyCollisionCapsule;
+	
+	EnemyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Enemy Mesh"));
+	EnemyMesh->SetupAttachment(RootComponent);
 
 	HitDetectionCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Hit Detection Capsule"));
-	HitDetectionCapsule->SetupAttachment(RootComponent);
+	HitDetectionCapsule->SetupAttachment(EnemyMesh);
 
 	mFlyingMover = nullptr;
 	mFollowMover = nullptr;
