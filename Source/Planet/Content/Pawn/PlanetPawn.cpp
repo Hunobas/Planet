@@ -46,24 +46,37 @@ void APlanetPawn::composeComponent()
 
 void APlanetPawn::updatePlanetRotation() const
 {
-	const FVector cameraLocation	= Camera->GetComponentLocation();
-	const FVector cameraForward		= Camera->GetForwardVector();
-	const FVector targetLoc			= cameraLocation + cameraForward * VisibleDistance;
-	const FVector meshLocation		= PlanetMesh->GetComponentLocation();
-	const FRotator lookAtRotation	= UKismetMathLibrary::FindLookAtRotation(meshLocation, targetLoc);
+	FVector WorldLocation, WorldDirection;
+	
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (PC && PC->DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
+	{
+		const FVector PlaneNormal = FVector::UpVector;
+		const FVector PlaneOrigin = GetActorLocation();
+		const FVector HitLocation = FMath::LinePlaneIntersection(
+			WorldLocation, 
+			WorldLocation + WorldDirection * 10000.0f, 
+			PlaneOrigin, 
+			PlaneNormal
+		);
+		const FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(
+			GetActorLocation(), 
+			HitLocation
+		);
+		
+		PlanetMesh->SetWorldRotation(FRotator(0, NewRotation.Yaw, 0));
 
 #ifdef DEBUG
-	DrawDebugLine(
-		GetWorld(),
-		cameraLocation,
-		targetLoc,
-		FColor::Green,
-		false,
-		0.05f,
-		0,
-		0.05f
-	);
+		DrawDebugLine(
+			GetWorld(),
+			GetActorLocation(),
+			HitLocation,
+			FColor::Green,
+			false,
+			0.1f,
+			0,
+			2.0f
+		);
 #endif
-
-	PlanetMesh->SetWorldRotation(lookAtRotation);
+	}
 }

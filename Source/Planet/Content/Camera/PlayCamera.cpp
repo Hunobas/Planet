@@ -9,9 +9,7 @@
 #include "../Planet.h"
 #include "PlanetPawn.h"
 
-UPlayCamera::UPlayCamera(): mPlayerPawn(nullptr), mSpringArm(nullptr), mCamera(nullptr), mCurrentArmLength(0),
-                            mRotationalSpeed(0),
-                            bIsAiming(false)
+UPlayCamera::UPlayCamera(): mPlayerPawn(nullptr), mSpringArm(nullptr), mCamera(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -26,49 +24,17 @@ void UPlayCamera::BeginPlay()
 	mSpringArm = mPlayerPawn->SpringArm;
 	mCamera = mPlayerPawn->Camera;
 
-	mCurrentArmLength = DefaultArmLength;
-	mRotationalSpeed = DefaultRotationalSpeed;
-	bIsAiming = false;
+	mSpringArm->bUsePawnControlRotation = false;
 
-	mSpringArm->SetRelativeLocation(SpringArmLocation);
-	mSpringArm->SocketOffset = FVector({0, SocketOffYMax, 0});
-	mSpringArm->TargetArmLength = mCurrentArmLength;
-	mSpringArm->bUsePawnControlRotation = true;
-	mSpringArm->bEnableCameraRotationLag = true;
-	mSpringArm->CameraRotationLagSpeed = DefaultRotationLagSpeed;
-
-	mCamera->bUsePawnControlRotation = false;
+	mSpringArm->SetRelativeRotation(SpringArmRotation);
+	mSpringArm->TargetArmLength    = DefaultArmLength;
 }
 
 void UPlayCamera::TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction)
 {
 	Super::TickComponent(_deltaTime, _tickType, _thisTickFunction);
 
-	updateArmLength(_deltaTime);
-	updateSocketOffY();
 	updateJustAimRotation(_deltaTime);
-}
-
-void UPlayCamera::Look(const FInputActionValue& _value)
-{
-	check(mPlayerPawn);
-	
-	FVector2D axis = _value.Get<FVector2D>();
-	float deltaTime = GetWorld()->GetDeltaSeconds();
-	mPlayerPawn->AddControllerYawInput  (axis.X * deltaTime * mRotationalSpeed);
-	mPlayerPawn->AddControllerPitchInput(axis.Y * deltaTime * mRotationalSpeed);
-}
-
-void UPlayCamera::StartAim()
-{
-	bIsAiming = true;
-	mRotationalSpeed = DefaultRotationalSpeed * 0.5f;
-}
-
-void UPlayCamera::StopAim()
-{
-	bIsAiming = false;
-	mRotationalSpeed = DefaultRotationalSpeed;
 }
 
 void UPlayCamera::OnJustAimSuccess(const FVector& _targetLocation)
@@ -81,7 +47,6 @@ void UPlayCamera::OnJustAimSuccess(const FVector& _targetLocation)
 	mStartControlRotation = mPlayerPawn->GetControlRotation();
 	mTargetControlRotation = (_targetLocation - cameraLocation).Rotation();
 	mJustAimingElapsedTime = 0.0f;
-	mSpringArm->TargetArmLength = JustAimedArmLength;
 	bIsJustAiming = true;
 
 	if (JustAimCameraShakeClass)
@@ -95,35 +60,6 @@ void UPlayCamera::OnJustAimSuccess(const FVector& _targetLocation)
 			check(false);
 		}
 	}
-}
-
-void UPlayCamera::updateSocketOffY()
-{
-	check(mPlayerPawn);
-	check(mCamera);
-	check(mSpringArm);
-	
-	const float pawnYaw	 = mPlayerPawn->GetActorRotation().Yaw + 45.0f;
-	const float camYaw	 = mCamera->GetComponentRotation().Yaw;
-	const float deltaYaw = FMath::FindDeltaAngleDegrees(pawnYaw, camYaw);
-	const float absYaw	 = FMath::Abs(deltaYaw);
-
-	const float t		 = FMath::Clamp(absYaw / 180.f, 0.f, 1.f);
-	const float targetY	 = FMath::Lerp(SocketOffYMax, SocketOffYMin, t);
-
-	mSpringArm->SocketOffset.Y = targetY;
-}
-
-void UPlayCamera::updateArmLength(float _deltaTime)
-{
-	if (bIsJustAiming)
-		return;
-	
-	check(mSpringArm);
-
-	float targetLength = bIsAiming ? AimedArmLength : DefaultArmLength;
-	mCurrentArmLength = FMath::FInterpTo(mCurrentArmLength, targetLength, _deltaTime, ArmLengthInterpSpeed);
-	mSpringArm->TargetArmLength = mCurrentArmLength;
 }
 
 void UPlayCamera::updateJustAimRotation(float _deltaTime)
@@ -143,9 +79,6 @@ void UPlayCamera::updateJustAimRotation(float _deltaTime)
 	);
     
 	mPlayerPawn->GetController()->SetControlRotation(NewRotation);
-
-	mCurrentArmLength = FMath::FInterpTo(JustAimedArmLength, DefaultArmLength, _deltaTime, ArmLengthInterpSpeed);
-	mSpringArm->TargetArmLength = mCurrentArmLength;
 
 	if (t >= 1.0f)
 	{

@@ -15,6 +15,10 @@ void APlanetController::BeginPlay()
 	mEISubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 	check(mEISubsystem);
 	mEISubsystem->AddMappingContext(PlayerIMC, 0);
+
+	bShowMouseCursor = true;
+	bEnableClickEvents = true;
+	bEnableMouseOverEvents = true;
 }
 
 void APlanetController::OnPossess(APawn* _pawn)
@@ -41,18 +45,10 @@ FVector2D APlanetController::GetEMAInput()
 	return ema;
 }
 
-
 void APlanetController::bindInputMappings(const APawn* _pawn)
 {
 	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
 	{
-		if (UPlayCamera* playCamera = _pawn->FindComponentByClass<UPlayCamera>())
-		{
-			EIC->BindAction(LookAction, ETriggerEvent::Triggered, playCamera, &UPlayCamera::Look);
-			EIC->BindAction(AimAction,  ETriggerEvent::Started,   playCamera, &UPlayCamera::StartAim);
-			EIC->BindAction(AimAction,  ETriggerEvent::Completed, playCamera, &UPlayCamera::StopAim);
-		}
-		
 		EIC->BindAction(JustAimAction, ETriggerEvent::Triggered, this, &APlanetController::setLastLookInput);
 		EIC->BindAction(JustAimAction, ETriggerEvent::None, this, &APlanetController::resetLastLookInput);
 	}
