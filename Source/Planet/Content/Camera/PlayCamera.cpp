@@ -3,8 +3,6 @@
 
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "InputActionValue.h"
-#include "Kismet/GameplayStatics.h"
 
 #include "../Planet.h"
 #include "PlanetPawn.h"
@@ -30,13 +28,6 @@ void UPlayCamera::BeginPlay()
 	mSpringArm->TargetArmLength    = DefaultArmLength;
 }
 
-void UPlayCamera::TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction)
-{
-	Super::TickComponent(_deltaTime, _tickType, _thisTickFunction);
-
-	updateJustAimRotation(_deltaTime);
-}
-
 void UPlayCamera::OnJustAimSuccess(const FVector& _targetLocation)
 {
 	check(mPlayerPawn);
@@ -47,7 +38,7 @@ void UPlayCamera::OnJustAimSuccess(const FVector& _targetLocation)
 	mStartControlRotation = mPlayerPawn->GetControlRotation();
 	mTargetControlRotation = (_targetLocation - cameraLocation).Rotation();
 	mJustAimingElapsedTime = 0.0f;
-	bIsJustAiming = true;
+	// bIsJustAiming = true;
 
 	if (JustAimCameraShakeClass)
 	{
@@ -59,30 +50,5 @@ void UPlayCamera::OnJustAimSuccess(const FVector& _targetLocation)
 		{
 			check(false);
 		}
-	}
-}
-
-void UPlayCamera::updateJustAimRotation(float _deltaTime)
-{
-	if (!bIsJustAiming)
-		return;
-
-	check(mPlayerPawn);
-
-	mJustAimingElapsedTime += _deltaTime;
-	const float t = FMath::Clamp(mJustAimingElapsedTime / JustAimingDuration, 0.0f, 1.0f);
-    
-	const FRotator NewRotation = LerpAngle(
-		mStartControlRotation,
-		mTargetControlRotation,
-		EaseOutQuint(t)
-	);
-    
-	mPlayerPawn->GetController()->SetControlRotation(NewRotation);
-
-	if (t >= 1.0f)
-	{
-		mPlayerPawn->GetController()->SetControlRotation(mTargetControlRotation);
-		bIsJustAiming = false;
 	}
 }

@@ -9,7 +9,7 @@ public class Planet : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[]
-			{ "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Niagara" });
+			{ "Core", "CoreUObject", "Engine", "InputCore", "UMG", "EnhancedInput", "Niagara" });
 		
         PublicIncludePaths.AddRange(new string[] {
 	        Path.Combine(ModuleDirectory, "Content"),
@@ -18,12 +18,14 @@ public class Planet : ModuleRules
             Path.Combine(ModuleDirectory, "Content/Pawn/PawnMover"),
             Path.Combine(ModuleDirectory, "Content/Pawn/PawnModule"),
             Path.Combine(ModuleDirectory, "Content/Pawn/Enemy"),
+			Path.Combine(ModuleDirectory, "Content/Pawn/Weapon"),
+            Path.Combine(ModuleDirectory, "Content/Pawn/UpdateStretegy"),
             Path.Combine(ModuleDirectory, "Content/Wave"),
-            Path.Combine(ModuleDirectory, "System")
+            Path.Combine(ModuleDirectory, "System"),
+            Path.Combine(ModuleDirectory, "UI")
         });
         
-        PublicDefinitions.Add("ENABLE_DRAW_DEBUG=1");
-        PublicDefinitions.Add("DEBUG=0");
+        PublicDefinitions.Add("DEBUG=1");
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

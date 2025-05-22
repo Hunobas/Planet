@@ -19,6 +19,7 @@ protected:
 
 public:	
 	virtual void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
+	void MoveStep(float _deltaTime);
 
 	UPROPERTY(EditAnywhere, Category = "Orbit Mover")
 	FName SunTag	= DEFAULT_SUN_TAG;
@@ -26,8 +27,6 @@ public:
 	int32 NumOrbits	= 2;
 
 private:
-	void moveStep(float _deltaTime);
-	
 	AActor* cTargetSun;
 	AActor* mOwner;
 	

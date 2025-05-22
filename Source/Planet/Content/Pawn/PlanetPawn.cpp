@@ -9,13 +9,24 @@
 
 #include "PlayCamera.h"
 #include "OrbitMover.h"
+#include "HPComponent.h"
 #include "JustAimManagerComponent.h"
+#include "PlanetController.h"
+#include "PlayerDataAsset.h"
 
 APlanetPawn::APlanetPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	
 	composeComponent();
+	mHP = nullptr;
+}
+
+void APlanetPawn::BeginPlay()
+{
+	Super::BeginPlay();
+
+	resetToDefaultSettings();
 }
 
 void APlanetPawn::Tick(float _deltaTime)
@@ -42,41 +53,45 @@ void APlanetPawn::composeComponent()
 	PlayCamera = CreateDefaultSubobject<UPlayCamera>(TEXT("Play Camera"));
 	OrbitMover = CreateDefaultSubobject<UOrbitMover>(TEXT("Orbit Mover"));
 	JustAimManager = CreateDefaultSubobject<UJustAimManagerComponent>(TEXT("Just Aim Manager"));
+	mHP = CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
 }
 
 void APlanetPawn::updatePlanetRotation() const
 {
-	FVector WorldLocation, WorldDirection;
+	APlanetController* planetController = Cast<APlanetController>(GetController());
 	
-	APlayerController* PC = Cast<APlayerController>(GetController());
-	if (PC && PC->DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
-	{
-		const FVector PlaneNormal = FVector::UpVector;
-		const FVector PlaneOrigin = GetActorLocation();
-		const FVector HitLocation = FMath::LinePlaneIntersection(
-			WorldLocation, 
-			WorldLocation + WorldDirection * 10000.0f, 
-			PlaneOrigin, 
-			PlaneNormal
-		);
-		const FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(
-			GetActorLocation(), 
-			HitLocation
-		);
-		
-		PlanetMesh->SetWorldRotation(FRotator(0, NewRotation.Yaw, 0));
+	const FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(
+		GetActorLocation(), 
+		planetController->MouseHoverLocation
+	);
+	
+	PlanetMesh->SetWorldRotation(FRotator(0, NewRotation.Yaw, 0));
 
 #ifdef DEBUG
-		DrawDebugLine(
-			GetWorld(),
-			GetActorLocation(),
-			HitLocation,
-			FColor::Green,
-			false,
-			0.1f,
-			0,
-			2.0f
-		);
+	DrawDebugLine(
+		GetWorld(),
+		GetActorLocation(),
+		planetController->MouseHoverLocation,
+		FColor::Green,
+		false,
+		0.1f,
+		0,
+		2.0f
+	);
 #endif
+}
+
+void APlanetPawn::resetToDefaultSettings()
+{
+	RuntimeSettings.HP				= BaseSettings->HPBase;
+	RuntimeSettings.Damage			= BaseSettings->DamageBase;
+	RuntimeSettings.Critical		= BaseSettings->CriticalBase;
+	RuntimeSettings.CriticalDamage	= BaseSettings->CriticalBase;
+	RuntimeSettings.Haste			= BaseSettings->HasteBase;
+	RuntimeSettings.XpGain			= BaseSettings->XPGainBase;
+
+	if (mHP)
+	{
+		mHP->Initialize();
 	}
 }

@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "PlayerSetting.h"
 #include "PlanetPawn.generated.h"
 
 struct FInputActionValue;
@@ -12,8 +13,10 @@ class USpringArmComponent;
 class UCameraComponent;
 class UPlayCamera;
 class UOrbitMover;
+class UHPComponent;
 class UJustAimManagerComponent;
 class APlanetController;
+class UPlayerDataAsset;
 
 UCLASS()
 class PLANET_API APlanetPawn : public APawn
@@ -23,6 +26,10 @@ class PLANET_API APlanetPawn : public APawn
 public:
 	APlanetPawn();
 
+protected:
+	virtual void BeginPlay() override;
+
+public:
 	virtual void Tick(float _deltaTime) override;
 
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
@@ -43,8 +50,16 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Planet")
 	float VisibleDistance = 3000.0f;
+
+	UPROPERTY(EditAnywhere, Category="Combat")
+	UPlayerDataAsset* BaseSettings;
+	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
+	FPlayerSetting RuntimeSettings;
 	
 private:
 	void composeComponent();
 	void updatePlanetRotation() const;
+	void resetToDefaultSettings();
+
+	UHPComponent* mHP;
 };

@@ -22,25 +22,17 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	bool HasJustAimed(const USceneComponent* _firePoint);
+	bool HasJustAimed(const USceneComponent* _firePoint) const;
 
-	void SucceedJustAim(USceneComponent* _firePoint);
+	void SucceedJustAim(USceneComponent* _firePoint) const;
 	void FailJustAim();
 
 	UPROPERTY(EditAnywhere, Category = "Just Aim")
-	float JustAimWindowRadius = 2000.0f;
-	UPROPERTY(VisibleAnywhere, Category = "Just Aim")
-	float JustAimWindowDuration = JUSTAIM_WINDOW_DURATION;
-	UPROPERTY(EditAnywhere, Category = "Just Aim")
-	float JustAimWindowAngle = 80.0f;
-	UPROPERTY(EditAnywhere, Category = "Just Aim")
-	float JustAimInputSpeedThreshold = 0.25f;
+	float JustAimWindowAngle = 15.0f;
 
 	UPROPERTY(EditAnywhere, Category = "FX")
 	UNiagaraSystem* JustAimSuccessTemplate;
 
-	bool IsInJustAimWindow = false;
-	
 private:
 	APlanetPawn* cPlayerPawn;
 	

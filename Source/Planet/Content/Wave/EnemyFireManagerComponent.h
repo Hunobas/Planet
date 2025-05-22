@@ -21,7 +21,7 @@ public:
 	virtual void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 	
 	UFUNCTION(BlueprintCallable, Category="Fire Manager")
-	void FireRandomFacingEnemy();
+	void FireRandomEnemy();
 	
 	void AddEnemy(AEnemyPawn* _spawnedEnemy, USceneComponent* _spawnPoint);
 	void RemoveEnemy(AEnemyPawn* _deadEnemy);
@@ -29,8 +29,6 @@ public:
 	void DequeueFireComponent(const UFiringComponent* _firedComponent);
 
 private:
-	TArray<AEnemyPawn*> getPlayerFacingEnemies();
-	
 	AEnemySpawnCelestial* mEnemySpawn;
 	TArray<AEnemyPawn*> mRangedEnemies;
 

@@ -37,10 +37,10 @@ void UOrbitMover::TickComponent(float _deltaTime, ELevelTick _tickType, FActorCo
 {
 	Super::TickComponent(_deltaTime, _tickType, _thisTickFunction);
 
-	moveStep(_deltaTime);
+	MoveStep(_deltaTime);
 }
 
-void UOrbitMover::moveStep(float _deltaTime)
+void UOrbitMover::MoveStep(float _deltaTime)
 {
 	mCurrentAngle += (_deltaTime / mOrbitPeriod) * 360.0f;
 	mCurrentAngle = FMath::Fmod(mCurrentAngle, 360.0f);

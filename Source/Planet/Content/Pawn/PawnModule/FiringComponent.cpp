@@ -96,10 +96,9 @@ void UFiringComponent::setOwnerParams()
 	{
 		if (!TryGetFirstComponentWithTag(mOwner, MuzzlePointTag, MuzzlePoint))
 		{
-			UE_LOG(LogTemp, Error, TEXT("[UFiringComponent] %s->'%s' 태그를 가진 컴포넌트를 찾지 못했습니다."), 
+			checkf(false, TEXT("[UFiringComponent] %s->'%s' 태그를 가진 컴포넌트를 찾지 못했습니다."), 
 				*mOwner->GetName(), *MuzzlePointTag.ToString());
 		}
-		check(MuzzlePoint != nullptr);
 	}
 }
 

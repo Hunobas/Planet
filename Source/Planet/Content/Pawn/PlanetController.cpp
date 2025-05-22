@@ -6,7 +6,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 
-#include "PlayCamera.h"
+#include "../Planet.h"
 
 void APlanetController::BeginPlay()
 {
@@ -14,11 +14,10 @@ void APlanetController::BeginPlay()
 
 	mEISubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 	check(mEISubsystem);
-	mEISubsystem->AddMappingContext(PlayerIMC, 0);
+	mEISubsystem->AddMappingContext(PlayerIMC, DEFAULT_ORDER);
 
-	bShowMouseCursor = true;
-	bEnableClickEvents = true;
-	bEnableMouseOverEvents = true;
+	bShowMouseCursor = false;
+	SetInputMode(FInputModeGameOnly());
 }
 
 void APlanetController::OnPossess(APawn* _pawn)
@@ -26,7 +25,30 @@ void APlanetController::OnPossess(APawn* _pawn)
 	Super::OnPossess(_pawn);
 
 	SetViewTarget(_pawn);
+
 	bindInputMappings(_pawn);
+}
+
+void APlanetController::Tick(float _deltaTime)
+{
+	Super::Tick(_deltaTime);
+
+	FVector WorldLocation, WorldDirection;
+	if (DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
+	{
+		MouseHoverLocation = FMath::LinePlaneIntersection(
+			WorldLocation, 
+			WorldLocation + WorldDirection * 10000.0f, 
+			FVector::ZeroVector, 
+			FVector::UpVector
+		);
+
+		ProjectWorldLocationToScreen(
+			MouseHoverLocation, 
+			ScreenMousePosition, 
+			true
+		);
+	}
 }
 
 FVector2D APlanetController::GetEMAInput()
@@ -49,9 +71,15 @@ void APlanetController::bindInputMappings(const APawn* _pawn)
 {
 	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
 	{
+		EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlanetController::onLookTriggered);
 		EIC->BindAction(JustAimAction, ETriggerEvent::Triggered, this, &APlanetController::setLastLookInput);
 		EIC->BindAction(JustAimAction, ETriggerEvent::None, this, &APlanetController::resetLastLookInput);
 	}
+}
+
+void APlanetController::onLookTriggered(const FInputActionValue& Value)
+{
+	OnLookValue.Broadcast(Value.Get<FVector2D>());
 }
 
 void APlanetController::setLastLookInput(const FInputActionValue& _value)

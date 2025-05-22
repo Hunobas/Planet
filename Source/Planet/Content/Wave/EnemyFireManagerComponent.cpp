@@ -1,8 +1,6 @@
 // EnemyFireManagerComponent.h
 #include "EnemyFireManagerComponent.h"
 
-#include "Camera/CameraComponent.h"
-
 #include "EnemyPawn.h"
 #include "EnemySpawnCelestial.h"
 #include "FiringComponent.h"
@@ -27,13 +25,12 @@ void UEnemyFireManagerComponent::TickComponent(float _deltaTime, ELevelTick _tic
 	{
 		currentFireComponent->HandleJustAim();
 
-// #ifdef DEBUG
+#ifdef DEBUG
 		if (APawn* cPlayerPawn = currentFireComponent->TargetPawn)
 		{
-			const FVector PlayerForwardPos = cPlayerPawn->GetActorLocation() + mEnemySpawn->PlayerCamera->GetForwardVector() * mEnemySpawn->EnemySpawnRadius;
 			DrawDebugLine(
 				GetWorld(),
-				PlayerForwardPos,
+				cPlayerPawn->GetActorLocation(),
 				currentFireComponent->MuzzlePoint->GetComponentLocation(),
 				FColor::Yellow,
 				false,
@@ -42,7 +39,7 @@ void UEnemyFireManagerComponent::TickComponent(float _deltaTime, ELevelTick _tic
 				5.0f
 			);
 		}
-// #endif
+#endif
 	}
 }
 
@@ -87,12 +84,10 @@ void UEnemyFireManagerComponent::DequeueFireComponent(const UFiringComponent* _f
 			*_firedComponent->GetName(), *GetNameSafe(result));
 }
 
-void UEnemyFireManagerComponent::FireRandomFacingEnemy()
+void UEnemyFireManagerComponent::FireRandomEnemy()
 {
-	TArray<AEnemyPawn*> facingEnemies = getPlayerFacingEnemies();
-
 	TArray<UFiringComponent*> allFirePoints;
-	for (AEnemyPawn* enemy : facingEnemies)
+	for (AEnemyPawn* enemy : mRangedEnemies)
 	{
 		TArray<UFiringComponent*> firePoints;
 		enemy->GetComponents<UFiringComponent>(firePoints);
@@ -119,28 +114,4 @@ void UEnemyFireManagerComponent::FireRandomFacingEnemy()
 	selectedFirePoint->StartFireSequence([this](const UFiringComponent* _firedComponent){
 		DequeueFireComponent(_firedComponent);
 	});
-}
-
-TArray<AEnemyPawn*> UEnemyFireManagerComponent::getPlayerFacingEnemies()
-{
-	TArray<AEnemyPawn*> facingEnemies;
-	
-	check(mEnemySpawn->PlayerCamera);
-	float camYaw = mEnemySpawn->PlayerCamera->GetComponentRotation().Yaw;
-	
-	for (AEnemyPawn* enemy : mRangedEnemies)
-	{
-		if (!IsValid(enemy))
-			continue;
-		
-		float enemyYaw = enemy->GetActorRotation().Yaw;
-		float deltaYaw = FMath::FindDeltaAngleDegrees(camYaw, enemyYaw);
-
-		if (FMath::Abs(deltaYaw) >= PI_IN_DEGREES - mEnemySpawn->HalfFOV)
-		{
-			facingEnemies.Add(enemy);
-		}
-	}
-
-	return facingEnemies;
 }

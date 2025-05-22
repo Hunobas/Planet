@@ -7,7 +7,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
 
+#include "PlanetConst.h"
 #include "SurvivorGameModeBase.h"
+#include "ObjectPoolManagerComponent.h"
 
 namespace GameplayUtils
 {
@@ -17,6 +19,17 @@ namespace GameplayUtils
 	inline float CalculateDamage(const float& _pawnDamage, const float& _weaponDamage = 0.0f, const float& _activeBuffScale = 1.0f)
 	{
 		return (_pawnDamage + _weaponDamage) * _activeBuffScale;
+	}
+
+	inline float CalculateCriticalDamage(const float& _pawnDamage, const float& _weaponDamage = 0.0f, const float& _critial = 5.0f, const float& _critialDamage = 150.0f, const float& _activeBuffScale = 1.0f)
+	{
+		float damage = CalculateDamage(_pawnDamage, _weaponDamage, _activeBuffScale);
+		
+		if (FMath::RandRange(0.0f, 100.0f) < _critial)
+		{
+			return damage * _critialDamage * 0.01f;
+		}
+		return damage;
 	}
 
 	inline float CalulateDefaultSigmoid(const float& roughStart, const float& roughEnd, const float& _inclination, const float& _inflectionPoint, const float& x)
@@ -119,10 +132,26 @@ namespace GameplayUtils
 	}
 
 	/**
+	 * 현재 게임 모드가 가진 오브젝트 풀 매니저를 가져옵니다.
+	 * @param _worldContextObject	꺼내올 게임 모드의 월드 컨텍스트에 속한 오브젝트
+	 * @return						우리 오브젝트 풀 매니저
+	 */
+	inline UObjectPoolManagerComponent* GetObjectPoolManager(const UObject* _worldContextObject)
+	{
+		UObjectPoolManagerComponent* pool;
+		if (!TryGetFirstComponentWithTag(GetPlanetGameMode(_worldContextObject), PlanetConst::OBJECT_POOL_TAG, pool))
+		{
+			checkf(false, TEXT("[WaveManager] 오브젝트 풀 컴포넌트 불러오기 실패."));
+		}
+
+		return pool;
+	}
+
+	/**
 	 * 이펙트를 소환해 컴포넌트 하위에 붙이고, 이펙트의 트랜스폼을 컴포넌트의 위치 및 정면 방향으로 조정합니다.
 	 * @param _systemTemplate		소환할 Niagara 시스템 템플릿
 	 * @param _attachToComponent	이펙트를 붙일 SceneComponent
-	 * @return						소환된 이펙트 컴포넌트
+	 * @return						소환된 이펙트 컴포넌트 (실패 시 nullptr)
 	 */
 	inline UNiagaraComponent* SpawnSystemAttachedFacingForward(UNiagaraSystem* _systemTemplate, USceneComponent* _attachToComponent)
 	{
@@ -141,6 +170,33 @@ namespace GameplayUtils
 			forwardRotation,
 			EAttachLocation::SnapToTarget,
 			true
+		);
+	}
+
+	/**
+	 * 이펙트를 소환해 액터 위치에 스폰하고, 이펙트의 트랜스폼을 액터의 위치 및 정면 방향으로 조정합니다.
+	 * @param _systemTemplate     소환할 Niagara 시스템 템플릿
+	 * @param _actor              이펙트를 스폰할 AActor
+	 * @return                    소환된 Niagara 컴포넌트 (실패 시 nullptr)
+	 */
+	inline UNiagaraComponent* SpawnSystemFacingForward(UNiagaraSystem* _systemTemplate, const AActor* _actor)
+	{
+		if (_systemTemplate == nullptr)
+			return nullptr;
+
+		check(_actor);
+
+		UWorld* world = _actor->GetWorld();
+		check(world);
+
+		const FVector location = _actor->GetActorLocation();
+		const FRotator rotation = _actor->GetActorRotation();
+
+		return UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			world,
+			_systemTemplate,
+			location,
+			rotation
 		);
 	}
 	

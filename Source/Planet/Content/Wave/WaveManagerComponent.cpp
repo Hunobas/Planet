@@ -36,11 +36,8 @@ void UWaveManagerComponent::BeginPlay()
 	
 	check(EnemySpawnClass);
 	mEnemySpawn = GetWorld()->SpawnActor<AEnemySpawnCelestial>(EnemySpawnClass, playerTx)->Initialize(cTargetPlayer);
-	
-	if (!TryGetFirstComponentWithTag(GetOwner(), OBJECT_POOL_TAG, mPool))
-	{
-		checkf(false, TEXT("[WaveManager] 오브젝트 풀 컴포넌트 불러오기 실패."));
-	}
+
+	mPool = GetObjectPoolManager(this);
 	if (!TryGetFirstComponentWithTag(GetOwner(), FIRE_MANAGER_TAG, mFireManager))
 	{
 		checkf(false, TEXT("[WaveManager] 적 Fire Manager 컴포넌트 불러오기 실패."));
@@ -62,17 +59,17 @@ void UWaveManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void UWaveManagerComponent::PlayWaveMode1()
 {
-	// updateMaxFieldScoreByGameTime();
+	updateMaxFieldScoreByGameTime();
 	updateSpawnableEnemyListByGameTime();
 	SpawnEnemyWave();
 
-	// GetWorld()->GetTimerManager().SetTimer(
-	// 	mDifficultyTimerHandle,
-	// 	this,
-	// 	&UWaveManagerComponent::updateMaxFieldScoreByGameTime,
-	// 	Config_DifficultyInterval,
-	// 	true
-	// );
+	GetWorld()->GetTimerManager().SetTimer(
+		mDifficultyTimerHandle,
+		this,
+		&UWaveManagerComponent::updateMaxFieldScoreByGameTime,
+		Config_DifficultyInterval,
+		true
+	);
 
 	GetWorld()->GetTimerManager().SetTimer(
 		mListTimerHandle,

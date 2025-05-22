@@ -21,10 +21,6 @@ public:
 	
 	virtual void BeginPlay() override;
 
-protected:
-	virtual void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
-
-public:
 	void OnJustAimSuccess(const FVector& _targetLocation);
 	
 	UPROPERTY(EditAnywhere, Category = "Camera Setting")
@@ -33,13 +29,9 @@ public:
 	float DefaultArmLength			= 3000.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Just Aim")
-	float JustAimingDuration		= 0.08f;
-	UPROPERTY(EditAnywhere, Category = "Just Aim")
 	TSubclassOf<UCameraShakeBase> JustAimCameraShakeClass;
 
 private:
-	void updateJustAimRotation(float _deltaTime);
-	
 	APlanetPawn* mPlayerPawn;
 	USpringArmComponent* mSpringArm;
 	UCameraComponent* mCamera;
