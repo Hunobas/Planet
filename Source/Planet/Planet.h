@@ -10,4 +10,4 @@
 using namespace PlanetConst;
 using namespace GameplayUtils;
 
-#define ECC_PROJECTILE ECC_GameTraceChannel1
+#define ECC_LASER ECC_GameTraceChannel1

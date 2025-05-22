@@ -20,10 +20,12 @@ public:
     UPROPERTY(EditAnywhere, Category = "Blueprint Components")
     USceneComponent* Root;
 
-    UPROPERTY(EditAnywhere, Category = "Weapon")
+    UPROPERTY(EditAnywhere, Category = "Combat")
     EWeaponType WeaponType;
-    UPROPERTY(EditAnywhere, Category = "Weapon")
+    UPROPERTY(EditAnywhere, Category = "Combat")
     float Damage        = 25.0f;
+    UPROPERTY(EditAnywhere, Category = "Combat")
+    float BaseFireRate  = 0.5f;
     UPROPERTY(EditAnywhere, Category = "DEBUG")
     int32 CurrentLevel  = 0;
 

@@ -6,6 +6,7 @@
 #include "WeaponSlotComponent.generated.h"
 
 class AWeaponPawn;
+class APlanetPawn;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PLANET_API UWeaponSlotComponent : public UActorComponent
@@ -26,7 +27,7 @@ protected:
 private:
 	bool EquipWeapon(const TSubclassOf<AWeaponPawn>& _weaponClass);
 
-	APawn* cOwner;
+	APlanetPawn* cOwner;
 	TArray<AWeaponPawn*> mEquippedWeapons;
 
 };

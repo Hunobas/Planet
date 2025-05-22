@@ -40,10 +40,8 @@ void AEnemyPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (BodyCollisionCapsule)
-	{
-		BodyCollisionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AEnemyPawn::OnOverlapBegin);
-	}
+	check(BodyCollisionCapsule);
+	BodyCollisionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AEnemyPawn::OnOverlapBegin);
 
 	TryGetFirstComponentWithTag(this, FLYING_MOVER_TAG, mFlyingMover);
 	TryGetFirstComponentWithTag(this, FOLLOW_MOVER_TAG, mFollowMover);

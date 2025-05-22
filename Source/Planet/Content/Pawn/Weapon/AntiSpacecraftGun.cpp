@@ -2,13 +2,15 @@
 #include "AntiSpacecraftGun.h"
 
 #include "../Planet.h"
+#include "PlanetPawn.h"
 #include "ObjectPoolManagerComponent.h"
 #include "DefaultProjectile.h"
 
-AAntiSpacecraftGun::AAntiSpacecraftGun()
+AAntiSpacecraftGun::AAntiSpacecraftGun(): FireSound(nullptr), cOwner(nullptr), mPool(nullptr), mMuzzleCenter(nullptr),
+                                          mMuzzleLeft(nullptr),
+                                          mMuzzleRight(nullptr)
 {
 	PrimaryActorTick.bCanEverTick = true;
-	
 }
 
 void AAntiSpacecraftGun::BeginPlay()
@@ -31,7 +33,10 @@ void AAntiSpacecraftGun::BeginPlay()
 			*this->GetName(), *MuzzleRightTag.ToString());
 	}
 
+	cOwner = Cast<APlanetPawn>(GetOwner());
 	mPool = GetObjectPoolManager(this);
+
+	StartAttack();
 }
 
 void AAntiSpacecraftGun::LevelUp(const int32& _newLevel)
@@ -44,20 +49,25 @@ void AAntiSpacecraftGun::LevelUp(const int32& _newLevel)
 		Damage = Damage_LV2;
 		break;
 	case 3:
-		// bReleaseSideSpawnPoint = true;
+		BaseFireRate = FireRate_LV3;
+		SingleFireInterval = SingleFireInterval_LV3;
+		StopAttack();
+		StartAttack();
 		break;
 	case 4:
 		bReleaseSideSpawnPoint = true;
 		break;
 	case 5:
-		// bReleaseUpdownSpawnPoint = true;
+		Damage = Damage_LV5;
 		break;
 	case 6:
-		// SetDamageScale(GetDamageScale() + DamageUp_LV6);
+		mMaxPierce = MaxPierce_LV6;
 		break;
 	case 7:
-		// bReleasePositronRifle = true;
-		// SetFireRate(LaserRate_LV7);
+		BaseFireRate = FireRate_LV7;
+		SingleFireInterval = SingleFireInterval_LV7;
+		StopAttack();
+		StartAttack();
 		break;
 	default:
 		break;
@@ -67,6 +77,47 @@ void AAntiSpacecraftGun::LevelUp(const int32& _newLevel)
 void AAntiSpacecraftGun::Fire()
 {
 	Super::Fire();
+
+	mBurstFireCount = 0;
+	
+	GetWorldTimerManager().SetTimer(
+		mBurstFireTimerHandle,
+		this,
+		&AAntiSpacecraftGun::burstFire,
+		SingleFireInterval,
+		true,
+		0.0f
+	);
+}
+
+void AAntiSpacecraftGun::StartAttack()
+{
+	const float playerHaste = cOwner->RuntimeSettings.Haste;
+	const float fireRate = CalculateFireRate(BaseFireRate, playerHaste);
+
+	GetWorldTimerManager().SetTimer(
+		mFireTimerHandle,
+		this,
+		&AAntiSpacecraftGun::Fire,
+		fireRate,
+		true,
+		0.0f
+	);
+}
+
+void AAntiSpacecraftGun::StopAttack()
+{
+	GetWorldTimerManager().ClearTimer(mFireTimerHandle);
+}
+
+void AAntiSpacecraftGun::burstFire()
+{
+	if (mBurstFireCount++ >= 4)
+	{
+		GetWorldTimerManager().ClearTimer(mBurstFireTimerHandle);
+		mBurstFireCount = 0;
+		return;
+	}
 
 	if (ADefaultProjectile* centerProjectile = spawnProjectileOrNull(mMuzzleCenter))
 	{
@@ -87,6 +138,7 @@ void AAntiSpacecraftGun::Fire()
 ADefaultProjectile* AAntiSpacecraftGun::spawnProjectileOrNull(const USceneComponent* _muzzle)
 {
 	check(_muzzle);
+	check(mPool);
 	check(ProjectileClass);
 
 	ADefaultProjectile* projectile = mPool->AcquireOrNull(ProjectileClass, _muzzle->GetComponentTransform());
@@ -94,6 +146,7 @@ ADefaultProjectile* AAntiSpacecraftGun::spawnProjectileOrNull(const USceneCompon
 	{
 		projectile->SetOwner(this);
 		projectile->Initialize(mPool);
+		projectile->MaxPierce = mMaxPierce;
 	}
 	
 	return projectile;

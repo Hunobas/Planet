@@ -178,7 +178,7 @@ void UWaveManagerComponent::updateMaxFieldScoreByGameTime()
 	}
 	else
 	{
-		CurrentMaxFieldScore = CalulateDefaultSigmoid(Config_StartMaxScore, Config_EndMaxScore, Config_Inclination, Config_InflectionPoint, elapsedTime);
+		CurrentMaxFieldScore = CalculateDefaultSigmoid(Config_StartMaxScore, Config_EndMaxScore, Config_Inclination, Config_InflectionPoint, elapsedTime);
 	}
 }
 

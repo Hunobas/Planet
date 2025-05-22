@@ -21,7 +21,7 @@ public:
 	void Initialize(UObjectPoolManagerComponent* _pool);
 
 	UFUNCTION()
-	void OnHit(UPrimitiveComponent* _hitComponent, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
+	void OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _otherActor, UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult);
 
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
 	UBoxComponent* CollisionBox;

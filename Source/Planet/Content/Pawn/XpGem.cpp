@@ -48,13 +48,13 @@ void AXpGem::Tick(float _deltaTime)
 	}
 }
 
-void AXpGem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                            UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AXpGem::OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _otherActor,
+                            UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult)
 {
 	check(cTargetPlayer);
 	check(mPool);
 
-	if (Cast<APlanetPawn>(OtherActor) != cTargetPlayer)
+	if (Cast<APlanetPawn>(_otherActor) != cTargetPlayer)
 		return;
 	
 	// cTargetPlayer->GainExperience(XP);

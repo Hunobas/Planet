@@ -32,8 +32,8 @@ void ADefaultProjectile::Initialize(UObjectPoolManagerComponent* _pool)
 	cOwner = Cast<AWeaponPawn>(GetOwner());
 	mPool = _pool;
 
-	CollisionBox->OnComponentHit.AddDynamic(this, &ADefaultProjectile::OnHit);
-	CollisionBox->SetCollisionObjectType(ECC_PROJECTILE);
+	check(CollisionBox);
+	CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &ADefaultProjectile::OnOverlapBegin);
 	
 	ProjectileMovement->Velocity = GetActorForwardVector() * Speed;
 	mCurrentPierce = 0;
@@ -47,7 +47,7 @@ void ADefaultProjectile::Initialize(UObjectPoolManagerComponent* _pool)
 	);
 }
 
-void ADefaultProjectile::OnHit(UPrimitiveComponent* _hitComponent, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
+void ADefaultProjectile::OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _otherActor, UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult)
 {
 	if (mHitActors.Contains(_otherActor))
 		return;
@@ -55,7 +55,7 @@ void ADefaultProjectile::OnHit(UPrimitiveComponent* _hitComponent, AActor* _othe
 	APlanetPawn* playerPawn = Cast<APlanetPawn>(cOwner->GetOwner());
 	check(playerPawn);
 	check(cOwner);
-	
+
 	if (Cast<AEnemyPawn>(_otherActor) != nullptr)
 	{
 		mHitActors.Add(_otherActor);
@@ -81,5 +81,6 @@ void ADefaultProjectile::OnHit(UPrimitiveComponent* _hitComponent, AActor* _othe
 void ADefaultProjectile::returnToPool()
 {
 	GetWorld()->GetTimerManager().ClearTimer(mLifeSpanTimerHandle);
+	mHitActors.Empty();
 	mPool->Release(this);
 }

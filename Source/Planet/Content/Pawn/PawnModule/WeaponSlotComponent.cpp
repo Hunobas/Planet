@@ -2,6 +2,7 @@
 #include "WeaponSlotComponent.h"
 
 #include "WeaponPawn.h"
+#include "PlanetPawn.h"
 
 UWeaponSlotComponent::UWeaponSlotComponent(): cOwner(nullptr)
 {
@@ -12,7 +13,7 @@ void UWeaponSlotComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	cOwner = Cast<APawn>(GetOwner());
+	cOwner = Cast<APlanetPawn>(GetOwner());
 	EquipWeapon(DefaultWeaponClass);
 }
 
@@ -29,7 +30,6 @@ bool UWeaponSlotComponent::EquipWeapon(const TSubclassOf<AWeaponPawn>& _weaponCl
 		{
 			FActorSpawnParameters params;
 			params.Owner = cOwner;
-			// mparams.Instigator = Cast<APawn>(GetOwner());
             
 			if (AWeaponPawn* newWeapon = GetWorld()->SpawnActor<AWeaponPawn>(
 				_weaponClass,
@@ -39,7 +39,7 @@ bool UWeaponSlotComponent::EquipWeapon(const TSubclassOf<AWeaponPawn>& _weaponCl
 			{
 				mEquippedWeapons[i] = newWeapon;
 				newWeapon->AttachToComponent(
-					cOwner->GetRootComponent(),
+					cOwner->PlanetMesh,
 					FAttachmentTransformRules::SnapToTargetNotIncludingScale
 				);
 				return true;

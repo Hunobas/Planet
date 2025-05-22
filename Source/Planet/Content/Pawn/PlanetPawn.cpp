@@ -60,12 +60,12 @@ void APlanetPawn::updatePlanetRotation() const
 {
 	APlanetController* planetController = Cast<APlanetController>(GetController());
 	
-	const FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(
+	const FRotator newRotation = UKismetMathLibrary::FindLookAtRotation(
 		GetActorLocation(), 
 		planetController->MouseHoverLocation
 	);
 	
-	PlanetMesh->SetWorldRotation(FRotator(0, NewRotation.Yaw, 0));
+	PlanetMesh->SetWorldRotation(FRotator(0, newRotation.Yaw, 0));
 
 #ifdef DEBUG
 	DrawDebugLine(

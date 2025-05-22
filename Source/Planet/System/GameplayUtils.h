@@ -32,7 +32,12 @@ namespace GameplayUtils
 		return damage;
 	}
 
-	inline float CalulateDefaultSigmoid(const float& roughStart, const float& roughEnd, const float& _inclination, const float& _inflectionPoint, const float& x)
+	inline float CalculateFireRate(const float& _baseFireRate, const float& _haste = 100.0f)
+	{
+		return _baseFireRate * FMath::Clamp(100.0f / _haste, 0.1f, 10.0f);
+	}
+
+	inline float CalculateDefaultSigmoid(const float& roughStart, const float& roughEnd, const float& _inclination, const float& _inflectionPoint, const float& x)
 	{
 		return roughStart + (roughEnd - roughStart)
 			/ (1 + FMath::Exp(_inclination * (_inflectionPoint - x)));
