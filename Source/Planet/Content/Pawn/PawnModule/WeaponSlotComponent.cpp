@@ -3,8 +3,9 @@
 
 #include "WeaponPawn.h"
 #include "PlanetPawn.h"
+#include "WeaponType.h"
 
-UWeaponSlotComponent::UWeaponSlotComponent(): cOwner(nullptr)
+UWeaponSlotComponent::UWeaponSlotComponent(): DefaultWeaponType(EWeaponType::None), cOwner(nullptr)
 {
 	mEquippedWeapons.SetNum(MaxSlots);
 }
@@ -14,14 +15,12 @@ void UWeaponSlotComponent::BeginPlay()
 	Super::BeginPlay();
 	
 	cOwner = Cast<APlanetPawn>(GetOwner());
-	EquipWeapon(DefaultWeaponClass);
+	EquipWeapon(DefaultWeaponType);
 }
 
-bool UWeaponSlotComponent::EquipWeapon(const TSubclassOf<AWeaponPawn>& _weaponClass)
+bool UWeaponSlotComponent::EquipWeapon(const EWeaponType& _weaponType)
 {
-	if (!_weaponClass)
-		return false;
-
+	check(WeaponTypeToClassMap[_weaponType]);
 	check(cOwner);
 	
 	for (int32 i = 0; i < mEquippedWeapons.Num(); i++)
@@ -32,7 +31,7 @@ bool UWeaponSlotComponent::EquipWeapon(const TSubclassOf<AWeaponPawn>& _weaponCl
 			params.Owner = cOwner;
             
 			if (AWeaponPawn* newWeapon = GetWorld()->SpawnActor<AWeaponPawn>(
-				_weaponClass,
+				WeaponTypeToClassMap[_weaponType],
 				FVector::ZeroVector,
 				FRotator::ZeroRotator,
 				params))
@@ -42,10 +41,23 @@ bool UWeaponSlotComponent::EquipWeapon(const TSubclassOf<AWeaponPawn>& _weaponCl
 					cOwner->PlanetMesh,
 					FAttachmentTransformRules::SnapToTargetNotIncludingScale
 				);
+				RemainSlots--;
 				return true;
 			}
 		}
 	}
 	
 	return false;
+}
+
+AWeaponPawn* UWeaponSlotComponent::GetWeaponByTypeOrNull(const EWeaponType& _weaponType)
+{
+	for (AWeaponPawn* weapon : mEquippedWeapons)
+	{
+		if (weapon->WeaponType == _weaponType)
+		{
+			return weapon;
+		}
+	}
+	return nullptr;
 }

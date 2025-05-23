@@ -37,27 +37,27 @@ public:
 	UPROPERTY(EditAnywhere, Category = "ASGun")
 	TSubclassOf<ADefaultProjectile> ProjectileClass;
 	UPROPERTY(EditAnywhere, Category = "ASGun")
-	float FireInterval = 0.3f;
+	float FireInterval			= 0.3f;
 
 	UPROPERTY(EditAnywhere, Category = "FX")
 	USoundBase* FireSound;
 
 	UPROPERTY(EditAnywhere, Category = "LV")
-	float Damage_LV2				= 40.0f;
+	float Damage_LV2			= 40.0f;
 	UPROPERTY(EditAnywhere, Category = "LV")
-	float FireRate_LV3				= 1.0f;
+	float FireRate_LV3			= 1.0f;
 	UPROPERTY(EditAnywhere, Category = "LV")
-	float FireInterval_LV3	= 0.2f;
+	float FireInterval_LV3		= 0.2f;
 	UPROPERTY(EditAnywhere, Category = "LV")
-	bool bReleaseSideSpawnPoint		= false;
+	bool bReleaseSideSpawnPoint	= false;
 	UPROPERTY(EditAnywhere, Category = "LV")
-	float Damage_LV5				= 70.0f;
+	float Damage_LV5			= 70.0f;
 	UPROPERTY(EditAnywhere, Category = "LV")
-	int32 MaxPierce_LV6				= 3;
+	int32 MaxPierce_LV6			= 3;
 	UPROPERTY(EditAnywhere, Category = "LV")
-	float FireRate_LV7				= 0.4f;
+	float FireRate_LV7			= 0.4f;
 	UPROPERTY(EditAnywhere, Category = "LV")
-	float FireInterval_LV7	= 0.1f;
+	float FireInterval_LV7		= 0.1f;
 
 private:
 	void burstFire();

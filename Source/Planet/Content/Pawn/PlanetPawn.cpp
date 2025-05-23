@@ -11,6 +11,8 @@
 #include "OrbitMover.h"
 #include "HPComponent.h"
 #include "JustAimManagerComponent.h"
+#include "WeaponSlotComponent.h"
+#include "PassiveItemSlotComponent.h"
 #include "PlanetController.h"
 #include "PlayerDataAsset.h"
 
@@ -53,6 +55,8 @@ void APlanetPawn::composeComponent()
 	PlayCamera = CreateDefaultSubobject<UPlayCamera>(TEXT("Play Camera"));
 	OrbitMover = CreateDefaultSubobject<UOrbitMover>(TEXT("Orbit Mover"));
 	JustAimManager = CreateDefaultSubobject<UJustAimManagerComponent>(TEXT("Just Aim Manager"));
+	WeaponSlot = CreateDefaultSubobject<UWeaponSlotComponent>(TEXT("Weapon Slot"));
+	ItemSlot = CreateDefaultSubobject<UPassiveItemSlotComponent>(TEXT("Item Slot"));
 	mHP = CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
 }
 
@@ -87,6 +91,7 @@ void APlanetPawn::resetToDefaultSettings()
 	RuntimeSettings.CriticalDamage	= BaseSettings->CriticalBase;
 	RuntimeSettings.Haste			= BaseSettings->HasteBase;
 	RuntimeSettings.XpGain			= BaseSettings->XPGainBase;
+	RuntimeSettings.XpSpeedScale	= BaseSettings->XPSpeedScaleBase;
 
 	if (mHP)
 	{

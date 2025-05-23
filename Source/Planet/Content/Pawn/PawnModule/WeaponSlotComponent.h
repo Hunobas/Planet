@@ -3,10 +3,12 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "../Planet.h"
 #include "WeaponSlotComponent.generated.h"
 
 class AWeaponPawn;
 class APlanetPawn;
+enum class EWeaponType : uint8;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PLANET_API UWeaponSlotComponent : public UActorComponent
@@ -16,17 +18,23 @@ class PLANET_API UWeaponSlotComponent : public UActorComponent
 public:
 	UWeaponSlotComponent();
 
-	UPROPERTY(EditAnywhere, Category = "Weapon Slot", meta=(ClampMin=1, ClampMax=12))
-	int32 MaxSlots = 6;
-	UPROPERTY(EditAnywhere, Category = "Weapon Slot")
-	TSubclassOf<AWeaponPawn> DefaultWeaponClass;
-
 protected:
 	virtual void BeginPlay() override;
 
-private:
-	bool EquipWeapon(const TSubclassOf<AWeaponPawn>& _weaponClass);
+public:
+	bool EquipWeapon(const EWeaponType& _weaponType);
+	AWeaponPawn* GetWeaponByTypeOrNull(const EWeaponType& _weaponType);
 
+	UPROPERTY(EditAnywhere, Category = "Weapon Slot")
+	TMap<EWeaponType, TSubclassOf<AWeaponPawn>> WeaponTypeToClassMap;
+	UPROPERTY(EditAnywhere, Category = "Weapon Slot", meta=(ClampMin=1, ClampMax=12))
+	int32 MaxSlots = WEAPON_MAX_SLOT;
+	UPROPERTY(EditAnywhere, Category = "Weapon Slot")
+	EWeaponType DefaultWeaponType;
+
+	int32 RemainSlots = WEAPON_MAX_SLOT;
+
+private:
 	APlanetPawn* cOwner;
 	TArray<AWeaponPawn*> mEquippedWeapons;
 

@@ -10,7 +10,6 @@ struct PLANET_API FRewardTextData : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
 
-public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Text")
 	FText DisplayName;
 

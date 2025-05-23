@@ -16,6 +16,7 @@ struct PLANET_API FPlayerSetting
 		, CriticalDamage(150.0f)
 		, Haste(100.0f)
 		, XpGain(100.0f)
+		, XpSpeedScale(1.0f)
 	{}
 
 	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
@@ -30,4 +31,6 @@ struct PLANET_API FPlayerSetting
 	float Haste;
 	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
 	float XpGain;
+	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
+	float XpSpeedScale;
 };

@@ -5,6 +5,7 @@
 
 namespace PlanetConst
 {
+	
 #pragma region Math
 
 	static constexpr float PI_IN_DEGREES = 180.0f;
@@ -19,6 +20,8 @@ namespace PlanetConst
 
 	static constexpr float ENEMY_FIRE_DELAY						= 2.0f;
 	static constexpr float JUSTAIM_WINDOW_DURATION				= 0.3f;
+	static constexpr int32 WEAPON_MAX_SLOT						= 7;
+	static constexpr int32 ITEM_MAX_SLOT						= 6;
 	
 #pragma endregion
 

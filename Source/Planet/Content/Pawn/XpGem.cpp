@@ -34,6 +34,10 @@ AXpGem* AXpGem::Initialize(APawn* _targetPlayer, const float& _XP, UObjectPoolMa
 	{
 		Capsule->OnComponentBeginOverlap.AddUniqueDynamic(this, &AXpGem::OnOverlapBegin);
 	}
+	if (mFollowMover && cTargetPlayer)
+	{
+		mFollowMover->MoveSpeedScale = cTargetPlayer->RuntimeSettings.XpSpeedScale;
+	}
 
 	return this;
 }

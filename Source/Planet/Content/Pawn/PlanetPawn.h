@@ -15,6 +15,8 @@ class UPlayCamera;
 class UOrbitMover;
 class UHPComponent;
 class UJustAimManagerComponent;
+class UWeaponSlotComponent;
+class UPassiveItemSlotComponent;
 class APlanetController;
 class UPlayerDataAsset;
 
@@ -45,6 +47,10 @@ public:
 	UOrbitMover* OrbitMover;
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
 	UJustAimManagerComponent* JustAimManager;
+	UPROPERTY(EditAnywhere, Category = "Actor Components")
+	UWeaponSlotComponent* WeaponSlot;
+	UPROPERTY(EditAnywhere, Category = "Actor Components")
+	UPassiveItemSlotComponent* ItemSlot;
 
 	UPROPERTY(EditAnywhere, Category = "Planet")
 	float VisibleDistance = 3000.0f;
