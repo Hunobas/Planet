@@ -14,12 +14,11 @@
 #include "PlanetController.h"
 #include "PlayerDataAsset.h"
 
-APlanetPawn::APlanetPawn()
+APlanetPawn::APlanetPawn() : cPlanetController(nullptr), mHP(nullptr)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	
 	composeComponent();
-	mHP = nullptr;
 }
 
 void APlanetPawn::BeginPlay()
@@ -27,13 +26,14 @@ void APlanetPawn::BeginPlay()
 	Super::BeginPlay();
 
 	resetToDefaultSettings();
-}
 
-void APlanetPawn::Tick(float _deltaTime)
-{
-	Super::Tick(_deltaTime);
+	cPlanetController = Cast<APlanetController>(GetController());
+	check(cPlanetController);
 
-	updatePlanetRotation();
+	cPlanetController->OnLookValue.AddLambda([this](const FVector2D& _inputValue)
+	{
+		updatePlanetRotation(cPlanetController->WorldMouseLocation);
+	});
 }
 
 void APlanetPawn::composeComponent()
@@ -56,13 +56,11 @@ void APlanetPawn::composeComponent()
 	mHP = CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
 }
 
-void APlanetPawn::updatePlanetRotation() const
+void APlanetPawn::updatePlanetRotation(const FVector& _worldMousePosition) const
 {
-	APlanetController* planetController = Cast<APlanetController>(GetController());
-	
 	const FRotator newRotation = UKismetMathLibrary::FindLookAtRotation(
 		GetActorLocation(), 
-		planetController->MouseHoverLocation
+		_worldMousePosition
 	);
 	
 	PlanetMesh->SetWorldRotation(FRotator(0, newRotation.Yaw, 0));
@@ -71,7 +69,7 @@ void APlanetPawn::updatePlanetRotation() const
 	DrawDebugLine(
 		GetWorld(),
 		GetActorLocation(),
-		planetController->MouseHoverLocation,
+		_worldMousePosition,
 		FColor::Green,
 		false,
 		0.1f,

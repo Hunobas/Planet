@@ -3,6 +3,7 @@
 
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Engine/DamageEvents.h"
 
 #include "EnemySetting.h"
@@ -14,11 +15,12 @@
 #include "FlyingMover.h"
 #include "FollowMover.h"
 #include "HPComponent.h"
+#include "EnemyHPWidget.h"
 #include "WaveManagerComponent.h"
 #include "ObjectPoolManagerComponent.h"
 #include "XpGem.h"
 
-AEnemyPawn::AEnemyPawn()
+AEnemyPawn::AEnemyPawn() : cTargetPawn(nullptr), mFlyingMover(nullptr), mFollowMover(nullptr), mHP(nullptr), mHPWidget(nullptr)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -30,22 +32,33 @@ AEnemyPawn::AEnemyPawn()
 
 	HitDetectionCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Hit Detection Capsule"));
 	HitDetectionCapsule->SetupAttachment(EnemyMesh);
+}
 
-	mFlyingMover = nullptr;
-	mFollowMover = nullptr;
-	mHP = nullptr;
+void AEnemyPawn::Initialize()
+{
+	check(BodyCollisionCapsule);
+	BodyCollisionCapsule->OnComponentBeginOverlap.AddUniqueDynamic(this, &AEnemyPawn::OnOverlapBegin);
+
+	TryGetFirstComponentWithTag(this, FLYING_MOVER_TAG, mFlyingMover);
+	TryGetFirstComponentWithTag(this, FOLLOW_MOVER_TAG, mFollowMover);
+	TryGetFirstComponentWithTag(this, HP_TAG, mHP);
+	TryGetFirstComponentWithTag(this, HP_WIDGET_TAG, mHPWidget);
+
+	if (mHP && mHPWidget)
+	{
+		mHP->Initialize();
+		OnTakeAnyDamage.AddUniqueDynamic(this, &AEnemyPawn::HandleDamageTaken);
+		mHPWidget->SetVisibility(false);
+	}
+
+	setUpdateStrategy();
 }
 
 void AEnemyPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	check(BodyCollisionCapsule);
-	BodyCollisionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AEnemyPawn::OnOverlapBegin);
-
-	TryGetFirstComponentWithTag(this, FLYING_MOVER_TAG, mFlyingMover);
-	TryGetFirstComponentWithTag(this, FOLLOW_MOVER_TAG, mFollowMover);
-	TryGetFirstComponentWithTag(this, HP_TAG, mHP);
+	Initialize();
 }
 
 void AEnemyPawn::Tick(float _deltaTime)
@@ -69,11 +82,9 @@ void AEnemyPawn::MoveStep(float _deltaTime)
 		mFlyingMover->MoveStep(_deltaTime);
 	}
 
-	if (cTargetPawn)
-	{
-		FVector direction = (cTargetPawn->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-		SetActorRotation(direction.Rotation());
-	}
+	check(cTargetPawn);
+	FVector direction = (cTargetPawn->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+	SetActorRotation(direction.Rotation());
 }
 
 void AEnemyPawn::ResetToDefaultSettings(const FEnemyScaleSetting& _scaleSettings, APawn* _targetPlayer)
@@ -86,12 +97,7 @@ void AEnemyPawn::ResetToDefaultSettings(const FEnemyScaleSetting& _scaleSettings
 	RuntimeSettings.XPDrop		= BaseSettings->XPDropBase * _scaleSettings.XPDropScale;
 	RuntimeSettings.FieldScore	= BaseSettings->FieldScoreBase;
 
-	if (mHP)
-	{
-		mHP->Initialize();
-	}
-
-	setUpdateStrategy();
+	Initialize();
 }
 
 void AEnemyPawn::HandleDied()
@@ -109,7 +115,6 @@ void AEnemyPawn::HandleDied()
 	}
 
 	mUpdateStrategy.Reset();
-	cTargetPawn = nullptr;
 }
 
 void AEnemyPawn::OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _otherActor,
@@ -125,16 +130,29 @@ void AEnemyPawn::OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActo
 	HandleDied();
 }
 
+void AEnemyPawn::HandleDamageTaken(AActor* _damagedActor, float _damage, const class UDamageType* _damageType,
+	class AController* _instigatedBy, AActor* _damageCauser)
+{
+	if (!mHP || !mHPWidget)
+		return;
+
+	mHPWidget->SetVisibility(true);
+
+	if (UEnemyHPWidget* enemyHPWidget = Cast<UEnemyHPWidget>(mHPWidget->GetUserWidgetObject()))
+	{
+		const float percent = mHP->CurrentHP / mHP->MaxHP;
+		enemyHPWidget->UpdateHealthProgress(percent);
+	}
+}
+
 void AEnemyPawn::setUpdateStrategy()
 {
 	if (UpdateType == EUpdateType::Continuous)
 	{
 		mUpdateStrategy = MakeUnique<ContinuousUpdateStrategy>(this);
 	}
-	else if (UpdateType == EUpdateType::InputDriven)
+	else if (cTargetPawn != nullptr && UpdateType == EUpdateType::InputDriven)
 	{
-		check(cTargetPawn);
-		
 		mUpdateStrategy = MakeUnique<InputDrivenUpdateStrategy>(this);
 
 		if (APlanetController* PC = Cast<APlanetController>(cTargetPawn->GetController()))
@@ -143,7 +161,8 @@ void AEnemyPawn::setUpdateStrategy()
 			{
 				if (mUpdateStrategy.IsValid())
 				{
-					mUpdateStrategy->OnLookInput(_inputValue * 0.05f);
+					const FVector2D inputValue = _inputValue * InputDrivenUpdateStrategy::InputDrivenUpdateScale;
+					mUpdateStrategy->OnLookInput(inputValue);
 				}
 			});
 		}

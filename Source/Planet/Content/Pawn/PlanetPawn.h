@@ -30,8 +30,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void Tick(float _deltaTime) override;
-
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
 	UCapsuleComponent* Capsule;
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
@@ -58,8 +56,9 @@ public:
 	
 private:
 	void composeComponent();
-	void updatePlanetRotation() const;
+	void updatePlanetRotation(const FVector& _worldMousePosition) const;
 	void resetToDefaultSettings();
 
+	APlanetController* cPlanetController;
 	UHPComponent* mHP;
 };

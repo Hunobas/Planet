@@ -36,7 +36,7 @@ void APlanetController::Tick(float _deltaTime)
 	FVector WorldLocation, WorldDirection;
 	if (DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
 	{
-		MouseHoverLocation = FMath::LinePlaneIntersection(
+		WorldMouseLocation = FMath::LinePlaneIntersection(
 			WorldLocation, 
 			WorldLocation + WorldDirection * 10000.0f, 
 			FVector::ZeroVector, 
@@ -44,7 +44,7 @@ void APlanetController::Tick(float _deltaTime)
 		);
 
 		ProjectWorldLocationToScreen(
-			MouseHoverLocation, 
+			WorldMouseLocation, 
 			ScreenMousePosition, 
 			true
 		);

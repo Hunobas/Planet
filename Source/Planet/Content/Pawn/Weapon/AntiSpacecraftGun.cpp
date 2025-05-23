@@ -50,7 +50,7 @@ void AAntiSpacecraftGun::LevelUp(const int32& _newLevel)
 		break;
 	case 3:
 		BaseFireRate = FireRate_LV3;
-		SingleFireInterval = SingleFireInterval_LV3;
+		FireInterval = FireInterval_LV3;
 		StopAttack();
 		StartAttack();
 		break;
@@ -65,7 +65,7 @@ void AAntiSpacecraftGun::LevelUp(const int32& _newLevel)
 		break;
 	case 7:
 		BaseFireRate = FireRate_LV7;
-		SingleFireInterval = SingleFireInterval_LV7;
+		FireInterval = FireInterval_LV7;
 		StopAttack();
 		StartAttack();
 		break;
@@ -78,13 +78,11 @@ void AAntiSpacecraftGun::Fire()
 {
 	Super::Fire();
 
-	mBurstFireCount = 0;
-	
 	GetWorldTimerManager().SetTimer(
 		mBurstFireTimerHandle,
 		this,
 		&AAntiSpacecraftGun::burstFire,
-		SingleFireInterval,
+		FireInterval,
 		true,
 		0.0f
 	);
@@ -108,6 +106,7 @@ void AAntiSpacecraftGun::StartAttack()
 void AAntiSpacecraftGun::StopAttack()
 {
 	GetWorldTimerManager().ClearTimer(mFireTimerHandle);
+	GetWorldTimerManager().ClearTimer(mBurstFireTimerHandle);
 }
 
 void AAntiSpacecraftGun::burstFire()

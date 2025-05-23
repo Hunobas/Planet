@@ -15,17 +15,19 @@ public:
 		}
 	}
 	
-	virtual void OnLookInput(const FVector2D& _lookValue) override
+	virtual void OnLookInput(const FVector2D& _inputValue) override
 	{
 		if (mEnemy)
 		{
-			mEnemy->MoveStep(_lookValue.Size());
+			mEnemy->MoveStep(_inputValue.Size());
 		}
 	}
 	
 	virtual void Update(float _deltaTime) override
 	{
 	}
+
+	static constexpr float InputDrivenUpdateScale = 0.05f;
 
 private:
 	AEnemyPawn* mEnemy;

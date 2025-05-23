@@ -92,7 +92,7 @@ void UWaveManagerComponent::PlayWaveMode2()
 {
 	updateSpawnableEnemyListByGameTime();
 
-	for (USceneComponent* spawnPoint : mEnemySpawn->GetNthRowSpawnPoints(3))
+	for (USceneComponent* spawnPoint : mEnemySpawn->GetNthRowSpawnPoints(2))
 	{
 		spawnEnemyOrNull(mRuntimeSpawnableList[0], spawnPoint);
 	}
@@ -163,8 +163,8 @@ USceneComponent* UWaveManagerComponent::getRandomPointForTypeOrNull(const EEnemy
 {
 	switch (_type)
 	{
-		case EEnemyType::Ranged: return mEnemySpawn->GetRandomActiveSpawnPointOrNull();
-		default:				 return mEnemySpawn->GetRandomSpawnPoint();
+		case EEnemyType::Ranged: return mEnemySpawn->GetRandomRangedSpawnPointOrNull();
+		default:				 return mEnemySpawn->GetRandomMeleeSpawnPoint();
 	}
 }
 

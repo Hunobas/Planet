@@ -25,18 +25,27 @@ void UObjectPoolManagerComponent::EndPlay(const EEndPlayReason::Type _endPlayRea
 	{
 		for (UObject* obj : pair.Value.Available)
 		{
-			if (AActor* A = Cast<AActor>(obj))
+			if (IsValid(obj))
 			{
-				A->Destroy();
+				if (AActor* A = Cast<AActor>(obj))
+				{
+					A->Destroy();
+				}
 			}
 		}
+		pair.Value.Available.Empty();
+
 		for (UObject* obj : pair.Value.InUse)
 		{
-			if (AActor* A = Cast<AActor>(obj))
+			if (IsValid(obj))
 			{
-				A->Destroy();
+				if (AActor* A = Cast<AActor>(obj))
+				{
+					A->Destroy();
+				}
 			}
 		}
+		pair.Value.InUse.Empty();
 	}
 	mPools.Empty();
 
@@ -62,9 +71,7 @@ void UObjectPoolManagerComponent::Release(UObject* _obj)
 
 	if (AActor* A = Cast<AActor>(_obj))
 	{
-		A->SetActorTickEnabled(false);
-		A->SetActorHiddenInGame(true);
-		A->SetActorEnableCollision(false);
+		setActorActiveState(A, false);
 	}
 
 	pool->InUse.RemoveSingleSwap(_obj);
@@ -92,8 +99,7 @@ void UObjectPoolManagerComponent::prepopulatePool(UClass* _inClass, int32 _count
 			obj = world->SpawnActor<AActor>(_inClass, FTransform::Identity, params);
 			if (AActor* A = Cast<AActor>(obj))
 			{
-				A->SetActorHiddenInGame(true);
-				A->SetActorEnableCollision(false);
+				setActorActiveState(A, false);
 			}
 		}
 		else
@@ -106,3 +112,15 @@ void UObjectPoolManagerComponent::prepopulatePool(UClass* _inClass, int32 _count
 	}
 }
 
+void UObjectPoolManagerComponent::setActorActiveState(AActor* _actor, bool _active)
+{
+	if (!_actor)
+		return;
+	
+	_actor->SetActorTickEnabled(_active);
+	_actor->SetActorEnableCollision(_active);
+	_actor->SetActorHiddenInGame(!_active);
+	
+	_actor->SetReplicates(_active);
+	_actor->SetReplicateMovement(_active);
+}

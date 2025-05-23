@@ -27,16 +27,15 @@ ADefaultProjectile::ADefaultProjectile()
 
 void ADefaultProjectile::Initialize(UObjectPoolManagerComponent* _pool)
 {
-	ProjectileMovement->ProjectileGravityScale = 0.f;
-
 	cOwner = Cast<AWeaponPawn>(GetOwner());
 	mPool = _pool;
 
-	check(CollisionBox);
-	CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &ADefaultProjectile::OnOverlapBegin);
-	
+	check(ProjectileMovement);
+	ProjectileMovement->ProjectileGravityScale = 0.f;
 	ProjectileMovement->Velocity = GetActorForwardVector() * Speed;
-	mCurrentPierce = 0;
+
+	check(CollisionBox);
+	CollisionBox->OnComponentBeginOverlap.AddUniqueDynamic(this, &ADefaultProjectile::OnOverlapBegin);
 
 	GetWorld()->GetTimerManager().SetTimer(
 		mLifeSpanTimerHandle,
@@ -81,6 +80,7 @@ void ADefaultProjectile::OnOverlapBegin(UPrimitiveComponent* _overlappedComponen
 void ADefaultProjectile::returnToPool()
 {
 	GetWorld()->GetTimerManager().ClearTimer(mLifeSpanTimerHandle);
+	mCurrentPierce = 0;
 	mHitActors.Empty();
 	mPool->Release(this);
 }

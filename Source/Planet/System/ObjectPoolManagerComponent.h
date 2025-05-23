@@ -57,9 +57,7 @@ public:
 		if (AActor* A = Cast<AActor>(obj))
 		{
 			A->SetActorTransform(_spawnTransform);
-			A->SetActorTickEnabled(true);
-			A->SetActorHiddenInGame(false);
-			A->SetActorEnableCollision(true);
+			setActorActiveState(A, true);
 		}
 
 		pool->InUse.Add(obj);
@@ -74,6 +72,7 @@ public:
 
 private:
 	void prepopulatePool(UClass* _inClass, int32 _count);
+	static void setActorActiveState(AActor* _actor, bool _active);
     
 	TMap<UClass*, FPool> mPools;
 };

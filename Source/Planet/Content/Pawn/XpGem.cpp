@@ -32,7 +32,7 @@ AXpGem* AXpGem::Initialize(APawn* _targetPlayer, const float& _XP, UObjectPoolMa
 
 	if (Capsule)
 	{
-		Capsule->OnComponentBeginOverlap.AddDynamic(this, &AXpGem::OnOverlapBegin);
+		Capsule->OnComponentBeginOverlap.AddUniqueDynamic(this, &AXpGem::OnOverlapBegin);
 	}
 
 	return this;

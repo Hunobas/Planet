@@ -44,7 +44,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	float InputResetDelay = 0.2f;
 
-	FVector MouseHoverLocation		= FVector::ZeroVector;
+	FVector WorldMouseLocation		= FVector::ZeroVector;
 	FVector2D ScreenMousePosition	= FVector2D::ZeroVector;
 	
 private:

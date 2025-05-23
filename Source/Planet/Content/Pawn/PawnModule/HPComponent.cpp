@@ -17,13 +17,13 @@ UHPComponent* UHPComponent::Initialize()
 	{
 		mEnemy = enemy;
 		MaxHP = mEnemy->RuntimeSettings.HP;
-		mEnemy->OnTakeAnyDamage.AddDynamic(this, &UHPComponent::OnTakeAnyDamage);
+		mEnemy->OnTakeAnyDamage.AddUniqueDynamic(this, &UHPComponent::OnTakeAnyDamage);
 	}
 	else if (APlanetPawn* player = Cast<APlanetPawn>(GetOwner()))
 	{
 		mPlanet = player;
 		MaxHP = mPlanet->RuntimeSettings.HP;
-		mPlanet->OnTakeAnyDamage.AddDynamic(this, &UHPComponent::OnTakeAnyDamage);
+		mPlanet->OnTakeAnyDamage.AddUniqueDynamic(this, &UHPComponent::OnTakeAnyDamage);
 	}
 	
 	CurrentHP = MaxHP;

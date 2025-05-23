@@ -8,5 +8,5 @@ class IUpdateStrategy
 public:
 	virtual ~IUpdateStrategy() = default;
 	virtual void Update(float _deltaTime) = 0;
-	virtual void OnLookInput(const FVector2D& _lookValue) {}
+	virtual void OnLookInput(const FVector2D& _inputValue) {}
 };

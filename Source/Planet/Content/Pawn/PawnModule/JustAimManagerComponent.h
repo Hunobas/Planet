@@ -35,7 +35,4 @@ public:
 
 private:
 	APlanetPawn* cPlayerPawn;
-	
-	float mDistanceToSpawnCelestial;
-	FVector mCachedDestinationNorm;
 };

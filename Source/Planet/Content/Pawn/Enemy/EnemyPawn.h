@@ -16,6 +16,7 @@ class UEnemyDataAsset;
 class UFollowMover;
 class UFlyingMover;
 class UHPComponent;
+class UWidgetComponent;
 class UNiagaraSystem;
 
 UENUM(BlueprintType)
@@ -41,6 +42,7 @@ class PLANET_API AEnemyPawn : public APawn
 
 public:
 	AEnemyPawn();
+	void Initialize();
 
 protected:
 	virtual void BeginPlay() override;
@@ -55,6 +57,9 @@ public:
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _otherActor, UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult);
+
+	UFUNCTION()
+	void HandleDamageTaken(AActor* _damagedActor, float _damage, const class UDamageType* _damageType, class AController* _instigatedBy, AActor* _damageCauser);
 
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
 	UCapsuleComponent* BodyCollisionCapsule;
@@ -83,11 +88,12 @@ public:
 private:
 	void setUpdateStrategy();
 	void spawnXpGem() const;
-
-	APawn* cTargetPawn;
 	
-	TUniquePtr<IUpdateStrategy> mUpdateStrategy;
+	APawn* cTargetPawn;
 	UFlyingMover* mFlyingMover;
 	UFollowMover* mFollowMover;
 	UHPComponent* mHP;
+	UWidgetComponent* mHPWidget;
+	
+	TUniquePtr<IUpdateStrategy> mUpdateStrategy;
 };
