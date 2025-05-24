@@ -2,12 +2,23 @@
 #include "RewardSelector.h"
 
 #include "RewardManager.h"
+#include "PlanetPawn.h"
 #include "WeaponRewardData.h"
 #include "PassiveItemRewardData.h"
+#include "PlayerPowerUpRewardData.h"        // 없을 시 빌드에러.
+#include "WeaponPawn.h"
+#include "WeaponSlotComponent.h"
+#include "PassiveItemSlotComponent.h"
 
-void URewardSelector::Initialize(URewardManager* Manager)
+void URewardSelector::Initialize(URewardManager* Manager, APlanetPawn* _owner)
 {
     mManager = Manager;
+    cOwner = _owner;
+
+    check(mManager);
+    mWeaponAppearanceRate = mManager->WeaponAppearanceRate;
+    mPassiveItemAppearanceRate = mManager->PassiveItemAppearanceRate;
+    
     updateAvailablePools();
 }
 
@@ -18,13 +29,14 @@ TArray<TScriptInterface<IRewardData>> URewardSelector::SelectRewards(int32 Reque
     TArray<TScriptInterface<IRewardData>> SelectedRewards;
     while (SelectedRewards.Num() < RequestedCount && hasAvailableRewards())
     {
-        if (auto Reward = selectRandomRewardOrNull())
+        if (TScriptInterface<IRewardData> Reward = selectRandomRewardOrNull())
         {
             SelectedRewards.Add(Reward);
             removeFromAvailablePool(Reward);
         }
         else
         {
+            check(false);
             break;
         }
     }
@@ -37,26 +49,37 @@ void URewardSelector::updateAvailablePools()
     mAvailablePassiveItems.Empty();
     mAvailablePowerUps.Empty();
 
-    for (auto& Reward : mManager->AllWeaponRewards)
+    check(cOwner->WeaponSlot);
+    if (cOwner->WeaponSlot->RemainSlots > 0)
     {
-        UWeaponRewardData* WeaponReward = Cast<UWeaponRewardData>(Reward.GetObject());
-        if (WeaponReward && !WeaponReward->IsMaxLevel())
-            mAvailableWeapons.Add(WeaponReward);
+        for (auto* Weapon : mManager->CachedWeaponInstances)
+        {
+            const auto CurrentWeapon = cOwner->WeaponSlot->GetWeaponByTypeOrNull(Weapon->WeaponType);
+            Weapon->SetLevel(CurrentWeapon ? CurrentWeapon->CurrentLevel : 0);
+            
+            if (!Weapon->IsMaxLevel())
+            {
+                mAvailableWeapons.Add(Weapon);
+            }
+        }
     }
-    RemainWeaponSlots = mManager->GetRemainWeaponSlots();
 
-    for (auto& Reward : mManager->AllPassiveItemRewards)
+    check(cOwner->ItemSlot);
+    if (cOwner->ItemSlot->RemainSlots > 0)
     {
-        UPassiveItemRewardData* ItemReward = Cast<UPassiveItemRewardData>(Reward.GetObject());
-        if (ItemReward && !ItemReward->IsMaxLevel())
-            mAvailablePassiveItems.Add(ItemReward);
+        for (auto* Item : mManager->CachedPassiveItemInstances)
+        {
+            const auto CurrentItem = cOwner->ItemSlot->GetItemByTypeOrNull(Item->PassiveItemType);
+            Item->SetLevel(/*CurrentItem ? CurrentItem->CurrentLevel :*/ 0);
+            
+            if (!Item->IsMaxLevel())
+            {
+                mAvailablePassiveItems.Add(Item);
+            }
+        }
     }
-    RemainPassiveItemSlots = mManager->GetRemainPassiveItemSlots();
 
-    for (auto& Reward : mManager->AllPlayerPowerUpRewards)
-    {
-        mAvailablePowerUps.Add(Reward);
-    }
+    mAvailablePowerUps.Append(mManager->CachedPowerUpInstances);
 }
 
 bool URewardSelector::hasAvailableRewards() const
@@ -66,14 +89,14 @@ bool URewardSelector::hasAvailableRewards() const
 
 TScriptInterface<IRewardData> URewardSelector::selectRandomRewardOrNull()
 {
-    const bool bWeaponAvailable = RemainWeaponSlots > 0 && mAvailableWeapons.Num() > 0;
-    const bool bPassiveAvailable = RemainPassiveItemSlots > 0 && mAvailablePassiveItems.Num() > 0;
+    const bool bWeaponAvailable = mAvailableWeapons.Num() > 0;
+    const bool bPassiveAvailable = mAvailablePassiveItems.Num() > 0;
     const bool bPowerUpAvailable = mAvailablePowerUps.Num() > 0;
 
     float totalProb = 0.f;
-    if (bWeaponAvailable) totalProb += WeaponAppearanceRate;
-    if (bPassiveAvailable) totalProb += PassiveItemAppearanceRate;
-    if (bPowerUpAvailable) totalProb += (1.f - WeaponAppearanceRate - PassiveItemAppearanceRate);
+    if (bWeaponAvailable) totalProb += mWeaponAppearanceRate;
+    if (bPassiveAvailable) totalProb += mPassiveItemAppearanceRate;
+    if (bPowerUpAvailable) totalProb += (1.f - mWeaponAppearanceRate - mPassiveItemAppearanceRate);
 
     if (totalProb <= 0.f) return nullptr;
 
@@ -82,13 +105,13 @@ TScriptInterface<IRewardData> URewardSelector::selectRandomRewardOrNull()
     float Accum = 0.0f;
     if (bWeaponAvailable)
     {
-        Accum += WeaponAppearanceRate;
+        Accum += mWeaponAppearanceRate;
         if (RandomValue < Accum)
             return selectRandomWeapon();
     }
     if (bPassiveAvailable)
     {
-        Accum += PassiveItemAppearanceRate;
+        Accum += mPassiveItemAppearanceRate;
         if (RandomValue < Accum)
             return selectRandomPassiveItem();
     }
@@ -140,10 +163,7 @@ TScriptInterface<IRewardData> URewardSelector::selectRandomPowerUp()
 
 void URewardSelector::removeFromAvailablePool(const TScriptInterface<IRewardData>& Reward)
 {
-    if (!Reward->IsMaxLevel())
-        return;
-    
-    mAvailableWeapons.Remove(Reward);
-    mAvailablePassiveItems.Remove(Reward);
-    mAvailablePowerUps.Remove(Reward);
+    mAvailableWeapons.RemoveSingleSwap(Reward);
+    mAvailablePassiveItems.RemoveSingleSwap(Reward);
+    mAvailablePowerUps.RemoveSingleSwap(Reward);
 }

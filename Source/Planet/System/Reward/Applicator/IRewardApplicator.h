@@ -6,6 +6,7 @@
 #include "IRewardApplicator.generated.h"
 
 class IRewardData;
+class APlanetPawn;
 
 UINTERFACE(MinimalAPI, BlueprintType)
 class URewardApplicator : public UInterface
@@ -19,7 +20,7 @@ class PLANET_API IRewardApplicator
 
 public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Reward")
-	void Apply(const TScriptInterface<IRewardData>& RewardData);
-	
-	virtual void Apply_Implementation(const TScriptInterface<IRewardData>& RewardData) = 0;
+	void Apply(const TScriptInterface<IRewardData>& _rewardData, APlanetPawn* _targetPlayer);
+
+	virtual void Apply_Implementation(const TScriptInterface<IRewardData>& _rewardData, APlanetPawn* _targetPlayer) = 0;
 };

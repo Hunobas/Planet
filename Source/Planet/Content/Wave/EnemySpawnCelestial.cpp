@@ -5,7 +5,7 @@
 
 #include "PlanetPawn.h"
 
-AEnemySpawnCelestial::AEnemySpawnCelestial() : cPlayerPawn(nullptr), PlayerCamera(nullptr)
+AEnemySpawnCelestial::AEnemySpawnCelestial() : cPlayerPawn(nullptr)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -15,7 +15,6 @@ AEnemySpawnCelestial::AEnemySpawnCelestial() : cPlayerPawn(nullptr), PlayerCamer
 AEnemySpawnCelestial* AEnemySpawnCelestial::Initialize(APawn* _targetPawn)
 {
 	cPlayerPawn = _targetPawn;
-	PlayerCamera = Cast<APlanetPawn>(_targetPawn)->Camera;
 	mIsPointsOccupied.Init(false, RangedSpawnPoints.Num());
 
 	FAttachmentTransformRules attachmentRules(

@@ -13,5 +13,5 @@ enum class EPlayerPowerUpType : uint8
 	CriticalDamage	UMETA(DisplayName="치명타 데미지"),
 	Haste			UMETA(DisplayName="공격 속도"),
 	XpGain			UMETA(DisplayName="XP 획득량"),
-	XpSpeedScale	UMETA(DisplayName="XP 이동속도"),
+	XpSpeed			UMETA(DisplayName="XP 이동속도"),
 };

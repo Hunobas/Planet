@@ -22,6 +22,7 @@ bool UWeaponSlotComponent::EquipWeapon(const EWeaponType& _weaponType)
 {
 	check(WeaponTypeToClassMap[_weaponType]);
 	check(cOwner);
+	check(RemainSlots > 0);
 	
 	for (int32 i = 0; i < mEquippedWeapons.Num(); i++)
 	{

@@ -11,9 +11,6 @@
 #include "ObjectPoolManagerComponent.h"
 
 UWaveManagerComponent::UWaveManagerComponent(): Config_EnemySpawnInterval(5.0f), Config_DifficultyInterval(5.0f),
-                                                Config_StartMaxScore(0),
-                                                Config_EndMaxScore(0),
-                                                Config_InflectionPoint(PLAYTIME / 2), Config_Inclination(0),
                                                 mEnemySpawn(nullptr),
                                                 mPool(nullptr),
                                                 mFireManager(nullptr), cTargetPlayer(nullptr),
@@ -172,14 +169,8 @@ void UWaveManagerComponent::updateMaxFieldScoreByGameTime()
 {
 	const float elapsedTime = UGameplayStatics::GetTimeSeconds(this);
 
-	if (Config_MaxFieldScoreCurve.GetRichCurveConst())
-	{
-		CurrentMaxFieldScore = Config_MaxFieldScoreCurve.GetRichCurveConst()->Eval(elapsedTime);
-	}
-	else
-	{
-		CurrentMaxFieldScore = CalculateDefaultSigmoid(Config_StartMaxScore, Config_EndMaxScore, Config_Inclination, Config_InflectionPoint, elapsedTime);
-	}
+	check(Config_MaxFieldScoreCurve.GetRichCurveConst());
+	CurrentMaxFieldScore = Config_MaxFieldScoreCurve.GetRichCurveConst()->Eval(elapsedTime);
 }
 
 void UWaveManagerComponent::updateSpawnableEnemyListByGameTime()
@@ -214,10 +205,6 @@ bool UWaveManagerComponent::loadWaveConfigForCurrentLevel()
 	Config_SpawnInfos			= waveConfig->SpawnInfos;
 	Config_EnemySpawnInterval	= waveConfig->EnemySpawnInterval;
 	Config_DifficultyInterval	= waveConfig->DifficultyInterval;
-	Config_StartMaxScore		= waveConfig->StartMaxScore;
-	Config_EndMaxScore			= waveConfig->EndMaxScore;
-	Config_InflectionPoint		= waveConfig->InflectionPoint;
-	Config_Inclination			= waveConfig->Inclination;
 	Config_MaxFieldScoreCurve	= waveConfig->MaxFieldScoreCurve;
 	Config_ScaleSettings		= waveConfig->ScaleSettings;
 

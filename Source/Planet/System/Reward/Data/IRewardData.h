@@ -17,6 +17,12 @@ class PLANET_API IRewardData
 
 public:
 	UFUNCTION(BlueprintCallable, Category="Reward")
+	virtual FName GetRewardIdentifier() const = 0;
+    
+	UFUNCTION(BlueprintCallable, Category="Reward")
+	virtual UTexture2D* GetRewardIcon() const = 0;
+	
+	UFUNCTION(BlueprintCallable, Category="Reward")
 	virtual int32 GetCurrentLevel() const = 0;
 
 	UFUNCTION(BlueprintCallable, Category="Reward")

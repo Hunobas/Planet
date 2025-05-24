@@ -35,14 +35,6 @@ public:
 	float EnemySpawnInterval = 5.f;
 	UPROPERTY(EditAnywhere, Category = "Wave Config")
 	float DifficultyInterval = 60.f;
-	UPROPERTY(EditAnywhere, Category = "Wave Config")
-	float StartMaxScore = 4.f;
-	UPROPERTY(EditAnywhere, Category = "Wave Config")
-	float EndMaxScore = 600.f;
-	UPROPERTY(EditAnywhere, Category = "Wave Config")
-	float InflectionPoint = PLAYTIME / 2;
-	UPROPERTY(EditAnywhere, Category = "Wave Config")
-	float Inclination = 0.008f;
 
 	UPROPERTY(EditAnywhere, Category = "Wave Config")
 	FRuntimeFloatCurve MaxFieldScoreCurve;

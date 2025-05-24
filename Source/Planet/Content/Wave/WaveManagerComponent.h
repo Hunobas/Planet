@@ -52,10 +52,6 @@ public:
 	TArray<FSpawnInfo>	Config_SpawnInfos;
 	float				Config_EnemySpawnInterval;
 	float				Config_DifficultyInterval;
-	float				Config_StartMaxScore;
-	float				Config_EndMaxScore;
-	float				Config_InflectionPoint;
-	float				Config_Inclination;
 	FRuntimeFloatCurve	Config_MaxFieldScoreCurve;
 	FEnemyScaleSetting	Config_ScaleSettings;
 

@@ -21,26 +21,58 @@ namespace GameplayUtils
 		return (_pawnDamage + _weaponDamage) * _activeBuffScale;
 	}
 
-	inline float CalculateCriticalDamage(const float& _pawnDamage, const float& _weaponDamage = 0.0f, const float& _critial = 5.0f, const float& _critialDamage = 150.0f, const float& _activeBuffScale = 1.0f)
+	inline float CalculateCriticalDamage(const float& _pawnDamage, const float& _weaponDamage = 0.0f, const float& _playerCritial = 5.0f, const float& _playerCritialDamage = 150.0f, const float& _activeBuffScale = 1.0f)
 	{
 		float damage = CalculateDamage(_pawnDamage, _weaponDamage, _activeBuffScale);
 		
-		if (FMath::RandRange(0.0f, 100.0f) < _critial)
+		if (FMath::RandRange(0.0f, 100.0f) < _playerCritial)
 		{
-			return damage * _critialDamage * 0.01f;
+			return damage * _playerCritialDamage * 0.01f;
 		}
 		return damage;
 	}
 
-	inline float CalculateFireRate(const float& _baseFireRate, const float& _haste = 100.0f)
+	inline float CalculateFireRate(const float& _baseFireRate, const float& _playerHaste = 100.0f)
 	{
-		return _baseFireRate * FMath::Clamp(100.0f / _haste, 0.1f, 10.0f);
+		return _baseFireRate * FMath::Clamp(100.0f / _playerHaste, 0.1f, 10.0f);
 	}
 
-	inline float CalculateDefaultSigmoid(const float& roughStart, const float& roughEnd, const float& _inclination, const float& _inflectionPoint, const float& x)
+	inline float CalculateXPGain(const float& _baseXP, const float& _playerXPGain)
 	{
-		return roughStart + (roughEnd - roughStart)
-			/ (1 + FMath::Exp(_inclination * (_inflectionPoint - x)));
+		return _baseXP * _playerXPGain * 0.01f;
+	}
+
+	inline float CalculateXPToNextLevel(const int32& _currentLevel)
+	{
+		float XPToNextLevel;
+		
+		if (_currentLevel == 1)
+		{
+			XPToNextLevel = 5;
+		}
+		else if (_currentLevel <= 20)
+		{
+			XPToNextLevel = 5 + (_currentLevel - 1) * 10;
+		}
+		else if (_currentLevel <= 40)
+		{
+			XPToNextLevel = 195 + (_currentLevel - 20) * 13;
+		}
+		else
+		{
+			XPToNextLevel = 455 + (_currentLevel - 40) * 16;
+		}
+
+		if (_currentLevel == 20)
+		{
+			XPToNextLevel += 600;
+		}
+		else if (_currentLevel == 40)
+		{
+			XPToNextLevel += 2400;
+		}
+		
+		return XPToNextLevel;
 	}
 	
 #pragma endregion

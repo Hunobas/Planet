@@ -11,5 +11,5 @@ class PLANET_API UWeaponRewardApplicator : public UObject, public IRewardApplica
 	GENERATED_BODY()
 
 public:
-	virtual void Apply_Implementation(const TScriptInterface<IRewardData>& RewardData) override;
+	virtual void Apply_Implementation(const TScriptInterface<IRewardData>& _rewardData, APlanetPawn* _targetPlayer) override;
 };

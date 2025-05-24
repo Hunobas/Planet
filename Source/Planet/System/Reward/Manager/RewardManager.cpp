@@ -1,19 +1,21 @@
 // RewardManager.cpp
 #include "RewardManager.h"
 
+#include "../Planet.h"
 #include "PlanetPawn.h"
 #include "RewardSelector.h"
+#include "WeaponRewardData.h"
+#include "PassiveItemRewardData.h"
+#include "PlayerPowerUpRewardData.h"
 #include "WeaponRewardApplicator.h"
 #include "PassiveItemRewardApplicator.h"
-#include "PassiveItemSlotComponent.h"
 #include "PlayerPowerUpRewardApplicator.h"
-#include "WeaponSlotComponent.h"
 
 URewardManager::URewardManager() : cOwner(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	
-	RewardSelector = CreateDefaultSubobject<URewardSelector>(TEXT("Reward Selector"));
+	mRewardSelector = CreateDefaultSubobject<URewardSelector>(TEXT("Reward Selector"));
 }
 
 void URewardManager::BeginPlay()
@@ -21,61 +23,79 @@ void URewardManager::BeginPlay()
 	Super::BeginPlay();
 
 	cOwner = Cast<APlanetPawn>(GetOwner());
-	RewardSelector->Initialize(this);
+	check(cOwner);
+
+	initializeApplicators();
+	createAllRewardInstances();
+	mRewardSelector->Initialize(this, cOwner);
 }
 
-TArray<TScriptInterface<IRewardData>> URewardManager::GetAvailableRewards(int32 RewardCount)
+TArray<TScriptInterface<IRewardData>> URewardManager::GetAvailableRewards(const int32& RewardCount)
 {
-	return RewardSelector->SelectRewards(RewardCount);
+	return mRewardSelector->SelectRewards(RewardCount);
 }
 
 void URewardManager::ApplyReward(const TScriptInterface<IRewardData>& Reward)
 {
 	if (const IRewardData* RewardData = Reward.GetInterface())
 	{
-		FString ApplicatorKey = RewardData->GetApplicatorType();
-		if (mApplicators.Contains(ApplicatorKey))
+		FString FullIdentifier = RewardData->GetRewardIdentifier().ToString();
+        
+		int32 SplitIndex;
+		if (FullIdentifier.FindChar(TEXT('_'), SplitIndex))
 		{
-			mApplicators[ApplicatorKey]->Apply(Reward);
+			FString ApplicatorKey = FullIdentifier.Left(SplitIndex);
+			
+            checkf(mApplicators.Contains(ApplicatorKey), TEXT("Invalid applicator key: %s"), *FullIdentifier);
+			mApplicators[ApplicatorKey]->Apply(Reward, cOwner);
+			
 			OnRewardApplied.Broadcast(Reward);
+		}
+		else
+		{
+			checkf(false, TEXT("Invalid reward identifier format: %s"), *FullIdentifier);
 		}
 	}
 }
 
-int32 URewardManager::GetRemainWeaponSlots() const
+void URewardManager::initializeApplicators()
 {
-	return cOwner->WeaponSlot->RemainSlots;
+	UWeaponRewardApplicator* WeaponApplicator = NewObject<UWeaponRewardApplicator>(this, TEXT("Weapon Applicator"));
+	UPassiveItemRewardApplicator* PassiveItemApplicator = NewObject<UPassiveItemRewardApplicator>(this, TEXT("Passive Item Applicator"));
+	UPlayerPowerUpRewardApplicator* PowerUpApplicator = NewObject<UPlayerPowerUpRewardApplicator>(this, TEXT("Power Up Applicator"));
+
+	mApplicators.Add(WEAPON_REWARD_TAG, WeaponApplicator);
+	mApplicators.Add(PASSIVEITEM_REWARD_TAG, PassiveItemApplicator);
+	mApplicators.Add(POWERUP_REWARD_TAG, PowerUpApplicator);
+
+	WeaponApplicator->Rename(nullptr, this);
+	PassiveItemApplicator->Rename(nullptr, this);
+	PowerUpApplicator->Rename(nullptr, this);
 }
 
-int32 URewardManager::GetRemainPassiveItemSlots() const
+void URewardManager::createAllRewardInstances()
 {
-	return cOwner->ItemSlot->RemainSlots;
-}
+	for (const auto& WeaponClass : AllWeaponRewards)
+	{
+		if (auto* Weapon = NewObject<UWeaponRewardData>(this, WeaponClass))
+		{
+			CachedWeaponInstances.Add(Weapon);
+		}
+	}
 
-FText URewardManager::getLocalizedText(const FString& TextKey, const FString& Category) const
-{
-	// static const FString ContextString(TEXT("RewardText"));
-	// if (RewardTextDataTable)
-	// {
-	// 	FName RowName = FName(*FString::Printf(TEXT("%s_%s"), *Category, *TextKey));
-	// 	return RewardTextDataTable->FindRow<FRewardTextData>(RowName, ContextString)->DisplayName;
-	// }
-	return FText::GetEmpty();
-}
+	for (const auto& ItemClass : AllPassiveItemRewards)
+	{
+		if (auto* Item = NewObject<UPassiveItemRewardData>(this, ItemClass))
+		{
+			CachedPassiveItemInstances.Add(Item);
+		}
+	}
 
-void URewardManager::loadWeaponConfigs()
-{
-	// static const FString Context(TEXT("Weapon Config"));
-	// if (WeaponConfigDataTable)
-	// {
-	// 	TArray<FWeaponConfigData*> Rows;
-	// 	WeaponConfigDataTable->GetAllRows<FWeaponConfigData>(Context, Rows);
- //        
-	// 	for (auto& Row : Rows)
-	// 	{
-	// 		UWeaponRewardData* NewData = NewObject<UWeaponRewardData>(this);
-	// 		NewData->InitializeFromConfig(Row);
-	// 		AllRewards.Add(NewData->GetIdentifier(), NewData);
-	// 	}
-	// }
+	for (const auto& PowerUpClass : AllPlayerPowerUpRewards)
+	{
+		if (auto* PowerUp = NewObject<UPlayerPowerUpRewardData>(this, PowerUpClass))
+		{
+			CachedPowerUpInstances.Add(PowerUp);
+		}
+	}
 }

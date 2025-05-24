@@ -7,6 +7,7 @@
 #include "InputActionValue.h"
 
 #include "../Planet.h"
+#include "PlanetPawn.h"
 
 void APlanetController::BeginPlay()
 {
@@ -26,7 +27,7 @@ void APlanetController::OnPossess(APawn* _pawn)
 
 	SetViewTarget(_pawn);
 
-	bindInputMappings(_pawn);
+	bindInputMappings();
 }
 
 void APlanetController::Tick(float _deltaTime)
@@ -67,7 +68,7 @@ FVector2D APlanetController::GetEMAInput()
 	return ema;
 }
 
-void APlanetController::bindInputMappings(const APawn* _pawn)
+void APlanetController::bindInputMappings()
 {
 	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
 	{

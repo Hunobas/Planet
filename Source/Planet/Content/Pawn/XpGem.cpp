@@ -8,6 +8,7 @@
 
 #include "PlanetPawn.h"
 #include "FollowMover.h"
+#include "LevelManager.h"
 
 AXpGem::AXpGem()
 {
@@ -36,7 +37,7 @@ AXpGem* AXpGem::Initialize(APawn* _targetPlayer, const float& _XP, UObjectPoolMa
 	}
 	if (mFollowMover && cTargetPlayer)
 	{
-		mFollowMover->MoveSpeedScale = cTargetPlayer->RuntimeSettings.XpSpeedScale;
+		mFollowMover->MoveSpeedScale = cTargetPlayer->RuntimeSettings.XpSpeed;
 	}
 
 	return this;
@@ -60,8 +61,8 @@ void AXpGem::OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _
 
 	if (Cast<APlanetPawn>(_otherActor) != cTargetPlayer)
 		return;
-	
-	// cTargetPlayer->GainExperience(XP);
+
+	cTargetPlayer->LevelManager->GainXP(XP);
 	SpawnSystemFacingForward(GainTemplate, this);
 	mPool->Release(this);
 }

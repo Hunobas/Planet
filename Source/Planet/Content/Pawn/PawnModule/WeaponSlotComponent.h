@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "WeaponType.h"
 #include "Components/ActorComponent.h"
 #include "../Planet.h"
 #include "WeaponSlotComponent.generated.h"
@@ -28,11 +29,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Slot")
 	TMap<EWeaponType, TSubclassOf<AWeaponPawn>> WeaponTypeToClassMap;
 	UPROPERTY(EditAnywhere, Category = "Weapon Slot", meta=(ClampMin=1, ClampMax=12))
-	int32 MaxSlots = WEAPON_MAX_SLOT;
+	int32 MaxSlots					= WEAPON_MAX_SLOT;
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Slot")
+	int32 RemainSlots				= WEAPON_MAX_SLOT;
 	UPROPERTY(EditAnywhere, Category = "Weapon Slot")
 	EWeaponType DefaultWeaponType;
-
-	int32 RemainSlots = WEAPON_MAX_SLOT;
 
 private:
 	APlanetPawn* cOwner;

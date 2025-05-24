@@ -2,10 +2,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../Planet.h"
 #include "RewardSelector.generated.h"
 
 class URewardManager;
+class APlanetPawn;
 class IRewardData;
 
 UCLASS()
@@ -14,15 +14,9 @@ class PLANET_API URewardSelector : public UObject
 	GENERATED_BODY()
 
 public:
-	void Initialize(URewardManager* Manager);
+	void Initialize(URewardManager* Manager, APlanetPawn* _owner);
 
 	TArray<TScriptInterface<IRewardData>> SelectRewards(int32 RequestedCount);
-
-	UPROPERTY(EditDefaultsOnly, Category = "Reward")
-	float WeaponAppearanceRate = 0.6f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Reward")
-	float PassiveItemAppearanceRate = 0.35f;
 
 private:
 	void updateAvailablePools();
@@ -33,12 +27,13 @@ private:
 	TScriptInterface<IRewardData> selectRandomPowerUp();
 	void removeFromAvailablePool(const TScriptInterface<IRewardData>& Reward);
 
+	APlanetPawn* cOwner = nullptr;
 	URewardManager* mManager = nullptr;
-
+	
 	TArray<TScriptInterface<IRewardData>> mAvailableWeapons;
 	TArray<TScriptInterface<IRewardData>> mAvailablePassiveItems;
 	TArray<TScriptInterface<IRewardData>> mAvailablePowerUps;
-
-	int32 RemainWeaponSlots = WEAPON_MAX_SLOT;
-	int32 RemainPassiveItemSlots = ITEM_MAX_SLOT;
+	
+	float mWeaponAppearanceRate;
+	float mPassiveItemAppearanceRate;
 };

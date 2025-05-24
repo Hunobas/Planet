@@ -2,16 +2,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
-#include "IRewardData.h"
+#include "../Planet.h"
 #include "RewardManager.generated.h"
 
+class IRewardData;
+class UWeaponRewardData;
+class UPassiveItemRewardData;
+class UPlayerPowerUpRewardData;
 class URewardSelector;
 class IRewardApplicator;
 class UDataTable;
 class APlanetPawn;
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRewardApplied, const TScriptInterface<IRewardData>&, AppliedReward);
+class URewardSelectionWidget;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PLANET_API URewardManager : public UActorComponent
@@ -26,41 +28,37 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Reward")
-	TArray<TScriptInterface<IRewardData>> GetAvailableRewards(int32 RewardCount = 3);
+	TArray<TScriptInterface<IRewardData>> GetAvailableRewards(const int32& RewardCount);
 
 	UFUNCTION(BlueprintCallable, Category = "Reward")
 	void ApplyReward(const TScriptInterface<IRewardData>& Reward);
 
-	int32 GetRemainWeaponSlots() const;
-	int32 GetRemainPassiveItemSlots() const;
-
-	UPROPERTY(BlueprintAssignable, Category = "Events")
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRewardApplied, const TScriptInterface<IRewardData>&, AppliedReward);
 	FOnRewardApplied OnRewardApplied;
 	
-	UPROPERTY(EditAnywhere, Category = "Data Tables")
-	UDataTable* RewardTextDataTable;
-	UPROPERTY(EditAnywhere, Category = "Data Tables")
-	UDataTable* WeaponConfigDataTable;
-	UPROPERTY(EditAnywhere, Category = "Data Tables")
-	UDataTable* PassiveItemConfigDataTable;
+	UPROPERTY(EditAnywhere, Category = "Reward")
+	TArray<TSubclassOf<UWeaponRewardData>> AllWeaponRewards;
+	UPROPERTY(EditAnywhere, Category = "Reward")
+	TArray<TSubclassOf<UPassiveItemRewardData>> AllPassiveItemRewards;
+	UPROPERTY(EditAnywhere, Category = "Reward")
+	TArray<TSubclassOf<UPlayerPowerUpRewardData>> AllPlayerPowerUpRewards;
+	
+	UPROPERTY(EditAnywhere, Category = "Reward")
+	float WeaponAppearanceRate		= WEAPON_APPEAR_RATE;
+	UPROPERTY(EditAnywhere, Category = "Reward")
+	float PassiveItemAppearanceRate	= ITEM_APPEAR_RATE;
 
-	UPROPERTY(EditAnywhere, Category = "Reward")
-	URewardSelector* RewardSelector;
-	UPROPERTY(EditAnywhere, Category = "Reward")
-	TArray<TScriptInterface<IRewardData>> AllWeaponRewards;
-	UPROPERTY(EditAnywhere, Category = "Reward")
-	TArray<TScriptInterface<IRewardData>> AllPassiveItemRewards;
-	UPROPERTY(EditAnywhere, Category = "Reward")
-	TArray<TScriptInterface<IRewardData>> AllPlayerPowerUpRewards;
-
+	TArray<UWeaponRewardData*> CachedWeaponInstances;
+	TArray<UPassiveItemRewardData*> CachedPassiveItemInstances;
+	TArray<UPlayerPowerUpRewardData*> CachedPowerUpInstances;
+	
 private:
 	void initializeApplicators();
-	FText getLocalizedText(const FString& TextKey, const FString& Category) const;
-	void loadWeaponConfigs();
-	void loadPassiveItemConfigs();
-	void loadPowerUpConfigs();
+	void createAllRewardInstances();
 
 	APlanetPawn* cOwner;
-	
+	URewardSelector* mRewardSelector;
 	TMap<FString, TScriptInterface<IRewardApplicator>> mApplicators;
+	
+	FString mCurrentLanguage;
 };

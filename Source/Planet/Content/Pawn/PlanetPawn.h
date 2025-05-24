@@ -15,10 +15,13 @@ class UPlayCamera;
 class UOrbitMover;
 class UHPComponent;
 class UJustAimManagerComponent;
+class URewardManager;
+class ULevelManager;
 class UWeaponSlotComponent;
 class UPassiveItemSlotComponent;
-class APlanetController;
 class UPlayerDataAsset;
+class APlanetController;
+class APlanetHUD;
 
 UCLASS()
 class PLANET_API APlanetPawn : public APawn
@@ -48,6 +51,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
 	UJustAimManagerComponent* JustAimManager;
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
+	ULevelManager* LevelManager;
+	UPROPERTY(EditAnywhere, Category = "Actor Components")
+	URewardManager* RewardManager;
+	UPROPERTY(EditAnywhere, Category = "Actor Components")
 	UWeaponSlotComponent* WeaponSlot;
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
 	UPassiveItemSlotComponent* ItemSlot;
@@ -59,6 +66,8 @@ public:
 	UPlayerDataAsset* BaseSettings;
 	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
 	FPlayerSetting RuntimeSettings;
+
+	APlanetHUD* PlanetHUD;
 	
 private:
 	void composeComponent();

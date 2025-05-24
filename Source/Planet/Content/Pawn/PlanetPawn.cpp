@@ -7,16 +7,19 @@
 #include "Camera/CameraComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
+#include "PlanetController.h"
+#include "PlanetHUD.h"
 #include "PlayCamera.h"
 #include "OrbitMover.h"
-#include "HPComponent.h"
 #include "JustAimManagerComponent.h"
+#include "RewardManager.h"
+#include "LevelManager.h"
 #include "WeaponSlotComponent.h"
 #include "PassiveItemSlotComponent.h"
-#include "PlanetController.h"
+#include "HPComponent.h"
 #include "PlayerDataAsset.h"
 
-APlanetPawn::APlanetPawn() : cPlanetController(nullptr), mHP(nullptr)
+APlanetPawn::APlanetPawn() : cPlanetController(nullptr)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	
@@ -31,6 +34,9 @@ void APlanetPawn::BeginPlay()
 
 	cPlanetController = Cast<APlanetController>(GetController());
 	check(cPlanetController);
+
+	PlanetHUD = Cast<APlanetHUD>(cPlanetController->GetHUD());
+	check(PlanetHUD);
 
 	cPlanetController->OnLookValue.AddLambda([this](const FVector2D& _inputValue)
 	{
@@ -52,12 +58,14 @@ void APlanetPawn::composeComponent()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
 
-	PlayCamera = CreateDefaultSubobject<UPlayCamera>(TEXT("Play Camera"));
-	OrbitMover = CreateDefaultSubobject<UOrbitMover>(TEXT("Orbit Mover"));
-	JustAimManager = CreateDefaultSubobject<UJustAimManagerComponent>(TEXT("Just Aim Manager"));
-	WeaponSlot = CreateDefaultSubobject<UWeaponSlotComponent>(TEXT("Weapon Slot"));
-	ItemSlot = CreateDefaultSubobject<UPassiveItemSlotComponent>(TEXT("Item Slot"));
-	mHP = CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
+	PlayCamera		= CreateDefaultSubobject<UPlayCamera>(TEXT("Play Camera"));
+	OrbitMover		= CreateDefaultSubobject<UOrbitMover>(TEXT("Orbit Mover"));
+	JustAimManager	= CreateDefaultSubobject<UJustAimManagerComponent>(TEXT("Just Aim Manager"));
+	LevelManager	= CreateDefaultSubobject<ULevelManager>(TEXT("Level Manager"));
+	RewardManager	= CreateDefaultSubobject<URewardManager>(TEXT("Reward Manager"));
+	WeaponSlot		= CreateDefaultSubobject<UWeaponSlotComponent>(TEXT("Weapon Slot"));
+	ItemSlot		= CreateDefaultSubobject<UPassiveItemSlotComponent>(TEXT("Item Slot"));
+	mHP				= CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
 }
 
 void APlanetPawn::updatePlanetRotation(const FVector& _worldMousePosition) const
@@ -91,7 +99,7 @@ void APlanetPawn::resetToDefaultSettings()
 	RuntimeSettings.CriticalDamage	= BaseSettings->CriticalBase;
 	RuntimeSettings.Haste			= BaseSettings->HasteBase;
 	RuntimeSettings.XpGain			= BaseSettings->XPGainBase;
-	RuntimeSettings.XpSpeedScale	= BaseSettings->XPSpeedScaleBase;
+	RuntimeSettings.XpSpeed	= BaseSettings->XPSpeedScaleBase;
 
 	if (mHP)
 	{

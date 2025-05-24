@@ -26,8 +26,7 @@ public class Planet : ModuleRules
             Path.Combine(ModuleDirectory, "System/Reward/Manager"),
             Path.Combine(ModuleDirectory, "System/Reward/Applicator"),
             Path.Combine(ModuleDirectory, "System/Reward/Type"),
-            Path.Combine(ModuleDirectory, "Data/DataTable"),
-            Path.Combine(ModuleDirectory, "Data/Assets"),
+            Path.Combine(ModuleDirectory, "Data"),
             Path.Combine(ModuleDirectory, "UI")
         });
         

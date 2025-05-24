@@ -11,7 +11,7 @@ struct PLANET_API FEnemyScaleSetting
 
 	FEnemyScaleSetting()
 		: HPScale(1.0f)
-		, DamageScale(1)
+		, DamageScale(1.0f)
 		, SpeedScale(1.0f)
 		, XPDropScale(1.0f)
 	{}

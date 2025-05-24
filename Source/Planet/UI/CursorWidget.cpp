@@ -1,8 +1,6 @@
 // CursorWidget.cpp
 #include "CursorWidget.h"
 
-#include "Blueprint/WidgetLayoutLibrary.h"
-
 #include "PlanetController.h"
 
 void UCursorWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)

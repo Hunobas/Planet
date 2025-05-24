@@ -23,16 +23,17 @@ protected:
 
 public:
 	bool EquipItem(const EPassiveItemType& _itemType);
+	UObject* GetItemByTypeOrNull(const EPassiveItemType& _itemType);
 
 	UPROPERTY(EditAnywhere, Category = "Item Slot")
-	TMap<EPassiveItemType, TSubclassOf<UPassiveItemRewardApplicator>> ItemTypeToClassMap;
+	TMap<EPassiveItemType, TSubclassOf<UObject>> ItemTypeToClassMap;
 	UPROPERTY(EditAnywhere, Category = "Item Slot", meta=(ClampMin=1, ClampMax=12))
 	int32 MaxSlots = ITEM_MAX_SLOT;
-
+	UPROPERTY(VisibleAnywhere, Category = "Item Slot")
 	int32 RemainSlots = ITEM_MAX_SLOT;
 
 private:
 	APlanetPawn* cOwner;
-	TArray<UPassiveItemRewardApplicator*> mEquippedItems;
+	TArray<UObject*> mEquippedItems;
 
 };

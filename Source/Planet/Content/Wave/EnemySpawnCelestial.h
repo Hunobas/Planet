@@ -45,8 +45,6 @@ public:
 	float RadiusInterval	= 100.0f;
 	UPROPERTY(VisibleAnywhere, Category = "Enemy Spawn")
 	float YawInterval		= 360.0f / PointsPerCircle;
-
-	UCameraComponent* PlayerCamera;
 	
 private:
 	APawn* cPlayerPawn;

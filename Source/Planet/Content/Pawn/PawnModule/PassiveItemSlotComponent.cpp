@@ -1,9 +1,7 @@
 // PassiveItemSlotComponent.h
 #include "PassiveItemSlotComponent.h"
 
-#include "PassiveItemRewardApplicator.h"
 #include "PlanetPawn.h"
-#include "PassiveItemType.h"
 
 UPassiveItemSlotComponent::UPassiveItemSlotComponent(): cOwner(nullptr)
 {
@@ -21,6 +19,7 @@ bool UPassiveItemSlotComponent::EquipItem(const EPassiveItemType& _itemType)
 {
 	check(ItemTypeToClassMap[_itemType]);
 	check(cOwner);
+	check(RemainSlots > 0);
 	
 	for (int32 i = 0; i < mEquippedItems.Num(); i++)
 	{
@@ -29,7 +28,7 @@ bool UPassiveItemSlotComponent::EquipItem(const EPassiveItemType& _itemType)
 			FActorSpawnParameters params;
 			params.Owner = cOwner;
             
-			if (UPassiveItemRewardApplicator* newItem = CreateDefaultSubobject<UPassiveItemRewardApplicator>(TEXT("Item")))
+			if (UObject* newItem = NewObject<UObject>())
 			{
 				mEquippedItems[i] = newItem;
 				RemainSlots--;
@@ -39,4 +38,17 @@ bool UPassiveItemSlotComponent::EquipItem(const EPassiveItemType& _itemType)
 	}
 	
 	return false;
+}
+
+UObject* UPassiveItemSlotComponent::GetItemByTypeOrNull(const EPassiveItemType& _itemType)
+{
+	for (UObject* item : mEquippedItems)
+	{
+		// TODO: 아이템 클래스 구현
+		// if (item->ItemType == _itemType)
+		// {
+		// 	return item;
+		// }
+	}
+	return nullptr;
 }

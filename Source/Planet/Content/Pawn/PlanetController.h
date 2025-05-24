@@ -10,6 +10,7 @@ class UInputAction;
 struct FInputActionValue;
 class UEnhancedInputLocalPlayerSubsystem;
 class APlanetPawn;
+class URewardSelectionWidget;
 
 UCLASS()
 class PLANET_API APlanetController : public APlayerController
@@ -48,7 +49,7 @@ public:
 	FVector2D ScreenMousePosition	= FVector2D::ZeroVector;
 	
 private:
-	void bindInputMappings(const APawn* _pawn);
+	void bindInputMappings();
 	void onLookTriggered(const FInputActionValue& Value);
 	void setLastLookInput(const FInputActionValue& _value);
 	void resetLastLookInput(const FInputActionValue& _value);
