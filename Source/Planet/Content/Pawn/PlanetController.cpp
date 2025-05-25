@@ -5,9 +5,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Blueprint/UserWidget.h"
 
 #include "../Planet.h"
-#include "PlanetPawn.h"
 
 void APlanetController::BeginPlay()
 {
@@ -17,8 +17,26 @@ void APlanetController::BeginPlay()
 	check(mEISubsystem);
 	mEISubsystem->AddMappingContext(PlayerIMC, DEFAULT_ORDER);
 
-	bShowMouseCursor = false;
-	SetInputMode(FInputModeGameOnly());
+	OnLookValue.AddLambda([this](const FVector2D& _inputValue)
+	{
+		FVector worldLocation, worldDirection;
+		if (DeprojectMousePositionToWorld(worldLocation, worldDirection))
+		{
+			WorldMouseLocation = FMath::LinePlaneIntersection(
+				worldLocation, 
+				worldLocation + worldDirection * 10000.0f, 
+				FVector::ZeroVector, 
+				FVector::UpVector
+			);
+		}
+	});
+}
+
+void APlanetController::EndPlay(const EEndPlayReason::Type _endPlayReason)
+{
+	Super::EndPlay(_endPlayReason);
+
+	OnLookValue.Clear();
 }
 
 void APlanetController::OnPossess(APawn* _pawn)
@@ -26,29 +44,23 @@ void APlanetController::OnPossess(APawn* _pawn)
 	Super::OnPossess(_pawn);
 
 	SetViewTarget(_pawn);
-
 	bindInputMappings();
+	SetInGameInputMode();
 }
 
-void APlanetController::Tick(float _deltaTime)
+void APlanetController::Tick(float DeltaTime)
 {
-	Super::Tick(_deltaTime);
+	Super::Tick(DeltaTime);
 
-	FVector WorldLocation, WorldDirection;
-	if (DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
+	FVector2D currentMousePosition;
+	if (GetMousePosition(currentMousePosition.X, currentMousePosition.Y))
 	{
-		WorldMouseLocation = FMath::LinePlaneIntersection(
-			WorldLocation, 
-			WorldLocation + WorldDirection * 10000.0f, 
-			FVector::ZeroVector, 
-			FVector::UpVector
-		);
-
-		ProjectWorldLocationToScreen(
-			WorldMouseLocation, 
-			ScreenMousePosition, 
-			true
-		);
+		if (currentMousePosition != mPreviousMousePosition)
+		{
+			FVector2D mouseDelta = currentMousePosition - mPreviousMousePosition;
+			onLookTriggered(mouseDelta);
+			mPreviousMousePosition = currentMousePosition;
+		}
 	}
 }
 
@@ -68,11 +80,28 @@ FVector2D APlanetController::GetEMAInput()
 	return ema;
 }
 
+void APlanetController::SetInGameInputMode()
+{
+	bShowMouseCursor = true;
+	FInputModeGameAndUI inputMode;
+	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	inputMode.SetHideCursorDuringCapture(false);
+	SetInputMode(inputMode);
+}
+
+void APlanetController::SetUIInputMode(UUserWidget* _widget)
+{
+	bShowMouseCursor = true;
+	FInputModeUIOnly inputMode;
+	// inputMode.SetWidgetToFocus(_widget->TakeWidget());
+	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	SetInputMode(inputMode);
+}
+
 void APlanetController::bindInputMappings()
 {
 	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
 	{
-		EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlanetController::onLookTriggered);
 		EIC->BindAction(JustAimAction, ETriggerEvent::Triggered, this, &APlanetController::setLastLookInput);
 		EIC->BindAction(JustAimAction, ETriggerEvent::None, this, &APlanetController::resetLastLookInput);
 	}

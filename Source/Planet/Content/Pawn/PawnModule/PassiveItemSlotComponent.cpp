@@ -45,7 +45,7 @@ UObject* UPassiveItemSlotComponent::GetItemByTypeOrNull(const EPassiveItemType& 
 	for (UObject* item : mEquippedItems)
 	{
 		// TODO: 아이템 클래스 구현
-		// if (item->ItemType == _itemType)
+		// if (item && item->ItemType == _itemType)
 		// {
 		// 	return item;
 		// }

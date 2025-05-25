@@ -11,6 +11,7 @@ class URewardManager;
 class UButton;
 class UImage;
 class UTextBlock;
+class APlanetController;
 
 UCLASS()
 class PLANET_API URewardSelectionWidget : public UUserWidget
@@ -51,5 +52,6 @@ private:
 	FText GetNextLevelDescription(const FRewardTextData* TextData, int32 CurrentLevel) const;
 
 	URewardManager* cRewardManager;
+	APlanetController* cPlanetController;
 	TArray<TScriptInterface<IRewardData>> mCurrentRewards;
 };

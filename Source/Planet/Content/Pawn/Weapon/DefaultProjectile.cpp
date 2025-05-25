@@ -25,18 +25,25 @@ ADefaultProjectile::ADefaultProjectile()
 	ProjectileMovement->SetUpdatedComponent(GetRootComponent());
 }
 
-void ADefaultProjectile::Initialize(UObjectPoolManagerComponent* _pool)
+void ADefaultProjectile::Initialize(AWeaponPawn* _owner, UObjectPoolManagerComponent* _pool)
 {
-	cOwner = Cast<AWeaponPawn>(GetOwner());
+	reset();
+    
+	cOwner = _owner;
+	cOwnPlanet = Cast<APlanetPawn>(_owner->GetOwner());
 	mPool = _pool;
-
-	check(ProjectileMovement);
-	ProjectileMovement->ProjectileGravityScale = 0.f;
-	ProjectileMovement->Velocity = GetActorForwardVector() * Speed;
-
-	check(CollisionBox);
-	CollisionBox->OnComponentBeginOverlap.AddUniqueDynamic(this, &ADefaultProjectile::OnOverlapBegin);
-
+    
+	if (IsValid(this) && IsValid(CollisionBox) && !IsActorBeingDestroyed())
+	{
+		CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &ADefaultProjectile::OnOverlapBegin);
+	}
+    
+	if (ProjectileMovement)
+	{
+		ProjectileMovement->ProjectileGravityScale = 0.f;
+		ProjectileMovement->Velocity = GetActorForwardVector() * Speed;
+	}
+    
 	GetWorld()->GetTimerManager().SetTimer(
 		mLifeSpanTimerHandle,
 		this,
@@ -48,20 +55,16 @@ void ADefaultProjectile::Initialize(UObjectPoolManagerComponent* _pool)
 
 void ADefaultProjectile::OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _otherActor, UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult)
 {
-	if (mHitActors.Contains(_otherActor))
+	if (mHitActors.Contains(_otherActor) || !cOwner || !cOwnPlanet)
 		return;
-	
-	APlanetPawn* playerPawn = Cast<APlanetPawn>(cOwner->GetOwner());
-	check(playerPawn);
-	check(cOwner);
 
 	if (Cast<AEnemyPawn>(_otherActor) != nullptr)
 	{
 		mHitActors.Add(_otherActor);
 		
-		const float playerDamage			= playerPawn->RuntimeSettings.Damage;
-		const float playerCritical			= playerPawn->RuntimeSettings.Critical;
-		const float playerCriticalDamage	= playerPawn->RuntimeSettings.CriticalDamage;
+		const float playerDamage			= cOwnPlanet->RuntimeSettings.Damage;
+		const float playerCritical			= cOwnPlanet->RuntimeSettings.Critical;
+		const float playerCriticalDamage	= cOwnPlanet->RuntimeSettings.CriticalDamage;
 		
 		float damage = CalculateCriticalDamage(playerDamage, cOwner->Damage, playerCritical, playerCriticalDamage);
 
@@ -77,10 +80,39 @@ void ADefaultProjectile::OnOverlapBegin(UPrimitiveComponent* _overlappedComponen
 	}
 }
 
+void ADefaultProjectile::reset()
+{
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(mLifeSpanTimerHandle);
+	}
+    
+	if (IsValid(CollisionBox))
+	{
+		CollisionBox->OnComponentBeginOverlap.RemoveAll(this);
+	}
+    
+	mCurrentPierce = 0;
+	mHitActors.Reset();
+    
+	if (ProjectileMovement)
+	{
+		ProjectileMovement->Velocity = FVector::ZeroVector;
+	}
+}
+
 void ADefaultProjectile::returnToPool()
 {
 	GetWorld()->GetTimerManager().ClearTimer(mLifeSpanTimerHandle);
 	mCurrentPierce = 0;
-	mHitActors.Empty();
+	mHitActors.Reset();
+
+	check(ProjectileMovement);
+	ProjectileMovement->Velocity = FVector::ZeroVector;
+
+	check(CollisionBox);
+	CollisionBox->OnComponentBeginOverlap.RemoveDynamic(this, &ADefaultProjectile::OnOverlapBegin);
+
+	check(mPool);
 	mPool->Release(this);
 }

@@ -143,8 +143,7 @@ ADefaultProjectile* AAntiSpacecraftGun::spawnProjectileOrNull(const USceneCompon
 	ADefaultProjectile* projectile = mPool->AcquireOrNull(ProjectileClass, _muzzle->GetComponentTransform());
 	if (projectile)
 	{
-		projectile->SetOwner(this);
-		projectile->Initialize(mPool);
+		projectile->Initialize(this, mPool);
 		projectile->MaxPierce = mMaxPierce;
 	}
 	

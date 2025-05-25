@@ -11,6 +11,7 @@
 #include "IRewardData.h"
 #include "RewardTextDataTable.h"
 #include "PlanetPawn.h"
+#include "PlanetController.h"
 
 void URewardSelectionWidget::NativeConstruct()
 {
@@ -18,8 +19,11 @@ void URewardSelectionWidget::NativeConstruct()
     
 	if (APlanetPawn* Owner = Cast<APlanetPawn>(GetOwningPlayerPawn()))
 	{
-		cRewardManager = Owner->FindComponentByClass<URewardManager>();
+		cRewardManager = Owner->RewardManager;
 	}
+
+	cPlanetController = Cast<APlanetController>(GetOwningPlayer());
+	check(cPlanetController);
     
 	if (RewardButton1) 
 		RewardButton1->OnClicked.AddUniqueDynamic(this, &URewardSelectionWidget::OnRewardButton1Clicked);
@@ -29,6 +33,8 @@ void URewardSelectionWidget::NativeConstruct()
 		RewardButton3->OnClicked.AddUniqueDynamic(this, &URewardSelectionWidget::OnRewardButton3Clicked);
         
 	UGameplayStatics::SetGamePaused(GetWorld(), true);
+	
+	cPlanetController->SetUIInputMode(this);
 }
 
 void URewardSelectionWidget::DisplayRewards(const TArray<TScriptInterface<IRewardData>>& Rewards)
@@ -146,5 +152,9 @@ void URewardSelectionWidget::HandleRewardSelection(int32 ButtonIndex)
 void URewardSelectionWidget::CloseRewardSelection()
 {
     UGameplayStatics::SetGamePaused(GetWorld(), false);
+	
+	check(cPlanetController);
+	cPlanetController->SetInGameInputMode();
+	
     RemoveFromParent();
 }

@@ -37,9 +37,14 @@ namespace GameplayUtils
 		return _baseFireRate * FMath::Clamp(100.0f / _playerHaste, 0.1f, 10.0f);
 	}
 
-	inline float CalculateXPGain(const float& _baseXP, const float& _playerXPGain)
+	inline float CalculateXPGain(const float& _baseXPGain, const float& _playerXPGain)
 	{
-		return _baseXP * _playerXPGain * 0.01f;
+		return _baseXPGain * _playerXPGain * 0.01f;
+	}
+
+	inline float CalculateXPSpeed(const float& _baseXPSpeed, const float& _playerXPSpeed)
+	{
+		return _baseXPSpeed * _playerXPSpeed * 0.01f;
 	}
 
 	inline float CalculateXPToNextLevel(const int32& _currentLevel)
@@ -244,7 +249,6 @@ namespace GameplayUtils
 
 	/**
 	 * 월드 컨텍스트로부터 레벨 이름 "/Game/Maps/Level_3"을 얻어서 "Level_3" 에서 뒤쪽 숫자 3만 파싱합니다.
-	 * 실패 시 -1 반환
 	 * @param _world	파싱할 월드 컨텍스트
 	 * @return			현재 레벨 인덱스, 실패하면 -1
 	 */
@@ -278,6 +282,21 @@ namespace GameplayUtils
 
 		const FString numberStr = levelName.Mid(numStart, numLength);
 		return FCString::Atoi(*numberStr);
+	}
+
+	/**
+	 * 열거형 값을 "Enum명::값" 형식에서 "값"만 추출합니다.
+	 * @tparam	EnumType  UENUM()으로 선언된 열거형 타입
+	 * @param	EnumeratorValue  변환할 열거형 값
+	 * @return	"값" 부분의 문자열
+	 */
+	template<typename EnumType>
+	inline FString GetEnumValueString(const EnumType EnumeratorValue)
+	{
+		const FString FullString = UEnum::GetValueAsString(EnumeratorValue);
+		FString ValuePart;
+		FullString.Split(TEXT("::"), nullptr, &ValuePart, ESearchCase::CaseSensitive, ESearchDir::FromStart);
+		return ValuePart;
 	}
 
 #pragma endregion

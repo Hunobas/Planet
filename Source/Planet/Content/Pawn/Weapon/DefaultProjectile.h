@@ -10,6 +10,7 @@ class UBoxComponent;
 class UProjectileMovementComponent;
 class UNiagaraSystem;
 class AWeaponPawn;
+class APlanetPawn;
 
 UCLASS()
 class PLANET_API ADefaultProjectile : public AActor
@@ -18,7 +19,7 @@ class PLANET_API ADefaultProjectile : public AActor
 	
 public:	
 	ADefaultProjectile();
-	void Initialize(UObjectPoolManagerComponent* _pool);
+	void Initialize(AWeaponPawn* _owner, UObjectPoolManagerComponent* _pool);
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _otherActor, UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult);
@@ -39,9 +40,11 @@ public:
 	UNiagaraSystem* HitTemplate;
 
 private:
+	void reset();
 	void returnToPool();
 	
 	AWeaponPawn* cOwner;
+	APlanetPawn* cOwnPlanet;
 	UObjectPoolManagerComponent* mPool;
 	TSet<AActor*> mHitActors;
 

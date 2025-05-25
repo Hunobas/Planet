@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "IRewardData.h"
 #include "WeaponType.h"
+#include "../Planet.h"
 #include "WeaponRewardData.generated.h"
 
 UCLASS(Blueprintable)
@@ -14,7 +15,7 @@ class PLANET_API UWeaponRewardData : public UObject, public IRewardData
 public:
 	virtual FName GetRewardIdentifier() const override
 	{
-		FString FullIdentifier = WEAPON_REWARD_TAG + "_" + UEnum::GetValueAsString(WeaponType);
+		FString FullIdentifier = WEAPON_REWARD_TAG + "_" + GetEnumValueString<EWeaponType>(WeaponType);
 		return FName(*FullIdentifier);
 	}
 	virtual UTexture2D* GetRewardIcon() const override { return WeaponIcon; }

@@ -55,7 +55,7 @@ AWeaponPawn* UWeaponSlotComponent::GetWeaponByTypeOrNull(const EWeaponType& _wea
 {
 	for (AWeaponPawn* weapon : mEquippedWeapons)
 	{
-		if (weapon->WeaponType == _weaponType)
+		if (weapon && weapon->WeaponType == _weaponType)
 		{
 			return weapon;
 		}

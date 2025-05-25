@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "IRewardData.h"
 #include "PassiveItemType.h"
+#include "../Planet.h"
 #include "PassiveItemRewardData.generated.h"
 
 UCLASS(Blueprintable)
@@ -14,7 +15,7 @@ class PLANET_API UPassiveItemRewardData : public UObject, public IRewardData
 public:
 	virtual FName GetRewardIdentifier() const override
 	{
-		FString FullIdentifier = PASSIVEITEM_REWARD_TAG + "_" + UEnum::GetValueAsString(PassiveItemType);
+		FString FullIdentifier = ITEM_REWARD_TAG + "_" + GetEnumValueString<EPassiveItemType>(PassiveItemType);
 		return FName(*FullIdentifier);
 	}
 	virtual UTexture2D* GetRewardIcon() const override { return PassiveItemIcon; }

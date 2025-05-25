@@ -34,31 +34,21 @@ AEnemyPawn::AEnemyPawn() : cTargetPawn(nullptr), mFlyingMover(nullptr), mFollowM
 	HitDetectionCapsule->SetupAttachment(EnemyMesh);
 }
 
-void AEnemyPawn::Initialize()
-{
-	check(BodyCollisionCapsule);
-	BodyCollisionCapsule->OnComponentBeginOverlap.AddUniqueDynamic(this, &AEnemyPawn::OnOverlapBegin);
-
-	TryGetFirstComponentWithTag(this, FLYING_MOVER_TAG, mFlyingMover);
-	TryGetFirstComponentWithTag(this, FOLLOW_MOVER_TAG, mFollowMover);
-	TryGetFirstComponentWithTag(this, HP_TAG, mHP);
-	TryGetFirstComponentWithTag(this, HP_WIDGET_TAG, mHPWidget);
-
-	if (mHP && mHPWidget)
-	{
-		mHP->Initialize();
-		OnTakeAnyDamage.AddUniqueDynamic(this, &AEnemyPawn::HandleDamageTaken);
-		mHPWidget->SetVisibility(false);
-	}
-
-	setUpdateStrategy();
-}
-
 void AEnemyPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
 	Initialize();
+}
+
+void AEnemyPawn::Initialize()
+{
+	TryGetFirstComponentWithTag(this, FLYING_MOVER_TAG, mFlyingMover);
+	TryGetFirstComponentWithTag(this, FOLLOW_MOVER_TAG, mFollowMover);
+	TryGetFirstComponentWithTag(this, HP_TAG, mHP);
+	TryGetFirstComponentWithTag(this, HP_WIDGET_TAG, mHPWidget);
+	
+	setUpdateStrategy();
 }
 
 void AEnemyPawn::Tick(float _deltaTime)
@@ -97,12 +87,24 @@ void AEnemyPawn::ResetToDefaultSettings(const FEnemyScaleSetting& _scaleSettings
 	RuntimeSettings.XPDrop		= BaseSettings->XPDropBase * _scaleSettings.XPDropScale;
 	RuntimeSettings.FieldScore	= BaseSettings->FieldScoreBase;
 
-	Initialize();
+	if (mHP && mHPWidget)
+	{
+		mHP->Initialize();
+		mHPWidget->SetVisibility(false);
+	}
+
+	check(BodyCollisionCapsule);
+	BodyCollisionCapsule->OnComponentBeginOverlap.AddUniqueDynamic(this, &AEnemyPawn::OnOverlapBegin);
+	OnTakeAnyDamage.AddUniqueDynamic(this, &AEnemyPawn::HandleDamageTaken);
 }
 
 void AEnemyPawn::HandleDied()
 {
 	SpawnSystemFacingForward(EnemyDieTemplate, this);
+
+	check(BodyCollisionCapsule);
+	BodyCollisionCapsule->OnComponentBeginOverlap.RemoveDynamic(this, &AEnemyPawn::OnOverlapBegin);
+	OnTakeAnyDamage.RemoveDynamic(this, &AEnemyPawn::HandleDamageTaken);
 	
 	if (ASurvivorGameModeBase* gm = GetPlanetGameMode(this))
 	{

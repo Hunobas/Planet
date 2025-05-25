@@ -30,15 +30,14 @@ AXpGem* AXpGem::Initialize(APawn* _targetPlayer, const float& _XP, UObjectPoolMa
 	XP = _XP;
 	mPool = _pool;
 	TryGetFirstComponentWithTag(this, FOLLOW_MOVER_TAG, mFollowMover);
-
-	if (Capsule)
-	{
-		Capsule->OnComponentBeginOverlap.AddUniqueDynamic(this, &AXpGem::OnOverlapBegin);
-	}
+	
 	if (mFollowMover && cTargetPlayer)
 	{
-		mFollowMover->MoveSpeedScale = cTargetPlayer->RuntimeSettings.XpSpeed;
+		mFollowMover->MoveSpeedScale = CalculateXPSpeed(mFollowMover->MoveSpeedScale, cTargetPlayer->RuntimeSettings.XpSpeed); 
 	}
+
+	check(Capsule);
+	Capsule->OnComponentBeginOverlap.AddUniqueDynamic(this, &AXpGem::OnOverlapBegin);
 
 	return this;
 }
@@ -64,5 +63,9 @@ void AXpGem::OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _
 
 	cTargetPlayer->LevelManager->GainXP(XP);
 	SpawnSystemFacingForward(GainTemplate, this);
+
+	check(Capsule);
+	Capsule->OnComponentBeginOverlap.RemoveDynamic(this, &AXpGem::OnOverlapBegin);
+	
 	mPool->Release(this);
 }

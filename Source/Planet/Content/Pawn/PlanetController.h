@@ -10,7 +10,7 @@ class UInputAction;
 struct FInputActionValue;
 class UEnhancedInputLocalPlayerSubsystem;
 class APlanetPawn;
-class URewardSelectionWidget;
+class UUserWidget;
 
 UCLASS()
 class PLANET_API APlanetController : public APlayerController
@@ -20,12 +20,16 @@ class PLANET_API APlanetController : public APlayerController
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void EndPlay(const EEndPlayReason::Type _endPlayReason) override;
+
 	virtual void OnPossess(APawn* _pawn) override;
 
 public:
-	virtual void Tick(float _deltaTime) override;
+	virtual void Tick(float DeltaTime) override;
 	
 	FVector2D GetEMAInput();
+	void SetInGameInputMode();
+	void SetUIInputMode(UUserWidget* _widget);
 
 	DECLARE_MULTICAST_DELEGATE_OneParam(FOnLookValue, const FVector2D&);
 	FOnLookValue OnLookValue;
@@ -45,8 +49,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	float InputResetDelay = 0.2f;
 
-	FVector WorldMouseLocation		= FVector::ZeroVector;
-	FVector2D ScreenMousePosition	= FVector2D::ZeroVector;
+	FVector WorldMouseLocation = FVector::ZeroVector;
 	
 private:
 	void bindInputMappings();
@@ -55,7 +58,8 @@ private:
 	void resetLastLookInput(const FInputActionValue& _value);
 	
 	UEnhancedInputLocalPlayerSubsystem* mEISubsystem;
-
+	
+	FVector2D mPreviousMousePosition = FVector2D::ZeroVector;
 	TArray<FVector2D> mInputHistory;
 	float mResetDelayElapsed = 0.0f;
 };

@@ -99,7 +99,7 @@ void APlanetPawn::resetToDefaultSettings()
 	RuntimeSettings.CriticalDamage	= BaseSettings->CriticalBase;
 	RuntimeSettings.Haste			= BaseSettings->HasteBase;
 	RuntimeSettings.XpGain			= BaseSettings->XPGainBase;
-	RuntimeSettings.XpSpeed	= BaseSettings->XPSpeedScaleBase;
+	RuntimeSettings.XpSpeed			= BaseSettings->XPSpeedBase;
 
 	if (mHP)
 	{

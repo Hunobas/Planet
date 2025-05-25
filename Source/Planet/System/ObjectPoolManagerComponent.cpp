@@ -1,126 +1,154 @@
 // ObjectPoolManagerComponent.cpp
 #include "ObjectPoolManagerComponent.h"
+#include "Engine/World.h"
+#include "GameFramework/Actor.h"
 
 UObjectPoolManagerComponent::UObjectPoolManagerComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
+	bWantsInitializeComponent = true;
 }
 
 void UObjectPoolManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	for (const auto& [pooledClass, poolSize] : PoolConfigs)
+    
+	for (const FPoolConfig& config : PoolConfigs)
 	{
-		if (pooledClass)
+		if (config.ActorClass && config.InitialPoolSize > 0)
 		{
-			prepopulatePool(pooledClass.Get(), poolSize);
+			repopulatePool(config.ActorClass, config.InitialPoolSize);
 		}
 	}
 }
 
 void UObjectPoolManagerComponent::EndPlay(const EEndPlayReason::Type _endPlayReason)
 {
-	for (auto& pair : mPools)
+	FScopeLock lock(&mPoolCriticalSection);
+    
+	for (AActor* actor : mAllPooledActors)
 	{
-		for (UObject* obj : pair.Value.Available)
+		if (IsValid(actor))
 		{
-			if (IsValid(obj))
-			{
-				if (AActor* A = Cast<AActor>(obj))
-				{
-					A->Destroy();
-				}
-			}
+			actor->Destroy();
 		}
-		pair.Value.Available.Empty();
-
-		for (UObject* obj : pair.Value.InUse)
-		{
-			if (IsValid(obj))
-			{
-				if (AActor* A = Cast<AActor>(obj))
-				{
-					A->Destroy();
-				}
-			}
-		}
-		pair.Value.InUse.Empty();
 	}
-	mPools.Empty();
-
+    
+	mAllPooledActors.Empty();
+    
+	for (auto& pair : mPoolMap)
+	{
+		delete pair.Value;
+	}
+	mPoolMap.Empty();
+    
 	Super::EndPlay(_endPlayReason);
 }
 
-
-void UObjectPoolManagerComponent::Release(UObject* _obj)
+void UObjectPoolManagerComponent::Release(AActor* _actor)
 {
-	if (!_obj)
-		return;
+    if (!IsValid(_actor))
+        return;
 
-	const UClass* key = _obj->GetClass();
-	FPool* pool = mPools.Find(key);
-	if (!pool)
-	{
-		if (AActor* A = Cast<AActor>(_obj))
-		{
-			A->Destroy();
-		}
-		return;
-	}
+    FScopeLock lock(&mPoolCriticalSection);
+    
+    TSubclassOf<AActor> actorClass = _actor->GetClass();
+    FPoolData* poolData = getOrCreatePoolData(actorClass);
+    
+    if (!poolData)
+        return;
 
-	if (AActor* A = Cast<AActor>(_obj))
-	{
-		setActorActiveState(A, false);
-	}
-
-	pool->InUse.RemoveSingleSwap(_obj);
-	pool->Available.Add(_obj);
+    AActor* dequeuedActor = nullptr;
+    TQueue<AActor*, EQueueMode::Mpsc> tempQueue;
+    
+    while (poolData->InUse.Dequeue(dequeuedActor))
+    {
+        if (dequeuedActor == _actor)
+        {
+            setActorActiveState(_actor, false);
+            poolData->Available.Enqueue(_actor);
+            break;
+        }
+        else
+        {
+            tempQueue.Enqueue(dequeuedActor);
+        }
+    }
+    
+    while (tempQueue.Dequeue(dequeuedActor))
+    {
+        poolData->InUse.Enqueue(dequeuedActor);
+    }
 }
 
-void UObjectPoolManagerComponent::prepopulatePool(UClass* _inClass, int32 _count)
+void UObjectPoolManagerComponent::repopulatePool(const TSubclassOf<AActor>& _actorClass, const int32& _count)
 {
-	UWorld* world = GetWorld();
-	
-	if (!_inClass || !world)
-		return;
-	
-	FActorSpawnParameters params;
-	params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    if (!_actorClass || _count <= 0)
+        return;
 
-	FPool& pool = mPools.FindOrAdd(_inClass);
+    UWorld* world = GetWorld();
+    if (!world)
+        return;
 
-	for (int32 i = 0; i < _count; ++i)
-	{
-		UObject* obj = nullptr;
+    FScopeLock lock(&mPoolCriticalSection);
+    
+    FPoolData* poolData = getOrCreatePoolData(_actorClass);
+    if (!poolData)
+        return;
 
-		if (_inClass->IsChildOf(AActor::StaticClass()))
-		{
-			obj = world->SpawnActor<AActor>(_inClass, FTransform::Identity, params);
-			if (AActor* A = Cast<AActor>(obj))
-			{
-				setActorActiveState(A, false);
-			}
-		}
-		else
-		{
-			obj = NewObject<UObject>(this, _inClass);
-		}
+    FActorSpawnParameters spawnParams;
+    spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-		check(obj);
-		pool.Available.Add(obj);
-	}
+    for (int32 i = 0; i < _count; ++i)
+    {
+	    if (AActor* newActor = world->SpawnActor<AActor>(_actorClass, FVector::ZeroVector, FRotator::ZeroRotator, spawnParams))
+        {
+            setActorActiveState(newActor, false);
+            poolData->Available.Enqueue(newActor);
+            mAllPooledActors.Add(newActor);
+        }
+    }
 }
 
 void UObjectPoolManagerComponent::setActorActiveState(AActor* _actor, bool _active)
 {
-	if (!_actor)
+	if (!IsValid(_actor))
 		return;
-	
+
 	_actor->SetActorTickEnabled(_active);
 	_actor->SetActorEnableCollision(_active);
 	_actor->SetActorHiddenInGame(!_active);
-	
-	_actor->SetReplicates(_active);
-	_actor->SetReplicateMovement(_active);
+}
+
+UObjectPoolManagerComponent::FPoolData* UObjectPoolManagerComponent::getOrCreatePoolData(const TSubclassOf<AActor>& _actorClass)
+{
+	if (!_actorClass)
+		return nullptr;
+
+	if (FPoolData** foundPoolData = mPoolMap.Find(_actorClass))
+	{
+		return *foundPoolData;
+	}
+
+	FPoolData* newPoolData = new FPoolData(_actorClass);
+	mPoolMap.Add(_actorClass, newPoolData);
+	return newPoolData;
+}
+
+AActor* UObjectPoolManagerComponent::createNewActor(const TSubclassOf<AActor>& _actorClass, const FTransform& _spawnTransform)
+{
+	UWorld* world = GetWorld();
+	if (!world || !_actorClass)
+		return nullptr;
+
+	FActorSpawnParameters spawnParams;
+	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	AActor* newActor = world->SpawnActor<AActor>(_actorClass, _spawnTransform, spawnParams);
+	if (newActor)
+	{
+		mAllPooledActors.Add(newActor);
+	}
+
+	return newActor;
 }

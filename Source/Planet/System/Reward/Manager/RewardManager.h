@@ -32,9 +32,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Reward")
 	void ApplyReward(const TScriptInterface<IRewardData>& Reward);
-
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRewardApplied, const TScriptInterface<IRewardData>&, AppliedReward);
-	FOnRewardApplied OnRewardApplied;
 	
 	UPROPERTY(EditAnywhere, Category = "Reward")
 	TArray<TSubclassOf<UWeaponRewardData>> AllWeaponRewards;
@@ -48,8 +45,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Reward")
 	float PassiveItemAppearanceRate	= ITEM_APPEAR_RATE;
 
+	UPROPERTY()
 	TArray<UWeaponRewardData*> CachedWeaponInstances;
+	UPROPERTY()
 	TArray<UPassiveItemRewardData*> CachedPassiveItemInstances;
+	UPROPERTY()
 	TArray<UPlayerPowerUpRewardData*> CachedPowerUpInstances;
 	
 private:
@@ -57,8 +57,9 @@ private:
 	void createAllRewardInstances();
 
 	APlanetPawn* cOwner;
-	URewardSelector* mRewardSelector;
-	TMap<FString, TScriptInterface<IRewardApplicator>> mApplicators;
 	
-	FString mCurrentLanguage;
+	UPROPERTY()
+	URewardSelector* mRewardSelector;
+	UPROPERTY()
+	TMap<FString, TScriptInterface<IRewardApplicator>> mApplicators;
 };

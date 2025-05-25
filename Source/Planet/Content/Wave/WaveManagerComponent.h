@@ -49,6 +49,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Wave Config")
 	float CurrentMaxFieldScore = 10.0f;
 
+	UPROPERTY(VisibleAnywhere, Category = "Wave Config")
+	float CurrentFieldScore = 0.0f;
+
 	TArray<FSpawnInfo>	Config_SpawnInfos;
 	float				Config_EnemySpawnInterval;
 	float				Config_DifficultyInterval;
@@ -71,6 +74,4 @@ private:
 	FTimerHandle mWaveTimerHandle;
 	FTimerHandle mDifficultyTimerHandle;
 	FTimerHandle mListTimerHandle;
-
-	float mCurrentFieldScore;
 };

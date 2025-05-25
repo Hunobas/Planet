@@ -20,17 +20,10 @@ protected:
 public:
     UFUNCTION(BlueprintCallable, Category = "Reward")
     void ShowRewardSelection();
-
-    UPROPERTY(EditAnywhere, Category = "HUD")
-    TEnumAsByte<EAutoReceiveInput::Type> TargetPlayer = SINGLEPLAYER_INDEX;
-
-    UPROPERTY(EditAnywhere, Category = "UI Component")
-    TSubclassOf<UCursorWidget> CursorWidgetClass;
+    
     UPROPERTY(EditAnywhere, Category = "UI Component")
     TSubclassOf<UUserWidget> RewardSelectionClass;
 
 private:
     APlanetPawn* cPlayerPawn;
-    
-    UCursorWidget* mCursorWidget;
 };

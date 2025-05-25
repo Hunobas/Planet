@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "IRewardData.h"
 #include "PlayerPowerUpType.h"
+#include "../Planet.h"
 #include "PlayerPowerUpRewardData.generated.h"
 
 UCLASS(Blueprintable, BlueprintType)
@@ -14,7 +15,7 @@ class PLANET_API UPlayerPowerUpRewardData : public UObject, public IRewardData
 public:
 	virtual FName GetRewardIdentifier() const override
 	{
-		FString FullIdentifier = POWERUP_REWARD_TAG + "_" + UEnum::GetValueAsString(PowerUpType);
+		FString FullIdentifier = POWERUP_REWARD_TAG + "_" + GetEnumValueString<EPlayerPowerUpType>(PowerUpType);
 		return FName(*FullIdentifier);
 	}
 	virtual UTexture2D* GetRewardIcon() const override { return PowerUpIcon; }

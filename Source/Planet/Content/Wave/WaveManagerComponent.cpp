@@ -13,8 +13,7 @@
 UWaveManagerComponent::UWaveManagerComponent(): Config_EnemySpawnInterval(5.0f), Config_DifficultyInterval(5.0f),
                                                 mEnemySpawn(nullptr),
                                                 mPool(nullptr),
-                                                mFireManager(nullptr), cTargetPlayer(nullptr),
-                                                mCurrentFieldScore(0)
+                                                mFireManager(nullptr), cTargetPlayer(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -41,6 +40,8 @@ void UWaveManagerComponent::BeginPlay()
 	}
 	mFireManager->Initialize(mEnemySpawn);
 
+	CurrentFieldScore = 0;
+	
 	PlayWaveMode1();
 	// PlayWaveMode2();
 }
@@ -58,7 +59,6 @@ void UWaveManagerComponent::PlayWaveMode1()
 {
 	updateMaxFieldScoreByGameTime();
 	updateSpawnableEnemyListByGameTime();
-	SpawnEnemyWave();
 
 	GetWorld()->GetTimerManager().SetTimer(
 		mDifficultyTimerHandle,
@@ -99,10 +99,10 @@ void UWaveManagerComponent::SpawnEnemyWave()
 {
 	check(mEnemySpawn);
 	
-	if (mRuntimeSpawnableList.IsEmpty() || mCurrentFieldScore > CurrentMaxFieldScore)
+	if (mRuntimeSpawnableList.IsEmpty() || CurrentFieldScore > CurrentMaxFieldScore)
 		return;
 
-	while (mCurrentFieldScore < CurrentMaxFieldScore)
+	while (CurrentFieldScore < CurrentMaxFieldScore)
 	{
 		TSubclassOf<AEnemyPawn> enemyClass = mRuntimeSpawnableList[FMath::RandRange(0, mRuntimeSpawnableList.Num() - 1)];
 		
@@ -135,7 +135,7 @@ void UWaveManagerComponent::SpawnEnemiesAtRandomRow(const TSubclassOf<AEnemyPawn
 
 void UWaveManagerComponent::EnemyDied(AEnemyPawn* _deadEnemy)
 {
-	mCurrentFieldScore -= _deadEnemy->RuntimeSettings.FieldScore;
+	CurrentFieldScore -= _deadEnemy->RuntimeSettings.FieldScore;
 	mPool->Release(_deadEnemy);
 
 	mFireManager->RemoveEnemy(_deadEnemy);
@@ -150,7 +150,7 @@ AEnemyPawn* UWaveManagerComponent::spawnEnemyOrNull(const TSubclassOf<AEnemyPawn
 	if (spawnedEnemy)
 	{
 		spawnedEnemy->ResetToDefaultSettings(Config_ScaleSettings, cTargetPlayer);
-		mCurrentFieldScore += spawnedEnemy->RuntimeSettings.FieldScore;
+		CurrentFieldScore += spawnedEnemy->RuntimeSettings.FieldScore;
 		mFireManager->AddEnemy(spawnedEnemy, _spawnPoint);
 	}
 	return spawnedEnemy;

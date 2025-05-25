@@ -14,8 +14,6 @@
 URewardManager::URewardManager() : cOwner(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	
-	mRewardSelector = CreateDefaultSubobject<URewardSelector>(TEXT("Reward Selector"));
 }
 
 void URewardManager::BeginPlay()
@@ -25,7 +23,9 @@ void URewardManager::BeginPlay()
 	cOwner = Cast<APlanetPawn>(GetOwner());
 	check(cOwner);
 
+	mRewardSelector = NewObject<URewardSelector>(this, TEXT("Reward Selector"));
 	initializeApplicators();
+	
 	createAllRewardInstances();
 	mRewardSelector->Initialize(this, cOwner);
 }
@@ -37,24 +37,21 @@ TArray<TScriptInterface<IRewardData>> URewardManager::GetAvailableRewards(const 
 
 void URewardManager::ApplyReward(const TScriptInterface<IRewardData>& Reward)
 {
-	if (const IRewardData* RewardData = Reward.GetInterface())
+	const IRewardData* RewardData = Reward.GetInterface();
+	check(RewardData);
+	FString FullIdentifier = RewardData->GetRewardIdentifier().ToString();
+    
+	int32 SplitIndex;
+	if (FullIdentifier.FindChar(TEXT('_'), SplitIndex))
 	{
-		FString FullIdentifier = RewardData->GetRewardIdentifier().ToString();
-        
-		int32 SplitIndex;
-		if (FullIdentifier.FindChar(TEXT('_'), SplitIndex))
-		{
-			FString ApplicatorKey = FullIdentifier.Left(SplitIndex);
-			
-            checkf(mApplicators.Contains(ApplicatorKey), TEXT("Invalid applicator key: %s"), *FullIdentifier);
-			mApplicators[ApplicatorKey]->Apply(Reward, cOwner);
-			
-			OnRewardApplied.Broadcast(Reward);
-		}
-		else
-		{
-			checkf(false, TEXT("Invalid reward identifier format: %s"), *FullIdentifier);
-		}
+		FString ApplicatorKey = FullIdentifier.Left(SplitIndex);
+		
+        checkf(mApplicators.Contains(ApplicatorKey), TEXT("Invalid applicator key: %s"), *FullIdentifier);
+		mApplicators[ApplicatorKey]->Apply_Implementation(Reward, cOwner);
+	}
+	else
+	{
+		checkf(false, TEXT("Invalid reward identifier format: %s"), *FullIdentifier);
 	}
 }
 
@@ -65,7 +62,7 @@ void URewardManager::initializeApplicators()
 	UPlayerPowerUpRewardApplicator* PowerUpApplicator = NewObject<UPlayerPowerUpRewardApplicator>(this, TEXT("Power Up Applicator"));
 
 	mApplicators.Add(WEAPON_REWARD_TAG, WeaponApplicator);
-	mApplicators.Add(PASSIVEITEM_REWARD_TAG, PassiveItemApplicator);
+	mApplicators.Add(ITEM_REWARD_TAG, PassiveItemApplicator);
 	mApplicators.Add(POWERUP_REWARD_TAG, PowerUpApplicator);
 
 	WeaponApplicator->Rename(nullptr, this);
@@ -75,25 +72,29 @@ void URewardManager::initializeApplicators()
 
 void URewardManager::createAllRewardInstances()
 {
-	for (const auto& WeaponClass : AllWeaponRewards)
+	CachedWeaponInstances.Reset();
+	CachedPassiveItemInstances.Reset();
+	CachedPowerUpInstances.Reset();
+	
+	for (const TSubclassOf<UWeaponRewardData>& WeaponClass : AllWeaponRewards)
 	{
-		if (auto* Weapon = NewObject<UWeaponRewardData>(this, WeaponClass))
+		if (UWeaponRewardData* Weapon = NewObject<UWeaponRewardData>(this, WeaponClass))
 		{
 			CachedWeaponInstances.Add(Weapon);
 		}
 	}
 
-	for (const auto& ItemClass : AllPassiveItemRewards)
+	for (const TSubclassOf<UPassiveItemRewardData>& ItemClass : AllPassiveItemRewards)
 	{
-		if (auto* Item = NewObject<UPassiveItemRewardData>(this, ItemClass))
+		if (UPassiveItemRewardData* Item = NewObject<UPassiveItemRewardData>(this, ItemClass))
 		{
 			CachedPassiveItemInstances.Add(Item);
 		}
 	}
 
-	for (const auto& PowerUpClass : AllPlayerPowerUpRewards)
+	for (const TSubclassOf<UPlayerPowerUpRewardData>& PowerUpClass : AllPlayerPowerUpRewards)
 	{
-		if (auto* PowerUp = NewObject<UPlayerPowerUpRewardData>(this, PowerUpClass))
+		if (UPlayerPowerUpRewardData* PowerUp = NewObject<UPlayerPowerUpRewardData>(this, PowerUpClass))
 		{
 			CachedPowerUpInstances.Add(PowerUp);
 		}

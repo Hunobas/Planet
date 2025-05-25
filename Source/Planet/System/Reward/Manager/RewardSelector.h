@@ -29,9 +29,12 @@ private:
 
 	APlanetPawn* cOwner = nullptr;
 	URewardManager* mManager = nullptr;
-	
+
+	UPROPERTY()
 	TArray<TScriptInterface<IRewardData>> mAvailableWeapons;
+	UPROPERTY()
 	TArray<TScriptInterface<IRewardData>> mAvailablePassiveItems;
+	UPROPERTY()
 	TArray<TScriptInterface<IRewardData>> mAvailablePowerUps;
 	
 	float mWeaponAppearanceRate;

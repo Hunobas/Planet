@@ -57,7 +57,7 @@ namespace PlanetConst
 #pragma region UI Matching Key
 
 	inline const FString WEAPON_REWARD_TAG(TEXT("Weapon"));
-	inline const FString PASSIVEITEM_REWARD_TAG(TEXT("PassiveItem"));
+	inline const FString ITEM_REWARD_TAG(TEXT("PassiveItem"));
 	inline const FString POWERUP_REWARD_TAG(TEXT("PowerUp"));
 
 	inline const FString REWARD_ICON(TEXT("RewardIcon"));

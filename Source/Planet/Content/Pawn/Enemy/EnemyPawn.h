@@ -42,12 +42,12 @@ class PLANET_API AEnemyPawn : public APawn
 
 public:
 	AEnemyPawn();
-	void Initialize();
 
 protected:
 	virtual void BeginPlay() override;
 
 public:
+	void Initialize();
 	virtual void Tick(float _deltaTime) override;
 
 	void MoveStep(float _deltaTime);

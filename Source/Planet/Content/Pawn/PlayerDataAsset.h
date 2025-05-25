@@ -24,5 +24,5 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float XPGainBase			= 100.0f;
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	float XPSpeedScaleBase		= 1.0f;
+	float XPSpeedBase		= 100.0f;
 };

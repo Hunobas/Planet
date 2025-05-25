@@ -45,16 +45,16 @@ TArray<TScriptInterface<IRewardData>> URewardSelector::SelectRewards(int32 Reque
 
 void URewardSelector::updateAvailablePools()
 {
-    mAvailableWeapons.Empty();
-    mAvailablePassiveItems.Empty();
-    mAvailablePowerUps.Empty();
+    mAvailableWeapons.Reset();
+    mAvailablePassiveItems.Reset();
+    mAvailablePowerUps.Reset();
 
     check(cOwner->WeaponSlot);
     if (cOwner->WeaponSlot->RemainSlots > 0)
     {
-        for (auto* Weapon : mManager->CachedWeaponInstances)
+        for (UWeaponRewardData* Weapon : mManager->CachedWeaponInstances)
         {
-            const auto CurrentWeapon = cOwner->WeaponSlot->GetWeaponByTypeOrNull(Weapon->WeaponType);
+            const AWeaponPawn* CurrentWeapon = cOwner->WeaponSlot->GetWeaponByTypeOrNull(Weapon->WeaponType);
             Weapon->SetLevel(CurrentWeapon ? CurrentWeapon->CurrentLevel : 0);
             
             if (!Weapon->IsMaxLevel())
@@ -67,9 +67,9 @@ void URewardSelector::updateAvailablePools()
     check(cOwner->ItemSlot);
     if (cOwner->ItemSlot->RemainSlots > 0)
     {
-        for (auto* Item : mManager->CachedPassiveItemInstances)
+        for (UPassiveItemRewardData* Item : mManager->CachedPassiveItemInstances)
         {
-            const auto CurrentItem = cOwner->ItemSlot->GetItemByTypeOrNull(Item->PassiveItemType);
+            const UObject* CurrentItem = cOwner->ItemSlot->GetItemByTypeOrNull(Item->PassiveItemType);
             Item->SetLevel(/*CurrentItem ? CurrentItem->CurrentLevel :*/ 0);
             
             if (!Item->IsMaxLevel())
