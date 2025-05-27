@@ -18,8 +18,15 @@ class PLANET_API UPlayCamera : public UActorComponent
 
 public:
 	UPlayCamera();
-	
+
+protected:
 	virtual void BeginPlay() override;
+
+public:
+	virtual void TickComponent(float _deltaTime, enum ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
+
+	void StartAim();
+	void StopAim();
 
 	void OnJustAimSuccess(const FVector& _targetLocation);
 	
@@ -27,14 +34,24 @@ public:
 	FRotator SpringArmRotation		= {90.0f, -90.0f, 0};
 	UPROPERTY(EditAnywhere, Category = "Camera Setting")
 	float DefaultArmLength			= 3000.0f;
+	UPROPERTY(EditAnywhere, Category = "Camera Setting")
+	float AimedArmLength			= 2900.0f;
+	UPROPERTY(EditAnywhere, Category = "Spring Arm")
+	float ArmLengthInterpSpeed		= 5.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Just Aim")
 	TSubclassOf<UCameraShakeBase> JustAimCameraShakeClass;
+	
 
 private:
+	void updateArmLength(float _deltaTime);
+	
 	APlanetPawn* mPlayerPawn;
 	USpringArmComponent* mSpringArm;
 	UCameraComponent* mCamera;
+
+	float mCurrentArmLength;
+	bool bIsAiming = false;
 
 	FRotator mStartControlRotation;
 	FRotator mTargetControlRotation;

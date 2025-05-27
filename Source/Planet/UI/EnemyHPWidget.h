@@ -11,7 +11,7 @@ class PLANET_API UEnemyHPWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category="UI")
+	UFUNCTION(BlueprintCallable, Category = "UI")
 	void UpdateHealthProgress(const float& _percent);
 
 protected:

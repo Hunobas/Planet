@@ -13,6 +13,7 @@ class UCapsuleComponent;
 class UStaticMeshComponent;
 class AXpGem;
 class UEnemyDataAsset;
+class UWaveManagerComponent;
 class UFollowMover;
 class UFlyingMover;
 class UHPComponent;
@@ -47,12 +48,11 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	void Initialize();
+	void Initialize(UWaveManagerComponent* _waveManager, APawn* _targetPlayer);
 	virtual void Tick(float _deltaTime) override;
 
 	void MoveStep(float _deltaTime);
 	
-	void ResetToDefaultSettings(const FEnemyScaleSetting& _scaleSettings, APawn* _targetPlayer = nullptr);
 	void HandleDied();
 
 	UFUNCTION()
@@ -86,9 +86,11 @@ public:
 	UNiagaraSystem* EnemyDieTemplate;
 
 private:
+	void reset(const FEnemyScaleSetting& _scaleSettings);
 	void setUpdateStrategy();
 	void spawnXpGem() const;
-	
+
+	UWaveManagerComponent* cWaveManager;
 	APawn* cTargetPawn;
 	UFlyingMover* mFlyingMover;
 	UFollowMover* mFollowMover;

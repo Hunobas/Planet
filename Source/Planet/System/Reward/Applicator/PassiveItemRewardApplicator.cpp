@@ -17,10 +17,13 @@ void UPassiveItemRewardApplicator::Apply_Implementation(const TScriptInterface<I
 			ItemData->SetLevel(NewLevel);
 			// TODO: 아이템 클래스 구현
 			// Item->LevelUp(NewLevel);
+			// Item->ItemIcon = ItemData->GetRewardIcon();
 		}
 		else
 		{
 			_targetPlayer->ItemSlot->EquipItem(ItemData->PassiveItemType);
 		}
+
+		_targetPlayer->ItemSlot->ReloadAllItems();
 	}
 }

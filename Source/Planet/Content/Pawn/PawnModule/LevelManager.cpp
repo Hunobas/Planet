@@ -20,23 +20,28 @@ void ULevelManager::BeginPlay()
 
 void ULevelManager::GainXP(float XP)
 {
-	mCurrentXP += CalculateXPGain(XP, cOwner->RuntimeSettings.XpGain);
-	while (mCurrentXP >= mXPToNextLevel)
+	CurrentXP += CalculateXPGain(XP, cOwner->RuntimeSettings.XpGain);
+	while (CurrentXP >= XPToNextLevel)
 	{
 		processLevelUp();
 	}
+
+	check(cOwner->PlanetHUD);
+	cOwner->PlanetHUD->OnXPGain(CurrentXP, XPToNextLevel);
 }
 
 void ULevelManager::calculateNextLevelXP()
 {
-	mXPToNextLevel = CalculateXPToNextLevel(mCurrentLevel);
+	XPToNextLevel = CalculateXPToNextLevel(CurrentLevel);
 }
 
 void ULevelManager::processLevelUp()
 {
-	mCurrentXP -= mXPToNextLevel;
-	mCurrentLevel++;
+	CurrentXP -= XPToNextLevel;
+	CurrentLevel++;
 	calculateNextLevelXP();
 
+	check(cOwner->PlanetHUD);
 	cOwner->PlanetHUD->ShowRewardSelection();
+	cOwner->PlanetHUD->OnLevelUp(CurrentLevel);
 }

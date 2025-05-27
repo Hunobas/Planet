@@ -4,10 +4,11 @@
 #include "WeaponPawn.h"
 #include "PlanetPawn.h"
 #include "WeaponType.h"
+#include "PlanetHUD.h"
 
 UWeaponSlotComponent::UWeaponSlotComponent(): DefaultWeaponType(EWeaponType::None), cOwner(nullptr)
 {
-	mEquippedWeapons.SetNum(MaxSlots);
+	EquippedWeapons.SetNum(MaxSlots);
 }
 
 void UWeaponSlotComponent::BeginPlay()
@@ -24,9 +25,9 @@ bool UWeaponSlotComponent::EquipWeapon(const EWeaponType& _weaponType)
 	check(cOwner);
 	check(RemainSlots > 0);
 	
-	for (int32 i = 0; i < mEquippedWeapons.Num(); i++)
+	for (int32 i = 0; i < EquippedWeapons.Num(); i++)
 	{
-		if (!mEquippedWeapons[i])
+		if (!EquippedWeapons[i])
 		{
 			FActorSpawnParameters params;
 			params.Owner = cOwner;
@@ -37,7 +38,7 @@ bool UWeaponSlotComponent::EquipWeapon(const EWeaponType& _weaponType)
 				FRotator::ZeroRotator,
 				params))
 			{
-				mEquippedWeapons[i] = newWeapon;
+				EquippedWeapons[i] = newWeapon;
 				newWeapon->AttachToComponent(
 					cOwner->PlanetMesh,
 					FAttachmentTransformRules::SnapToTargetNotIncludingScale
@@ -53,7 +54,7 @@ bool UWeaponSlotComponent::EquipWeapon(const EWeaponType& _weaponType)
 
 AWeaponPawn* UWeaponSlotComponent::GetWeaponByTypeOrNull(const EWeaponType& _weaponType)
 {
-	for (AWeaponPawn* weapon : mEquippedWeapons)
+	for (AWeaponPawn* weapon : EquippedWeapons)
 	{
 		if (weapon && weapon->WeaponType == _weaponType)
 		{
@@ -61,4 +62,20 @@ AWeaponPawn* UWeaponSlotComponent::GetWeaponByTypeOrNull(const EWeaponType& _wea
 		}
 	}
 	return nullptr;
+}
+
+void UWeaponSlotComponent::ReloadAllWeapons()
+{
+	for (AWeaponPawn* weapon : EquippedWeapons)
+	{
+		if (weapon)
+		{
+			weapon->StopAttack();
+			weapon->StartAttack();
+		}
+	}
+
+	check(cOwner);
+	check(cOwner->PlanetHUD);
+	cOwner->PlanetHUD->OnWeaponSlotChanged(EquippedWeapons);
 }

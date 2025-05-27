@@ -44,7 +44,7 @@ protected:
 
 public:
     template<typename T>
-    T* AcquireOrNull(TSubclassOf<T> _actorClass, const FTransform& _spawnTransform)
+    T* AcquireOrNull(const TSubclassOf<T>& _actorClass, const FTransform& _spawnTransform)
     {
         if (!_actorClass)
             return nullptr;
@@ -63,14 +63,12 @@ public:
             if (!actor)
                 return nullptr;
         }
-        else
+
+        if (IsValid(actor))
         {
             actor->SetActorTransform(_spawnTransform);
+            setActorActiveState(actor, true);
         }
-
-        poolData->InUse.Enqueue(actor);
-        setActorActiveState(actor, true);
-    
         return Cast<T>(actor);
     }
 
@@ -83,7 +81,7 @@ private:
     struct FPoolData
     {
         TQueue<AActor*, EQueueMode::Mpsc> Available;
-        TQueue<AActor*, EQueueMode::Mpsc> InUse;
+        // TQueue<AActor*, EQueueMode::Mpsc> InUse;
         TSubclassOf<AActor> ActorClass;
         
         FPoolData() : ActorClass(nullptr) {}

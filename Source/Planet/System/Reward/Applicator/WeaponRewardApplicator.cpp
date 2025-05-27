@@ -17,10 +17,13 @@ void UWeaponRewardApplicator::Apply_Implementation(const TScriptInterface<IRewar
 			const int32 NewLevel = WeaponData->CurrentLevel + 1;
 			WeaponData->SetLevel(NewLevel);
 			Weapon->LevelUp(NewLevel);
+			Weapon->WeaponIcon = WeaponData->GetRewardIcon();
 		}
 		else
 		{
 			_targetPlayer->WeaponSlot->EquipWeapon(WeaponData->WeaponType);
 		}
+		
+		_targetPlayer->WeaponSlot->ReloadAllWeapons();
 	}
 }

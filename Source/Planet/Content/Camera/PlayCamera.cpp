@@ -28,6 +28,23 @@ void UPlayCamera::BeginPlay()
 	mSpringArm->TargetArmLength    = DefaultArmLength;
 }
 
+void UPlayCamera::TickComponent(float _deltaTime, enum ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction)
+{
+	Super::TickComponent(_deltaTime, _tickType, _thisTickFunction);
+
+	updateArmLength(_deltaTime);
+}
+
+void UPlayCamera::StartAim()
+{
+	bIsAiming = true;
+}
+
+void UPlayCamera::StopAim()
+{
+	bIsAiming = false;
+}
+
 void UPlayCamera::OnJustAimSuccess(const FVector& _targetLocation)
 {
 	check(mPlayerPawn);
@@ -51,4 +68,16 @@ void UPlayCamera::OnJustAimSuccess(const FVector& _targetLocation)
 			check(false);
 		}
 	}
+}
+
+void UPlayCamera::updateArmLength(float _deltaTime)
+{
+	if (bIsJustAiming)
+		return;
+	
+	check(mSpringArm);
+
+	float targetLength = bIsAiming ? AimedArmLength : DefaultArmLength;
+	mCurrentArmLength = FMath::FInterpTo(mCurrentArmLength, targetLength, _deltaTime, ArmLengthInterpSpeed);
+	mSpringArm->TargetArmLength = mCurrentArmLength;
 }

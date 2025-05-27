@@ -36,6 +36,7 @@ void AAntiSpacecraftGun::BeginPlay()
 	cOwner = Cast<APlanetPawn>(GetOwner());
 	mPool = GetObjectPoolManager(this);
 
+	StopAttack();
 	StartAttack();
 }
 
@@ -51,11 +52,10 @@ void AAntiSpacecraftGun::LevelUp(const int32& _newLevel)
 	case 3:
 		BaseFireRate = FireRate_LV3;
 		FireInterval = FireInterval_LV3;
-		StopAttack();
-		StartAttack();
 		break;
 	case 4:
 		bReleaseSideSpawnPoint = true;
+		
 		break;
 	case 5:
 		Damage = Damage_LV5;
@@ -66,8 +66,6 @@ void AAntiSpacecraftGun::LevelUp(const int32& _newLevel)
 	case 7:
 		BaseFireRate = FireRate_LV7;
 		FireInterval = FireInterval_LV7;
-		StopAttack();
-		StartAttack();
 		break;
 	default:
 		break;

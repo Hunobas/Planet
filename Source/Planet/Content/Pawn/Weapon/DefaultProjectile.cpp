@@ -27,11 +27,11 @@ ADefaultProjectile::ADefaultProjectile()
 
 void ADefaultProjectile::Initialize(AWeaponPawn* _owner, UObjectPoolManagerComponent* _pool)
 {
-	reset();
-    
 	cOwner = _owner;
 	cOwnPlanet = Cast<APlanetPawn>(_owner->GetOwner());
 	mPool = _pool;
+	
+	reset();
     
 	if (IsValid(this) && IsValid(CollisionBox) && !IsActorBeingDestroyed())
 	{
@@ -82,36 +82,24 @@ void ADefaultProjectile::OnOverlapBegin(UPrimitiveComponent* _overlappedComponen
 
 void ADefaultProjectile::reset()
 {
-	if (GetWorld())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(mLifeSpanTimerHandle);
-	}
-    
-	if (IsValid(CollisionBox))
-	{
-		CollisionBox->OnComponentBeginOverlap.RemoveAll(this);
-	}
+	GetWorld()->GetTimerManager().ClearTimer(mLifeSpanTimerHandle);
+	
+	check(CollisionBox);
+	CollisionBox->OnComponentBeginOverlap.RemoveAll(this);
     
 	mCurrentPierce = 0;
 	mHitActors.Reset();
     
-	if (ProjectileMovement)
-	{
-		ProjectileMovement->Velocity = FVector::ZeroVector;
-	}
+	check(ProjectileMovement);
+	ProjectileMovement->Velocity = FVector::ZeroVector;
 }
 
 void ADefaultProjectile::returnToPool()
 {
-	GetWorld()->GetTimerManager().ClearTimer(mLifeSpanTimerHandle);
-	mCurrentPierce = 0;
-	mHitActors.Reset();
-
-	check(ProjectileMovement);
-	ProjectileMovement->Velocity = FVector::ZeroVector;
-
-	check(CollisionBox);
-	CollisionBox->OnComponentBeginOverlap.RemoveDynamic(this, &ADefaultProjectile::OnOverlapBegin);
+	if (!IsValid(this) || IsActorTickEnabled())
+		return;
+	
+	reset();
 
 	check(mPool);
 	mPool->Release(this);

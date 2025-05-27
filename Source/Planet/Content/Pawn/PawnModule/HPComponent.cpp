@@ -2,6 +2,7 @@
 #include "HPComponent.h"
 
 #include "EnemyPawn.h"
+#include "PlanetHUD.h"
 #include "PlanetPawn.h"
 #include "SurvivorGameModeBase.h"
 #include "WaveManagerComponent.h"
@@ -37,6 +38,12 @@ void UHPComponent::OnTakeAnyDamage(AActor* _damagedActor, float _damage, const U
 		return;
 
 	CurrentHP = FMath::Clamp(CurrentHP - _damage, 0.0f, MaxHP);
+
+	if (mPlanet)
+	{
+		check(mPlanet->PlanetHUD);
+		mPlanet->PlanetHUD->OnHPChanged(CurrentHP, MaxHP);
+	}
 
 	if (CurrentHP <= 0.0f)
 	{

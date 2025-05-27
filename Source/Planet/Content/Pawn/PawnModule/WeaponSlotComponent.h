@@ -25,6 +25,7 @@ protected:
 public:
 	bool EquipWeapon(const EWeaponType& _weaponType);
 	AWeaponPawn* GetWeaponByTypeOrNull(const EWeaponType& _weaponType);
+	void ReloadAllWeapons();
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Slot")
 	TMap<EWeaponType, TSubclassOf<AWeaponPawn>> WeaponTypeToClassMap;
@@ -35,8 +36,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Slot")
 	EWeaponType DefaultWeaponType;
 
+	TArray<AWeaponPawn*> EquippedWeapons;
+	
 private:
 	APlanetPawn* cOwner;
-	TArray<AWeaponPawn*> mEquippedWeapons;
 
 };

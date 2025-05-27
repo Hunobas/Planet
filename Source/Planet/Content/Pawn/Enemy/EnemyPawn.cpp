@@ -38,16 +38,30 @@ void AEnemyPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Initialize();
-}
-
-void AEnemyPawn::Initialize()
-{
 	TryGetFirstComponentWithTag(this, FLYING_MOVER_TAG, mFlyingMover);
 	TryGetFirstComponentWithTag(this, FOLLOW_MOVER_TAG, mFollowMover);
 	TryGetFirstComponentWithTag(this, HP_TAG, mHP);
 	TryGetFirstComponentWithTag(this, HP_WIDGET_TAG, mHPWidget);
+}
+
+void AEnemyPawn::Initialize(UWaveManagerComponent* _waveManager, APawn* _targetPlayer)
+{
+	cWaveManager = _waveManager;
+	cTargetPawn = _targetPlayer;
+
+	check(cWaveManager);
+	reset(cWaveManager->Config_ScaleSettings);
 	
+	if (mHP && mHPWidget)
+	{
+		mHP->Initialize();
+		mHPWidget->SetVisibility(false);
+	}
+
+	check(BodyCollisionCapsule);
+	BodyCollisionCapsule->OnComponentBeginOverlap.AddUniqueDynamic(this, &AEnemyPawn::OnOverlapBegin);
+	OnTakeAnyDamage.AddUniqueDynamic(this, &AEnemyPawn::HandleDamageTaken);
+
 	setUpdateStrategy();
 }
 
@@ -77,46 +91,32 @@ void AEnemyPawn::MoveStep(float _deltaTime)
 	SetActorRotation(direction.Rotation());
 }
 
-void AEnemyPawn::ResetToDefaultSettings(const FEnemyScaleSetting& _scaleSettings, APawn* _targetPlayer)
+void AEnemyPawn::reset(const FEnemyScaleSetting& _scaleSettings)
 {
-	cTargetPawn = _targetPlayer;
-	
 	RuntimeSettings.HP			= BaseSettings->HPBase * _scaleSettings.HPScale;
 	RuntimeSettings.Damage		= BaseSettings->DamageBase * _scaleSettings.DamageScale;
 	RuntimeSettings.Speed		= BaseSettings->SpeedBase * _scaleSettings.SpeedScale;
 	RuntimeSettings.XPDrop		= BaseSettings->XPDropBase * _scaleSettings.XPDropScale;
 	RuntimeSettings.FieldScore	= BaseSettings->FieldScoreBase;
 
-	if (mHP && mHPWidget)
-	{
-		mHP->Initialize();
-		mHPWidget->SetVisibility(false);
-	}
-
 	check(BodyCollisionCapsule);
-	BodyCollisionCapsule->OnComponentBeginOverlap.AddUniqueDynamic(this, &AEnemyPawn::OnOverlapBegin);
-	OnTakeAnyDamage.AddUniqueDynamic(this, &AEnemyPawn::HandleDamageTaken);
+	BodyCollisionCapsule->OnComponentBeginOverlap.RemoveAll(this);
+	OnTakeAnyDamage.RemoveAll(this);
+
+	mUpdateStrategy.Reset();
 }
 
 void AEnemyPawn::HandleDied()
 {
 	SpawnSystemFacingForward(EnemyDieTemplate, this);
-
-	check(BodyCollisionCapsule);
-	BodyCollisionCapsule->OnComponentBeginOverlap.RemoveDynamic(this, &AEnemyPawn::OnOverlapBegin);
-	OnTakeAnyDamage.RemoveDynamic(this, &AEnemyPawn::HandleDamageTaken);
 	
-	if (ASurvivorGameModeBase* gm = GetPlanetGameMode(this))
+	if (mHP && mHP->CurrentHP <= 0.0f)
 	{
-		if (mHP && mHP->CurrentHP <= 0.0f)
-		{
-			spawnXpGem();
-		}
-		
-		gm->WaveManager->EnemyDied(this);
+		spawnXpGem();
 	}
-
-	mUpdateStrategy.Reset();
+	
+	reset(FEnemyScaleSetting());
+	cWaveManager->EnemyDied(this);
 }
 
 void AEnemyPawn::OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _otherActor,
@@ -153,18 +153,18 @@ void AEnemyPawn::setUpdateStrategy()
 	{
 		mUpdateStrategy = MakeUnique<ContinuousUpdateStrategy>(this);
 	}
-	else if (cTargetPawn != nullptr && UpdateType == EUpdateType::InputDriven)
+	else if (UpdateType == EUpdateType::InputDriven)
 	{
 		mUpdateStrategy = MakeUnique<InputDrivenUpdateStrategy>(this);
 
+		check(cTargetPawn);
 		if (APlanetController* PC = Cast<APlanetController>(cTargetPawn->GetController()))
 		{
 			PC->OnLookValue.AddLambda([this](const FVector2D& _inputValue)
 			{
 				if (mUpdateStrategy.IsValid())
 				{
-					const FVector2D inputValue = _inputValue * InputDrivenUpdateStrategy::InputDrivenUpdateScale;
-					mUpdateStrategy->OnLookInput(inputValue);
+					mUpdateStrategy->OnLookInput(_inputValue);
 				}
 			});
 		}

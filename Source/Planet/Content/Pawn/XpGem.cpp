@@ -29,12 +29,13 @@ AXpGem* AXpGem::Initialize(APawn* _targetPlayer, const float& _XP, UObjectPoolMa
 	cTargetPlayer = Cast<APlanetPawn>(_targetPlayer);
 	XP = _XP;
 	mPool = _pool;
-	TryGetFirstComponentWithTag(this, FOLLOW_MOVER_TAG, mFollowMover);
 	
-	if (mFollowMover && cTargetPlayer)
-	{
-		mFollowMover->MoveSpeedScale = CalculateXPSpeed(mFollowMover->MoveSpeedScale, cTargetPlayer->RuntimeSettings.XpSpeed); 
-	}
+	reset();
+	TryGetFirstComponentWithTag(this, FOLLOW_MOVER_TAG, mFollowMover);
+
+	check(cTargetPlayer);
+	cTargetPlayer->OnAimStart.AddUFunction(this, FName("StartAim"));
+	cTargetPlayer->OnAimRelease.AddUFunction(this, FName("StopAim"));
 
 	check(Capsule);
 	Capsule->OnComponentBeginOverlap.AddUniqueDynamic(this, &AXpGem::OnOverlapBegin);
@@ -46,10 +47,36 @@ void AXpGem::Tick(float _deltaTime)
 {
 	Super::Tick(_deltaTime);
 
-	if (mFollowMover)
+	if (!mFollowMover)
+		return;
+
+	mCurrentSpeed = DefaultSpeed;
+
+	if (bIsPlayerAiming)
 	{
-		mFollowMover->MoveStep(_deltaTime);
+		const FVector targetLocation	= cTargetPlayer->GetActorLocation();
+		const FVector targetForward		= cTargetPlayer->PlanetMesh->GetForwardVector().GetSafeNormal();
+		const FVector direction			= (GetActorLocation() - targetLocation).GetSafeNormal();
+		const float angleBetween		= FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(direction, targetForward)));
+
+		if (FMath::Abs(angleBetween) < PlayerAttractWindowAngle)
+		{
+			mCurrentSpeed = CalculateXPSpeed(DefaultSpeed, cTargetPlayer->RuntimeSettings.XpSpeed);
+		}
 	}
+	
+	mFollowMover->MoveSpeed = mCurrentSpeed;
+	mFollowMover->MoveStep(_deltaTime);
+}
+
+void AXpGem::StartAim()
+{
+	bIsPlayerAiming = true;
+}
+
+void AXpGem::StopAim()
+{
+	bIsPlayerAiming = false;
 }
 
 void AXpGem::OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _otherActor,
@@ -63,9 +90,16 @@ void AXpGem::OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _
 
 	cTargetPlayer->LevelManager->GainXP(XP);
 	SpawnSystemFacingForward(GainTemplate, this);
+	
+	reset();
+	mPool->Release(this);
+}
+
+void AXpGem::reset() const
+{
+	cTargetPlayer->OnAimStart.RemoveAll(this);
+	cTargetPlayer->OnAimRelease.RemoveAll(this);
 
 	check(Capsule);
-	Capsule->OnComponentBeginOverlap.RemoveDynamic(this, &AXpGem::OnOverlapBegin);
-	
-	mPool->Release(this);
+	Capsule->OnComponentBeginOverlap.RemoveAll(this);
 }

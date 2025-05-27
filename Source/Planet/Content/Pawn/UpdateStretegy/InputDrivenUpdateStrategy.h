@@ -19,15 +19,13 @@ public:
 	{
 		if (mEnemy)
 		{
-			mEnemy->MoveStep(_inputValue.Size());
+			mEnemy->MoveStep(_inputValue.Size() * InputDrivenUpdateScale);
 		}
 	}
 	
-	virtual void Update(float _deltaTime) override
-	{
-	}
+	virtual void Update(float _deltaTime) override { }
 
-	static constexpr float InputDrivenUpdateScale = 0.05f;
+	static constexpr float InputDrivenUpdateScale = 0.001f;
 
 private:
 	AEnemyPawn* mEnemy;

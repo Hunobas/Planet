@@ -4,6 +4,7 @@
 #include "../Planet.h"
 #include "PlanetPawn.h"
 #include "PlayerPowerUpRewardData.h"
+#include "WeaponSlotComponent.h"
 
 void UPlayerPowerUpRewardApplicator::Apply_Implementation(const TScriptInterface<IRewardData>& _rewardData,
 	APlanetPawn* _targetPlayer)
@@ -26,6 +27,9 @@ void UPlayerPowerUpRewardApplicator::Apply_Implementation(const TScriptInterface
 			break;
 		case EPlayerPowerUpType::Haste:
 			_targetPlayer->RuntimeSettings.Haste += HASTE_BOOST;
+			
+			check(_targetPlayer->WeaponSlot);
+			_targetPlayer->WeaponSlot->ReloadAllWeapons();
 			break;
 		case EPlayerPowerUpType::XpGain:
 			_targetPlayer->RuntimeSettings.XpGain += XP_GAIN_BOOST;

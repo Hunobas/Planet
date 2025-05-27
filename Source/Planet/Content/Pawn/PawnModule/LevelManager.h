@@ -22,16 +22,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Level")
 	void GainXP(float XP);
 
+	UPROPERTY(VisibleAnywhere, Category="Level")
+	int32 CurrentLevel = 1;
+	UPROPERTY(VisibleAnywhere, Category="Level")
+	float CurrentXP = 0.0f;
+	UPROPERTY(VisibleAnywhere, Category="Level")
+	float XPToNextLevel = 0.0f;
+
 private:
 	void calculateNextLevelXP();
 	void processLevelUp();
-
-	UPROPERTY(VisibleAnywhere, Category="Level")
-	int32 mCurrentLevel = 1;
-	UPROPERTY(VisibleAnywhere, Category="Level")
-	float mCurrentXP = 0.0f;
-	UPROPERTY(VisibleAnywhere, Category="Level")
-	float mXPToNextLevel = 0.0f;
 
 	APlanetPawn* cOwner;
 };

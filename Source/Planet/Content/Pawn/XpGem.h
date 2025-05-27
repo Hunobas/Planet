@@ -23,6 +23,11 @@ public:
 	virtual void Tick(float _deltaTime) override;
 
 	UFUNCTION()
+	void StartAim();
+	UFUNCTION()
+	void StopAim();
+
+	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _otherActor, UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult);
 
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
@@ -33,13 +38,22 @@ public:
 	UStaticMeshComponent* GemMesh;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
+	float DefaultSpeed = 100.0f;
+	UPROPERTY(EditAnywhere, Category = "Combat")
 	float XP = 2.f;
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float PlayerAttractWindowAngle = 45.0f;
 
 	UPROPERTY(EditAnywhere, Category = "FX")
 	UNiagaraSystem* GainTemplate;
 
 private:
+	void reset() const;
+	
 	APlanetPawn* cTargetPlayer;
 	UObjectPoolManagerComponent* mPool;
 	UFollowMover* mFollowMover;
+
+	float mCurrentSpeed;
+	bool bIsPlayerAiming = false;
 };

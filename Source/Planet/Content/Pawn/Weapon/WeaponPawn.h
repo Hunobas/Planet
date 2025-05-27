@@ -16,12 +16,18 @@ public:
     AWeaponPawn();
     virtual void LevelUp(const int32& _newLevel);
     virtual void Fire() { }
+
+    virtual void StartAttack() { }
+    virtual void StopAttack() { }
     
     UPROPERTY(EditAnywhere, Category = "Blueprint Components")
     USceneComponent* Root;
 
-    UPROPERTY(EditAnywhere, Category = "Combat")
+    UPROPERTY(EditAnywhere, Category = "Config")
+    UTexture2D* WeaponIcon;
+    UPROPERTY(EditAnywhere, Category = "Config")
     EWeaponType WeaponType;
+    
     UPROPERTY(EditAnywhere, Category = "Combat")
     float Damage        = 25.0f;
     UPROPERTY(EditAnywhere, Category = "Combat")

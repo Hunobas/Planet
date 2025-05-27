@@ -22,7 +22,7 @@ namespace PlanetConst
 	static constexpr float JUSTAIM_WINDOW_DURATION				= 0.3f;
 
 	static constexpr int32 REWARD_COUNT							= 3;
-	static constexpr int32 WEAPON_MAX_SLOT						= 7;
+	static constexpr int32 WEAPON_MAX_SLOT						= 6;
 	static constexpr int32 ITEM_MAX_SLOT						= 6;
 
 	static constexpr float WEAPON_APPEAR_RATE					= 0.6f;

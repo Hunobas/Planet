@@ -58,27 +58,8 @@ void UObjectPoolManagerComponent::Release(AActor* _actor)
     if (!poolData)
         return;
 
-    AActor* dequeuedActor = nullptr;
-    TQueue<AActor*, EQueueMode::Mpsc> tempQueue;
-    
-    while (poolData->InUse.Dequeue(dequeuedActor))
-    {
-        if (dequeuedActor == _actor)
-        {
-            setActorActiveState(_actor, false);
-            poolData->Available.Enqueue(_actor);
-            break;
-        }
-        else
-        {
-            tempQueue.Enqueue(dequeuedActor);
-        }
-    }
-    
-    while (tempQueue.Dequeue(dequeuedActor))
-    {
-        poolData->InUse.Enqueue(dequeuedActor);
-    }
+	setActorActiveState(_actor, false);
+	poolData->Available.Enqueue(_actor);
 }
 
 void UObjectPoolManagerComponent::repopulatePool(const TSubclassOf<AActor>& _actorClass, const int32& _count)
@@ -114,10 +95,12 @@ void UObjectPoolManagerComponent::setActorActiveState(AActor* _actor, bool _acti
 {
 	if (!IsValid(_actor))
 		return;
-
+	
 	_actor->SetActorTickEnabled(_active);
 	_actor->SetActorEnableCollision(_active);
 	_actor->SetActorHiddenInGame(!_active);
+	
+	_actor->ForceNetUpdate();
 }
 
 UObjectPoolManagerComponent::FPoolData* UObjectPoolManagerComponent::getOrCreatePoolData(const TSubclassOf<AActor>& _actorClass)

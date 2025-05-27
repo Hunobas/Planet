@@ -25,8 +25,8 @@ public:
 	virtual void LevelUp(const int32& _newLevel) override;
 	virtual void Fire() override;
 
-	void StartAttack();
-	void StopAttack();
+	virtual void StartAttack() override;
+	virtual void StopAttack() override;
 
 	UPROPERTY(EditAnywhere, Category = "ASGun")
 	FName MuzzleCenterTag;

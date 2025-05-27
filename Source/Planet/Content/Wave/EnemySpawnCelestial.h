@@ -34,7 +34,7 @@ public:
 	TArray<USceneComponent*> RangedSpawnPoints;
 
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
-	float MeleeSpawnRadius	= 5000.0f;
+	float MeleeSpawnRadius	= 3500.0f;
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
 	float RangedSpawnRadius	= 1500.0f;
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")

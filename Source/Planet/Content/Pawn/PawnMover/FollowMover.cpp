@@ -2,6 +2,7 @@
 #include "FollowMover.h"
 
 #include "EnemyPawn.h"
+#include "XpGem.h"
 
 UFollowMover::UFollowMover(): mOwner(nullptr), mFollowActor(nullptr)
 {
@@ -30,7 +31,7 @@ void UFollowMover::BeginPlay()
 
 	if (AEnemyPawn* enemy = Cast<AEnemyPawn>(mOwner))
 	{
-		mMoveSpeed = enemy->RuntimeSettings.Speed;
+		MoveSpeed = enemy->RuntimeSettings.Speed;
 	}
 }
 
@@ -40,7 +41,7 @@ void UFollowMover::MoveStep(float _deltaTime) const
 	check(mFollowActor);
 	
 	const FVector direction = (mFollowActor->GetActorLocation() - mOwner->GetActorLocation()).GetSafeNormal();
-	const FVector newLocation = mOwner->GetActorLocation() + direction * mMoveSpeed * MoveSpeedScale * _deltaTime;
+	const FVector newLocation = mOwner->GetActorLocation() + direction * MoveSpeed * MoveSpeedScale * _deltaTime;
 
 	mOwner->SetActorLocation(newLocation);
 }

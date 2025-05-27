@@ -149,7 +149,8 @@ AEnemyPawn* UWaveManagerComponent::spawnEnemyOrNull(const TSubclassOf<AEnemyPawn
 
 	if (spawnedEnemy)
 	{
-		spawnedEnemy->ResetToDefaultSettings(Config_ScaleSettings, cTargetPlayer);
+		spawnedEnemy->SetOwner(GetOwner());
+		spawnedEnemy->Initialize(this, cTargetPlayer);
 		CurrentFieldScore += spawnedEnemy->RuntimeSettings.FieldScore;
 		mFireManager->AddEnemy(spawnedEnemy, _spawnPoint);
 	}

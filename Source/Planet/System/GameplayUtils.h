@@ -5,11 +5,12 @@
 #include "Components/ActorComponent.h"
 #include "Components/SceneComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 
 #include "PlanetConst.h"
 #include "SurvivorGameModeBase.h"
-#include "ObjectPoolManagerComponent.h"
+#include "ObjectPoolManagerComponent.h"		// 없을 시 빌드 에러
 
 namespace GameplayUtils
 {
@@ -44,7 +45,7 @@ namespace GameplayUtils
 
 	inline float CalculateXPSpeed(const float& _baseXPSpeed, const float& _playerXPSpeed)
 	{
-		return _baseXPSpeed * _playerXPSpeed * 0.01f;
+		return _baseXPSpeed + _playerXPSpeed;
 	}
 
 	inline float CalculateXPToNextLevel(const int32& _currentLevel)
@@ -193,25 +194,24 @@ namespace GameplayUtils
 	 * 이펙트를 소환해 컴포넌트 하위에 붙이고, 이펙트의 트랜스폼을 컴포넌트의 위치 및 정면 방향으로 조정합니다.
 	 * @param _systemTemplate		소환할 Niagara 시스템 템플릿
 	 * @param _attachToComponent	이펙트를 붙일 SceneComponent
+	 * @param bAutoDestroy			소환한 이펙트의 자동 소멸 여부
 	 * @return						소환된 이펙트 컴포넌트 (실패 시 nullptr)
 	 */
-	inline UNiagaraComponent* SpawnSystemAttachedFacingForward(UNiagaraSystem* _systemTemplate, USceneComponent* _attachToComponent)
+	inline UNiagaraComponent* SpawnSystemAttachedFacingForward(UNiagaraSystem* _systemTemplate, USceneComponent* _attachToComponent, bool bAutoDestroy = true)
 	{
 		if (_systemTemplate == nullptr)
 			return nullptr;
 		
 		check(_attachToComponent);
 
-		const FRotator forwardRotation = _attachToComponent->GetComponentRotation();
-
 		return UNiagaraFunctionLibrary::SpawnSystemAttached(
 			_systemTemplate,
 			_attachToComponent,
 			NAME_None,
 			FVector::ZeroVector,
-			forwardRotation,
+			FRotator::ZeroRotator,
 			EAttachLocation::SnapToTarget,
-			true
+			bAutoDestroy
 		);
 	}
 
@@ -239,6 +239,35 @@ namespace GameplayUtils
 			_systemTemplate,
 			location,
 			rotation
+		);
+	}
+
+	/**
+	 * 나이아가라 컴포넌트를 부드럽게 페이드아웃시킨 후 제거합니다.
+	 * 새로운 파티클 생성을 중단하고, 기존 파티클들이 자연스럽게 사라질 때까지 대기 후 컴포넌트를 파괴합니다.
+	 * @param _world				타이머 매니저를 가져올 월드 컨텍스트
+	 * @param out_niagaraComponent	페이드아웃할 나이아가라 컴포넌트
+	 * @param _fadeTime				페이드아웃 시간 (초)
+	 */
+	inline void FadeOutNiagaraComponent(UWorld* _world, UNiagaraComponent& out_niagaraComponent, float _fadeTime = 2.0f)
+	{
+		if (!_world)
+			return;
+
+		out_niagaraComponent.SetVariableFloat(FName("SpawnRate"), 0.0f);
+
+		FTimerHandle fadeOutTimer;
+		_world->GetTimerManager().SetTimer(
+			fadeOutTimer,
+			[&out_niagaraComponent]() mutable
+			{
+				if (IsValid(&out_niagaraComponent))
+				{
+					out_niagaraComponent.DestroyComponent();
+				}
+			},
+			_fadeTime,
+			false
 		);
 	}
 	

@@ -24,6 +24,7 @@ protected:
 public:
 	bool EquipItem(const EPassiveItemType& _itemType);
 	UObject* GetItemByTypeOrNull(const EPassiveItemType& _itemType);
+	void ReloadAllItems() const;
 
 	UPROPERTY(EditAnywhere, Category = "Item Slot")
 	TMap<EPassiveItemType, TSubclassOf<UObject>> ItemTypeToClassMap;
@@ -32,8 +33,8 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Item Slot")
 	int32 RemainSlots = ITEM_MAX_SLOT;
 
+	TArray<UObject*> EquippedItems;
+	
 private:
 	APlanetPawn* cOwner;
-	TArray<UObject*> mEquippedItems;
-
 };

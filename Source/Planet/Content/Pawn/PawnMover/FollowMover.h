@@ -27,10 +27,10 @@ public:
 	FName FollowActorTag								= NAME_None;
 	UPROPERTY(EditAnywhere, Category = "Follow Mover", meta=(ClampMin=0))
 	float MoveSpeedScale								= 1.0f;
+	UPROPERTY(VisibleAnywhere, Category = "Follow Mover")
+	float MoveSpeed										= 100.0f;
 
 private:
 	AActor* mOwner;
 	AActor* mFollowActor;
-
-	float mMoveSpeed = 100.0f;
 };
