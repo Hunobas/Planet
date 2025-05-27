@@ -5,7 +5,7 @@
 
 #include "../Planet.h"
 #include "PlanetPawn.h"
-#include "LevelManager.h"
+#include "LevelComponent.h"
 #include "HPComponent.h"
 #include "WeaponSlotComponent.h"
 #include "PassiveItemSlotComponent.h"
@@ -29,9 +29,9 @@ void APlanetHUD::BeginPlay()
 
 void APlanetHUD::beginLatePlay() const
 {
-	check(cPlayerPawn->LevelManager);
-	OnXPGain(cPlayerPawn->LevelManager->CurrentXP, cPlayerPawn->LevelManager->XPToNextLevel);
-	OnLevelUp(cPlayerPawn->LevelManager->CurrentLevel);
+	check(cPlayerPawn->Level);
+	OnXPGain(cPlayerPawn->Level->CurrentXP, cPlayerPawn->Level->XPToNextLevel);
+	OnLevelUp(cPlayerPawn->Level->CurrentLevel);
 
 	check(cPlayerPawn->HP);
 	OnHPChanged(cPlayerPawn->HP->CurrentHP, cPlayerPawn->HP->MaxHP);
@@ -77,7 +77,7 @@ void APlanetHUD::OnWeaponSlotChanged(const TArray<AWeaponPawn*>& _equippedWeapon
 	mHUDWidget->UpdateAllWeaponIcons(_equippedWeapons);
 }
 
-void APlanetHUD::OnItemSlotChanged(const TArray<UObject*>& _equippedItems) const
+void APlanetHUD::OnItemSlotChanged(const TArray<APassiveItem*>& _equippedItems) const
 {
 	mHUDWidget->UpdateAllItemIcons(_equippedItems);
 }

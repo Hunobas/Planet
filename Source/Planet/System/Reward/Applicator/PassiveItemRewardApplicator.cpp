@@ -2,6 +2,7 @@
 #include "PassiveItemRewardApplicator.h"
 
 #include "PlanetPawn.h"
+#include "PassiveItem.h"
 #include "PassiveItemSlotComponent.h"
 #include "PassiveItemRewardData.h"
 
@@ -11,13 +12,12 @@ void UPassiveItemRewardApplicator::Apply_Implementation(const TScriptInterface<I
 	{
 		check(_targetPlayer->ItemSlot);
 		
-		if (UObject* Item = _targetPlayer->ItemSlot->GetItemByTypeOrNull(ItemData->PassiveItemType))
+		if (APassiveItem* Item = _targetPlayer->ItemSlot->GetItemByTypeOrNull(ItemData->PassiveItemType))
 		{
 			const int32 NewLevel = ItemData->GetCurrentLevel() + 1;
 			ItemData->SetLevel(NewLevel);
-			// TODO: 아이템 클래스 구현
-			// Item->LevelUp(NewLevel);
-			// Item->ItemIcon = ItemData->GetRewardIcon();
+			Item->LevelUp(NewLevel);
+			Item->ItemIcon = ItemData->GetRewardIcon();
 		}
 		else
 		{

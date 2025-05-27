@@ -16,9 +16,10 @@ class UOrbitMover;
 class UHPComponent;
 class UJustAimManagerComponent;
 class URewardManager;
-class ULevelManager;
+class ULevelComponent;
 class UWeaponSlotComponent;
 class UPassiveItemSlotComponent;
+class UDayOfWeekComponent;
 class UPlayerDataAsset;
 class APlanetController;
 class APlanetHUD;
@@ -56,7 +57,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
 	UJustAimManagerComponent* JustAimManager;
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
-	ULevelManager* LevelManager;
+	UHPComponent* HP;
+	UPROPERTY(EditAnywhere, Category = "Actor Components")
+	ULevelComponent* Level;
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
 	URewardManager* RewardManager;
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
@@ -64,7 +67,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
 	UPassiveItemSlotComponent* ItemSlot;
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
-	UHPComponent* HP;
+	UDayOfWeekComponent* DayOfWeek;
 
 	DECLARE_MULTICAST_DELEGATE(FOnAimStart)
 	FOnAimStart OnAimStart;
@@ -86,11 +89,13 @@ public:
 	
 private:
 	void composeComponent();
-	void updatePlanetRotation(const FVector& _worldMousePosition) const;
+	void updatePlanetRotation(const FVector& _worldMousePosition);
 	void resetToDefaultSettings();
-
-	APlanetController* cPlanetController;
-
+	
 	UPROPERTY()
 	UNiagaraComponent* mCurrentAimEffect;
+	
+	APlanetController* cPlanetController;
+
+	float mPreviousYaw = 0.0f;
 };

@@ -38,22 +38,29 @@ public:
 	UStaticMeshComponent* GemMesh;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	float DefaultSpeed = 100.0f;
+	float BaseMoveSpeed = 100.0f;
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float XP = 2.f;
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	float PlayerAttractWindowAngle = 45.0f;
+	float AttractAngleDegrees = 45.0f;
 
 	UPROPERTY(EditAnywhere, Category = "FX")
 	UNiagaraSystem* GainTemplate;
 
 private:
-	void reset() const;
+	void reset();
+	void updateMoveSpeed(float _deltaTime);
 	
 	APlanetPawn* cTargetPlayer;
 	UObjectPoolManagerComponent* mPool;
 	UFollowMover* mFollowMover;
 
 	float mCurrentSpeed;
-	bool bIsPlayerAiming = false;
+	float mCachedAttractCosAngle;
+	bool bPlayerAiming;
+    
+	float mMoveSpeedUpdateInterval;
+	bool bNeedRefreshMoveSpeed;
+	FVector mCachedPlayerLocation;
+	FVector mCachedPlayerForward;
 };

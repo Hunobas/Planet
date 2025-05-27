@@ -2,8 +2,8 @@
 #include "WeaponSlotComponent.h"
 
 #include "WeaponPawn.h"
-#include "PlanetPawn.h"
 #include "WeaponType.h"
+#include "PlanetPawn.h"
 #include "PlanetHUD.h"
 
 UWeaponSlotComponent::UWeaponSlotComponent(): DefaultWeaponType(EWeaponType::None), cOwner(nullptr)
@@ -23,6 +23,7 @@ bool UWeaponSlotComponent::EquipWeapon(const EWeaponType& _weaponType)
 {
 	check(WeaponTypeToClassMap[_weaponType]);
 	check(cOwner);
+	check(cOwner->PlanetMesh);
 	check(RemainSlots > 0);
 	
 	for (int32 i = 0; i < EquippedWeapons.Num(); i++)

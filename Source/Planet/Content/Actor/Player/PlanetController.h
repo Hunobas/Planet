@@ -43,6 +43,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* JustAimAction;
 	UPROPERTY(EditAnywhere, Category = "Input")
+	float MouseMoveThreshold = 1.0f;
+	UPROPERTY(EditAnywhere, Category = "Input")
 	int32 InputBufferSize = 5;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	float RecentInputWeight = 0.6f;
@@ -53,7 +55,6 @@ public:
 	
 private:
 	void bindInputMappings(APawn* _pawn);
-	void onLookTriggered(const FInputActionValue& Value);
 	void setLastLookInput(const FInputActionValue& _value);
 	void resetLastLookInput(const FInputActionValue& _value);
 	

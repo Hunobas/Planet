@@ -7,9 +7,9 @@
 #include "../Planet.h"
 #include "WeaponSlotComponent.generated.h"
 
+enum class EWeaponType : uint8;
 class AWeaponPawn;
 class APlanetPawn;
-enum class EWeaponType : uint8;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PLANET_API UWeaponSlotComponent : public UActorComponent

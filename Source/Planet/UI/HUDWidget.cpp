@@ -9,6 +9,7 @@
 #include "../Planet.h"
 #include "PlanetPawn.h"
 #include "WeaponPawn.h"
+#include "PassiveItem.h"
 
 void UHUDWidget::NativeConstruct()
 {
@@ -80,13 +81,13 @@ void UHUDWidget::SetWeaponIconBySlot(const int32& _slotIndex, UTexture2D* _weapo
 	}
 }
 
-void UHUDWidget::UpdateAllItemIcons(const TArray<UObject*>& _equippedItems) const
+void UHUDWidget::UpdateAllItemIcons(const TArray<APassiveItem*>& _equippedItems) const
 {
 	for (int32 i = 0; i < _equippedItems.Num(); i++)
 	{
 		if (_equippedItems[i])
 		{
-			SetItemIconBySlot(i, /*_equippedItems[i]->WeaponIcon*/nullptr);
+			SetItemIconBySlot(i, _equippedItems[i]->ItemIcon);
 		}
 		else
 		{

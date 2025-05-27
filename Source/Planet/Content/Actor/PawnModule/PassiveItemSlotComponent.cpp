@@ -1,6 +1,8 @@
 // PassiveItemSlotComponent.h
 #include "PassiveItemSlotComponent.h"
 
+#include "PassiveItem.h"
+#include "PassiveItemType.h"
 #include "PlanetPawn.h"
 #include "PlanetHUD.h"
 
@@ -20,6 +22,7 @@ bool UPassiveItemSlotComponent::EquipItem(const EPassiveItemType& _itemType)
 {
 	check(ItemTypeToClassMap[_itemType]);
 	check(cOwner);
+	check(cOwner->PlanetMesh);
 	check(RemainSlots > 0);
 	
 	for (int32 i = 0; i < EquippedItems.Num(); i++)
@@ -29,9 +32,17 @@ bool UPassiveItemSlotComponent::EquipItem(const EPassiveItemType& _itemType)
 			FActorSpawnParameters params;
 			params.Owner = cOwner;
             
-			if (UObject* newItem = NewObject<UObject>())
+			if (APassiveItem* newItem = GetWorld()->SpawnActor<APassiveItem>(
+				ItemTypeToClassMap[_itemType],
+				FVector::ZeroVector,
+				FRotator::ZeroRotator,
+				params))
 			{
 				EquippedItems[i] = newItem;
+				newItem->AttachToComponent(
+					cOwner->PlanetMesh,
+					FAttachmentTransformRules::SnapToTargetNotIncludingScale
+				);
 				RemainSlots--;
 				return true;
 			}
@@ -41,15 +52,14 @@ bool UPassiveItemSlotComponent::EquipItem(const EPassiveItemType& _itemType)
 	return false;
 }
 
-UObject* UPassiveItemSlotComponent::GetItemByTypeOrNull(const EPassiveItemType& _itemType)
+APassiveItem* UPassiveItemSlotComponent::GetItemByTypeOrNull(const EPassiveItemType& _itemType)
 {
-	for (UObject* item : EquippedItems)
+	for (APassiveItem* item : EquippedItems)
 	{
-		// TODO: 아이템 클래스 구현
-		// if (item && item->ItemType == _itemType)
-		// {
-		// 	return item;
-		// }
+		if (item && item->ItemType == _itemType)
+		{
+			return item;
+		}
 	}
 	return nullptr;
 }

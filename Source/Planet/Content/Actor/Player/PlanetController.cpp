@@ -53,14 +53,14 @@ void APlanetController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	FVector2D currentMousePosition;
-	if (GetMousePosition(currentMousePosition.X, currentMousePosition.Y))
+	if (!GetMousePosition(currentMousePosition.X, currentMousePosition.Y))
+		return;
+        
+	const FVector2D mouseDelta = currentMousePosition - mPreviousMousePosition;
+	if (mouseDelta.SizeSquared() > MouseMoveThreshold)
 	{
-		if (currentMousePosition != mPreviousMousePosition)
-		{
-			FVector2D mouseDelta = currentMousePosition - mPreviousMousePosition;
-			onLookTriggered(mouseDelta);
-			mPreviousMousePosition = currentMousePosition;
-		}
+		OnLookValue.Broadcast(mouseDelta);
+		mPreviousMousePosition = currentMousePosition;
 	}
 }
 
@@ -110,11 +110,6 @@ void APlanetController::bindInputMappings(APawn* _pawn)
 		EIC->BindAction(JustAimAction, ETriggerEvent::Triggered, this, &APlanetController::setLastLookInput);
 		EIC->BindAction(JustAimAction, ETriggerEvent::None, this, &APlanetController::resetLastLookInput);
 	}
-}
-
-void APlanetController::onLookTriggered(const FInputActionValue& Value)
-{
-	OnLookValue.Broadcast(Value.Get<FVector2D>());
 }
 
 void APlanetController::setLastLookInput(const FInputActionValue& _value)

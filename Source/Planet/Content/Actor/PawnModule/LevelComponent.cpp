@@ -1,16 +1,16 @@
-// LevelManager.cpp
-#include "LevelManager.h"
+// LevelComponent.cpp
+#include "LevelComponent.h"
 
 #include "../Planet.h"
 #include "PlanetPawn.h"
 #include "PlanetHUD.h"
 
-ULevelManager::ULevelManager(): cOwner(nullptr)
+ULevelComponent::ULevelComponent(): cOwner(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-void ULevelManager::BeginPlay()
+void ULevelComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -18,7 +18,7 @@ void ULevelManager::BeginPlay()
 	calculateNextLevelXP();
 }
 
-void ULevelManager::GainXP(float XP)
+void ULevelComponent::GainXP(float XP)
 {
 	CurrentXP += CalculateXPGain(XP, cOwner->RuntimeSettings.XpGain);
 	while (CurrentXP >= XPToNextLevel)
@@ -30,12 +30,12 @@ void ULevelManager::GainXP(float XP)
 	cOwner->PlanetHUD->OnXPGain(CurrentXP, XPToNextLevel);
 }
 
-void ULevelManager::calculateNextLevelXP()
+void ULevelComponent::calculateNextLevelXP()
 {
 	XPToNextLevel = CalculateXPToNextLevel(CurrentLevel);
 }
 
-void ULevelManager::processLevelUp()
+void ULevelComponent::processLevelUp()
 {
 	CurrentXP -= XPToNextLevel;
 	CurrentLevel++;

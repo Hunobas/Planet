@@ -1,19 +1,19 @@
-// LevelManager.h
+// LevelComponent.h
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "LevelManager.generated.h"
+#include "LevelComponent.generated.h"
 
 class APlanetPawn;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class PLANET_API ULevelManager : public UActorComponent
+class PLANET_API ULevelComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:    
-	ULevelManager();
+	ULevelComponent();
 
 protected:
 	virtual void BeginPlay() override;

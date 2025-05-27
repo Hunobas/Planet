@@ -14,11 +14,13 @@
 #include "OrbitMover.h"
 #include "JustAimManagerComponent.h"
 #include "RewardManager.h"
-#include "LevelManager.h"
+#include "HPComponent.h"
+#include "LevelComponent.h"
 #include "WeaponSlotComponent.h"
 #include "PassiveItemSlotComponent.h"
-#include "HPComponent.h"
+#include "DayOfWeekComponent.h"
 #include "PlayerDataAsset.h"
+#include "UObject/UnrealTypePrivate.h"
 
 APlanetPawn::APlanetPawn() : cPlanetController(nullptr)
 {
@@ -92,21 +94,27 @@ void APlanetPawn::composeComponent()
 	PlayCamera		= CreateDefaultSubobject<UPlayCamera>(TEXT("Play Camera"));
 	OrbitMover		= CreateDefaultSubobject<UOrbitMover>(TEXT("Orbit Mover"));
 	JustAimManager	= CreateDefaultSubobject<UJustAimManagerComponent>(TEXT("Just Aim Manager"));
-	LevelManager	= CreateDefaultSubobject<ULevelManager>(TEXT("Level Manager"));
+	HP				= CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
+	Level	= CreateDefaultSubobject<ULevelComponent>(TEXT("Level Manager"));
 	RewardManager	= CreateDefaultSubobject<URewardManager>(TEXT("Reward Manager"));
 	WeaponSlot		= CreateDefaultSubobject<UWeaponSlotComponent>(TEXT("Weapon Slot"));
 	ItemSlot		= CreateDefaultSubobject<UPassiveItemSlotComponent>(TEXT("Item Slot"));
-	HP				= CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
+	DayOfWeek		= CreateDefaultSubobject<UDayOfWeekComponent>(TEXT("Day Of Week"));
 }
 
-void APlanetPawn::updatePlanetRotation(const FVector& _worldMousePosition) const
+void APlanetPawn::updatePlanetRotation(const FVector& _worldMousePosition)
 {
 	const FRotator newRotation = UKismetMathLibrary::FindLookAtRotation(
 		GetActorLocation(), 
 		_worldMousePosition
 	);
-	
+
 	PlanetMesh->SetWorldRotation(FRotator(0, newRotation.Yaw, 0));
+
+	check(DayOfWeek);
+	const float yawDelta = mPreviousYaw - newRotation.Yaw;			// 반시계 자전
+	DayOfWeek->UpdateRotation(yawDelta);
+	mPreviousYaw = newRotation.Yaw;
 
 #ifdef DEBUG
 	DrawDebugLine(
@@ -118,6 +126,20 @@ void APlanetPawn::updatePlanetRotation(const FVector& _worldMousePosition) const
 		0.1f,
 		0,
 		2.0f
+	);
+
+	const FRotator meridianRotation = FRotator(0.0f, DayOfWeek->MeridianYaw, 0.0f);
+	const FVector meridianDirection = meridianRotation.Vector();
+    
+	DrawDebugLine(
+		GetWorld(),
+		GetActorLocation(),
+		GetActorLocation() + (meridianDirection * 1000.0f),
+		FColor::White,
+		false,
+		0.1f,
+		0,
+		5.0f
 	);
 #endif
 }

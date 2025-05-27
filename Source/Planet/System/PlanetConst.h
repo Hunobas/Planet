@@ -18,6 +18,10 @@ namespace PlanetConst
 	static constexpr float PLAYTIME								= 1200.0f;
 	static constexpr EAutoReceiveInput::Type SINGLEPLAYER_INDEX	= EAutoReceiveInput::Player0;
 
+	static constexpr float CACHE_UPDATE_FREQUENT_INTERVAL		= 0.02f;	// 약 2프레임에 한 번
+	static constexpr float CACHE_UPDATE_NORMAL_INTERVAL			= 0.05f;	// 약 5프레임에 한 번
+	static constexpr float CACHE_UPDATE_INFREQUENT_INTERVAL		= 0.1f;		// 약 10프레임에 한 번
+
 	static constexpr float ENEMY_FIRE_DELAY						= 2.0f;
 	static constexpr float JUSTAIM_WINDOW_DURATION				= 0.3f;
 
@@ -36,6 +40,11 @@ namespace PlanetConst
 	static constexpr float HASTE_BOOST							= 5.0f;
 	static constexpr float XP_GAIN_BOOST						= 10.0f;
 	static constexpr float XP_SPEED_BOOST						= 20.0f;
+    
+	static constexpr float EPSILON = 0.001f;
+	static constexpr float DEGREES_PER_DAY = 360.0f;
+	static constexpr float DEGREES_PER_WEEK = 2520.0f;
+	static constexpr int32 DAY_PER_WEEK = 7;
 	
 #pragma endregion
 

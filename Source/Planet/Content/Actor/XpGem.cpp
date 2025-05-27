@@ -8,7 +8,7 @@
 
 #include "PlanetPawn.h"
 #include "FollowMover.h"
-#include "LevelManager.h"
+#include "LevelComponent.h"
 
 AXpGem::AXpGem()
 {
@@ -40,6 +40,9 @@ AXpGem* AXpGem::Initialize(APawn* _targetPlayer, const float& _XP, UObjectPoolMa
 	check(Capsule);
 	Capsule->OnComponentBeginOverlap.AddUniqueDynamic(this, &AXpGem::OnOverlapBegin);
 
+	mCachedAttractCosAngle = FMath::Cos(FMath::DegreesToRadians(AttractAngleDegrees));
+	mCurrentSpeed = BaseMoveSpeed;
+
 	return this;
 }
 
@@ -50,20 +53,7 @@ void AXpGem::Tick(float _deltaTime)
 	if (!mFollowMover)
 		return;
 
-	mCurrentSpeed = DefaultSpeed;
-
-	if (bIsPlayerAiming)
-	{
-		const FVector targetLocation	= cTargetPlayer->GetActorLocation();
-		const FVector targetForward		= cTargetPlayer->PlanetMesh->GetForwardVector().GetSafeNormal();
-		const FVector direction			= (GetActorLocation() - targetLocation).GetSafeNormal();
-		const float angleBetween		= FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(direction, targetForward)));
-
-		if (FMath::Abs(angleBetween) < PlayerAttractWindowAngle)
-		{
-			mCurrentSpeed = CalculateXPSpeed(DefaultSpeed, cTargetPlayer->RuntimeSettings.XpSpeed);
-		}
-	}
+	updateMoveSpeed(_deltaTime);
 	
 	mFollowMover->MoveSpeed = mCurrentSpeed;
 	mFollowMover->MoveStep(_deltaTime);
@@ -71,12 +61,13 @@ void AXpGem::Tick(float _deltaTime)
 
 void AXpGem::StartAim()
 {
-	bIsPlayerAiming = true;
+	bPlayerAiming = true;
+	bNeedRefreshMoveSpeed = true;
 }
 
 void AXpGem::StopAim()
 {
-	bIsPlayerAiming = false;
+	bPlayerAiming = false;
 }
 
 void AXpGem::OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _otherActor,
@@ -88,18 +79,47 @@ void AXpGem::OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _
 	if (Cast<APlanetPawn>(_otherActor) != cTargetPlayer)
 		return;
 
-	cTargetPlayer->LevelManager->GainXP(XP);
+	cTargetPlayer->Level->GainXP(XP);
 	SpawnSystemFacingForward(GainTemplate, this);
 	
 	reset();
 	mPool->Release(this);
 }
 
-void AXpGem::reset() const
+void AXpGem::reset()
 {
 	cTargetPlayer->OnAimStart.RemoveAll(this);
 	cTargetPlayer->OnAimRelease.RemoveAll(this);
 
 	check(Capsule);
 	Capsule->OnComponentBeginOverlap.RemoveAll(this);
+
+	bPlayerAiming = false;
+	bNeedRefreshMoveSpeed = true;
+	mMoveSpeedUpdateInterval = 0.0f;
+}
+
+void AXpGem::updateMoveSpeed(float _deltaTime)
+{
+	mCurrentSpeed = BaseMoveSpeed;
+    
+	if (!bPlayerAiming)
+		return;
+    
+	mMoveSpeedUpdateInterval += _deltaTime;
+	if (bNeedRefreshMoveSpeed || mMoveSpeedUpdateInterval >= CACHE_UPDATE_NORMAL_INTERVAL)
+	{
+		mCachedPlayerLocation = cTargetPlayer->GetActorLocation();
+		mCachedPlayerForward = cTargetPlayer->PlanetMesh->GetForwardVector();
+		mMoveSpeedUpdateInterval = 0.0f;
+		bNeedRefreshMoveSpeed = false;
+	}
+    
+	const FVector directionToGem = (GetActorLocation() - mCachedPlayerLocation).GetSafeNormal();
+	const float dotProduct = FVector::DotProduct(directionToGem, mCachedPlayerForward);
+    
+	if (dotProduct >= mCachedAttractCosAngle)
+	{
+		mCurrentSpeed = CalculateXPSpeed(BaseMoveSpeed, cTargetPlayer->RuntimeSettings.XpSpeed);
+	}
 }

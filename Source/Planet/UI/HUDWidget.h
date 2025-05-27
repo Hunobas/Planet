@@ -10,6 +10,7 @@ class UTextBlock;
 class UImage;
 class APlanetPawn;
 class AWeaponPawn;
+class APassiveItem;
 
 UCLASS()
 class PLANET_API UHUDWidget : public UUserWidget
@@ -25,7 +26,7 @@ public:
 	void UpdateHP(const float& _currentHP, const float& _maxHP) const;
 	void UpdateAllWeaponIcons(const TArray<AWeaponPawn*>& _equippedWeapons) const;
 	void SetWeaponIconBySlot(const int32& _slotIndex, UTexture2D* _weaponTexture) const;
-	void UpdateAllItemIcons(const TArray<UObject*>& _equippedItems) const;
+	void UpdateAllItemIcons(const TArray<APassiveItem*>& _equippedItems) const;
 	void SetItemIconBySlot(const int32& _slotIndex, UTexture2D* _itemTexture) const;
 
 	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
