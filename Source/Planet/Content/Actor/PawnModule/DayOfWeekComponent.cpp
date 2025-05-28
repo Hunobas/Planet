@@ -2,56 +2,60 @@
 #include "DayOfWeekComponent.h"
 
 #include "../Planet.h"
+#include "PlanetPawn.h"
+#include "PlanetHUD.h"
 
-UDayOfWeekComponent::UDayOfWeekComponent() : DailyAngle(0.0f), WeeklyAngle(0.0f), MeridianYaw(90.0f),
-    CurrentDay(EPlanetDayOfWeek::Monday)
+UDayOfWeekComponent::UDayOfWeekComponent() : DailyAngle(0.0f), WeeklyAngle(0.0f), CurrentDay(EPlanetDayOfWeek::Monday),
+    MeridianYaw(180.0f), mWeeklyAngleStack(0.0f), mPreviousPlanetYaw(0.0f)
 {
     PrimaryComponentTick.bCanEverTick = false;
 }
 
-void UDayOfWeekComponent::UpdateRotation(float _yawDelta)
+void UDayOfWeekComponent::BeginPlay()
 {
-    if (FMath::Abs(_yawDelta) < EPSILON)
+    Super::BeginPlay();
+
+    cOwner = Cast<APlanetPawn>(GetOwner());
+    check(cOwner);
+}
+
+void UDayOfWeekComponent::UpdateRotation(float _planetYaw)
+{
+    if (FMath::Abs(_planetYaw - mPreviousPlanetYaw) < EPSILON)
         return;
+    mPreviousPlanetYaw = _planetYaw;
     
-    if (_yawDelta > 0.0f)
+    const float spendAngle = ToFixedAngle(_planetYaw - MeridianYaw);      // 0~360
+    const float presentYaw = NormalizeAngle(_planetYaw - MeridianYaw);    // -180~180
+    
+    if (DailyAngle >= NOON_ANGLE)
     {
-        DailyAngle += _yawDelta;
-        
-        if (DailyAngle >= DEGREES_PER_DAY)
+        if (presentYaw >= 0 && presentYaw <= DayPassYawGap)
         {
-            const float overflow = DailyAngle - DEGREES_PER_DAY;
-            DailyAngle = overflow;
+            // 요일 진행
+            mWeeklyAngleStack = FMath::Modulo(mWeeklyAngleStack + DEGREES_PER_DAY, DEGREES_PER_WEEK);
         }
-        
-        WeeklyAngle += _yawDelta;
+        DailyAngle = FMath::Modulo(MIDNIGHT_ANGLE + spendAngle, DEGREES_PER_DAY);
     }
     else
     {
-        const float newDailyAngle = DailyAngle + _yawDelta;
-        
-        if (newDailyAngle >= 0.0f)
+        if (presentYaw >= DayBackingYawGap && presentYaw <= 0)
         {
-            DailyAngle = newDailyAngle;
-            WeeklyAngle += _yawDelta;
+            // 역행
+            MeridianYaw = _planetYaw;
+            DailyAngle  = MIDNIGHT_ANGLE;
         }
         else
         {
-            DailyAngle = 0.0f;
-            MeridianYaw = NormalizeAngle(MeridianYaw + newDailyAngle);
+            DailyAngle = FMath::Modulo(MIDNIGHT_ANGLE + spendAngle, DEGREES_PER_DAY);
         }
     }
-    WeeklyAngle = FMath::Fmod(WeeklyAngle, DEGREES_PER_WEEK);
-    
+
+    WeeklyAngle = FMath::Modulo(mWeeklyAngleStack + DailyAngle, DEGREES_PER_WEEK);
     updateCurrentDay();
 
-#ifdef DEBUG
-    if (bDebugMode)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("YawDelta: %.2f, DailyAngle: %.2f, WeeklyAngle: %.2f, Day: %d"), 
-            _yawDelta, DailyAngle, WeeklyAngle, static_cast<int32>(CurrentDay));
-    }
-#endif
+    check(cOwner->PlanetHUD);
+    cOwner->PlanetHUD->OnDailyProgressChanged(GetDailyProgress(), GetWeeklyProgress());
 }
 
 void UDayOfWeekComponent::updateCurrentDay()
@@ -62,6 +66,9 @@ void UDayOfWeekComponent::updateCurrentDay()
     {
         broadcastDayChange(newDay);
         CurrentDay = newDay;
+
+        check(cOwner->PlanetHUD);
+        cOwner->PlanetHUD->OnCurrentDayChanged(newDay);
     }
 }
 

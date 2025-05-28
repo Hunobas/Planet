@@ -31,7 +31,7 @@ public:
 	void OnJustAimSuccess(const FVector& _targetLocation);
 	
 	UPROPERTY(EditAnywhere, Category = "Camera Setting")
-	FRotator SpringArmRotation		= {90.0f, -90.0f, 0};
+	FRotator SpringArmRotation		= {0.0f, -90.0f, 0};
 	UPROPERTY(EditAnywhere, Category = "Camera Setting")
 	float DefaultArmLength			= 3000.0f;
 	UPROPERTY(EditAnywhere, Category = "Camera Setting")

@@ -9,6 +9,7 @@
 #include "HPComponent.h"
 #include "WeaponSlotComponent.h"
 #include "PassiveItemSlotComponent.h"
+#include "DayOfWeekComponent.h"
 #include "IRewardData.h"
 #include "RewardManager.h"
 #include "HUDWidget.h"
@@ -41,6 +42,9 @@ void APlanetHUD::beginLatePlay() const
 
 	check(cPlayerPawn->ItemSlot)
 	OnItemSlotChanged(cPlayerPawn->ItemSlot->EquippedItems);
+
+	check(cPlayerPawn->DayOfWeek);
+	OnCurrentDayChanged(cPlayerPawn->DayOfWeek->CurrentDay);
 
 	mHUDWidget->AddToViewport(LOW_ORDER);
 }
@@ -80,4 +84,14 @@ void APlanetHUD::OnWeaponSlotChanged(const TArray<AWeaponPawn*>& _equippedWeapon
 void APlanetHUD::OnItemSlotChanged(const TArray<APassiveItem*>& _equippedItems) const
 {
 	mHUDWidget->UpdateAllItemIcons(_equippedItems);
+}
+
+void APlanetHUD::OnDailyProgressChanged(const float _dailyProgress, const float _weeklyProgress) const
+{
+	mHUDWidget->UpdateDailyProgress(_dailyProgress, _weeklyProgress);
+}
+
+void APlanetHUD::OnCurrentDayChanged(EPlanetDayOfWeek _newDay) const
+{
+	mHUDWidget->UpdateCurrentDayTextBlock(_newDay);
 }

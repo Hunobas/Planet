@@ -25,7 +25,7 @@ public:
 	
 	virtual void Update(float _deltaTime) override { }
 
-	static constexpr float InputDrivenUpdateScale = 0.001f;
+	static constexpr float InputDrivenUpdateScale = 0.005f;
 
 private:
 	AEnemyPawn* mEnemy;

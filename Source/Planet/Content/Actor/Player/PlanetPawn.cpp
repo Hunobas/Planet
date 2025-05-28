@@ -41,6 +41,9 @@ void APlanetPawn::BeginPlay()
 	PlanetHUD = Cast<APlanetHUD>(cPlanetController->GetHUD());
 	check(PlanetHUD);
 
+	check(PlanetMesh);
+	PlanetMesh->SetRelativeRotation(FRotator(0, DEGREES_PER_DAY / 2, 0));
+
 	cPlanetController->OnLookValue.AddLambda([this](const FVector2D& _inputValue)
 	{
 		updatePlanetRotation(cPlanetController->WorldMouseLocation);
@@ -112,9 +115,7 @@ void APlanetPawn::updatePlanetRotation(const FVector& _worldMousePosition)
 	PlanetMesh->SetWorldRotation(FRotator(0, newRotation.Yaw, 0));
 
 	check(DayOfWeek);
-	const float yawDelta = mPreviousYaw - newRotation.Yaw;			// 반시계 자전
-	DayOfWeek->UpdateRotation(yawDelta);
-	mPreviousYaw = newRotation.Yaw;
+	DayOfWeek->UpdateRotation(newRotation.Yaw);
 
 #ifdef DEBUG
 	DrawDebugLine(

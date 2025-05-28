@@ -348,13 +348,20 @@ namespace GameplayUtils
 		return EaseOut(num, 5);
 	}
 
-	inline float NormalizeAngle(float degree)
+	inline float NormalizeAngle(float yaw)
 	{
-		while (degree > 180.f)
-			degree -= 360.f;
-		while (degree < -180.f)
-			degree += 360.f;
-		return degree;
+		while (yaw > 180.f)
+			yaw -= 360.f;
+		while (yaw <= -180.f)
+			yaw += 360.f;
+		return yaw;
+	}
+
+	inline float ToFixedAngle(float yaw)
+	{
+		if (yaw < 0.0f)
+			yaw += 360.f;
+		return yaw;
 	}
 
 	inline FRotator LerpAngle(FRotator a, FRotator b, float x)

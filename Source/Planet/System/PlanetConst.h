@@ -45,6 +45,8 @@ namespace PlanetConst
 	static constexpr float DEGREES_PER_DAY = 360.0f;
 	static constexpr float DEGREES_PER_WEEK = 2520.0f;
 	static constexpr int32 DAY_PER_WEEK = 7;
+	static constexpr float MIDNIGHT_ANGLE = EPSILON;
+	static constexpr float NOON_ANGLE = 180.0f;
 	
 #pragma endregion
 

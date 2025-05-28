@@ -96,6 +96,4 @@ private:
 	UNiagaraComponent* mCurrentAimEffect;
 	
 	APlanetController* cPlanetController;
-
-	float mPreviousYaw = 0.0f;
 };

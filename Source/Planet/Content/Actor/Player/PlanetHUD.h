@@ -5,6 +5,7 @@
 #include "GameFramework/HUD.h"
 #include "PlanetHUD.generated.h"
 
+enum class EPlanetDayOfWeek : uint8;
 class UUserWidget;
 class APlanetPawn;
 class UHUDWidget;
@@ -28,6 +29,8 @@ public:
     void OnHPChanged(const float& _currentHP, const float& _maxHP) const;
     void OnWeaponSlotChanged(const TArray<AWeaponPawn*>& _equippedWeapons) const;
     void OnItemSlotChanged(const TArray<APassiveItem*>& _equippedItems) const;
+    void OnDailyProgressChanged(const float _dailyProgress, const float _weeklyProgress) const;
+    void OnCurrentDayChanged(EPlanetDayOfWeek _newDay) const;
 
     UPROPERTY(EditAnywhere, Category = "UI Component")
     TSubclassOf<UUserWidget> HUDClass;

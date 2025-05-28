@@ -5,6 +5,7 @@
 #include "Blueprint/UserWidget.h"
 #include "HUDWidget.generated.h"
 
+enum class EPlanetDayOfWeek : uint8;
 class UProgressBar;
 class UTextBlock;
 class UImage;
@@ -21,13 +22,15 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
-	void UpdateXPProgress(const float& _currentXP, const float& _xpToNextLevel) const;
-	void UpdateCurrentLevel(const int32& _level) const;
-	void UpdateHP(const float& _currentHP, const float& _maxHP) const;
+	void UpdateXPProgress(const float _currentXP, const float _xpToNextLevel) const;
+	void UpdateCurrentLevel(const int32 _level) const;
+	void UpdateHP(const float _currentHP, const float _maxHP) const;
 	void UpdateAllWeaponIcons(const TArray<AWeaponPawn*>& _equippedWeapons) const;
-	void SetWeaponIconBySlot(const int32& _slotIndex, UTexture2D* _weaponTexture) const;
+	void SetWeaponIconBySlot(const int32 _slotIndex, UTexture2D* _weaponTexture) const;
 	void UpdateAllItemIcons(const TArray<APassiveItem*>& _equippedItems) const;
-	void SetItemIconBySlot(const int32& _slotIndex, UTexture2D* _itemTexture) const;
+	void SetItemIconBySlot(const int32 _slotIndex, UTexture2D* _itemTexture) const;
+	void UpdateDailyProgress(const float _dailyProgress, const float _weeklyProgress) const;
+	void UpdateCurrentDayTextBlock(EPlanetDayOfWeek _currentDay) const;
 
 	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
 	UProgressBar* HPProgressBar;
@@ -65,9 +68,29 @@ public:
 	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
 	UImage* Item6;
 
+	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
+	UProgressBar* DailyProgressBar;
+	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
+	UProgressBar* WeeklyProgressBar;
+	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
+	UTextBlock* MON;
+	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
+	UTextBlock* TUE;
+	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
+	UTextBlock* WED;
+	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
+	UTextBlock* THU;
+	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
+	UTextBlock* FRI;
+	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
+	UTextBlock* SAT;
+	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
+	UTextBlock* SUN;
+
 private:
-	UImage* getWeaponImageBySlot(int32 _slotIndex) const;
-	UImage* getItemImageBySlot(int32 _slotIndex) const;
+	UImage* getWeaponImageBySlot(const int32 _slotIndex) const;
+	UImage* getItemImageBySlot(const int32 _slotIndex) const;
+	UTextBlock* getDayTextByDayOfWeek(const EPlanetDayOfWeek& _dayOfWeek) const;
 	
 	APlanetPawn* cPlayerPawn;
 };

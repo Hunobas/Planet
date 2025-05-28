@@ -6,6 +6,8 @@
 #include "../Planet.h"
 #include "DayOfWeekComponent.generated.h"
 
+class APlanetPawn;
+
 UENUM(BlueprintType)
 enum class EPlanetDayOfWeek : uint8
 {
@@ -28,7 +30,11 @@ class PLANET_API UDayOfWeekComponent : public UActorComponent
 public:
 	UDayOfWeekComponent();
 
-	void UpdateRotation(float _yawDelta);
+protected:
+	virtual void BeginPlay() override;
+
+public:
+	void UpdateRotation(float _planetYaw);
     
 	UFUNCTION(BlueprintCallable, Category = "Day of Week")
 	float GetDailyProgress() const { return DailyAngle / DEGREES_PER_DAY; }
@@ -38,9 +44,13 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Day of Week")
 	FOnDayChanged OnDayChanged;
 
-	UPROPERTY(VisibleAnywhere, Category = "Day of Week")
+	UPROPERTY(EditAnywhere, Category = "Day of Week")
+	float DayPassYawGap = 45.0f;
+	UPROPERTY(EditAnywhere, Category = "Day of Week")
+	float DayBackingYawGap = -90.0f;
+	UPROPERTY(VisibleAnywhere, Category = "Day of Week", meta=(ClampMin=0, ClampMax=360))
 	float DailyAngle;
-	UPROPERTY(VisibleAnywhere, Category = "Day of Week")
+	UPROPERTY(VisibleAnywhere, Category = "Day of Week", meta=(ClampMin=0, ClampMax=2520))
 	float WeeklyAngle;
 	UPROPERTY(VisibleAnywhere, Category = "Day of Week")
 	EPlanetDayOfWeek CurrentDay;
@@ -54,4 +64,9 @@ private:
 	void updateCurrentDay();
 	void broadcastDayChange(EPlanetDayOfWeek _newDay);
 	EPlanetDayOfWeek calculateDay() const;
+
+	APlanetPawn* cOwner;
+	
+	float mWeeklyAngleStack;
+	float mPreviousPlanetYaw;
 };

@@ -10,6 +10,7 @@
 #include "PlanetPawn.h"
 #include "WeaponPawn.h"
 #include "PassiveItem.h"
+#include "DayOfWeekComponent.h"
 
 void UHUDWidget::NativeConstruct()
 {
@@ -19,7 +20,7 @@ void UHUDWidget::NativeConstruct()
 	checkf(cPlayerPawn, TEXT("[HUDWidget] PlayerPawn을 찾을 수 없습니다."));
 }
 
-void UHUDWidget::UpdateXPProgress(const float& _currentXP, const float& _xpToNextLevel) const
+void UHUDWidget::UpdateXPProgress(const float _currentXP, const float _xpToNextLevel) const
 {
 	if (!XPProgressBar)
 		return;
@@ -28,7 +29,7 @@ void UHUDWidget::UpdateXPProgress(const float& _currentXP, const float& _xpToNex
 	XPProgressBar->SetPercent(FMath::Clamp(progressPercent, 0.0f, 1.0f));
 }
 
-void UHUDWidget::UpdateCurrentLevel(const int32& _level) const
+void UHUDWidget::UpdateCurrentLevel(const int32 _level) const
 {
 	if (!CurrentLevel)
 		return;
@@ -37,7 +38,7 @@ void UHUDWidget::UpdateCurrentLevel(const int32& _level) const
 	CurrentLevel->SetText(levelText);
 }
 
-void UHUDWidget::UpdateHP(const float& _currentHP, const float& _maxHP) const
+void UHUDWidget::UpdateHP(const float _currentHP, const float _maxHP) const
 {
 	if (!HPProgressBar || !CurrentHPOverMaxHp)
 		return;
@@ -64,7 +65,7 @@ void UHUDWidget::UpdateAllWeaponIcons(const TArray<AWeaponPawn*>& _equippedWeapo
 	}
 }
 
-void UHUDWidget::SetWeaponIconBySlot(const int32& _slotIndex, UTexture2D* _weaponTexture) const
+void UHUDWidget::SetWeaponIconBySlot(const int32 _slotIndex, UTexture2D* _weaponTexture) const
 {
 	UImage* weaponImage = getWeaponImageBySlot(_slotIndex);
 	if (!weaponImage)
@@ -96,7 +97,7 @@ void UHUDWidget::UpdateAllItemIcons(const TArray<APassiveItem*>& _equippedItems)
 	}
 }
 
-void UHUDWidget::SetItemIconBySlot(const int32& _slotIndex, UTexture2D* _itemTexture) const
+void UHUDWidget::SetItemIconBySlot(const int32 _slotIndex, UTexture2D* _itemTexture) const
 {
 	UImage* itemImage = getItemImageBySlot(_slotIndex);
 	if (!itemImage)
@@ -113,7 +114,32 @@ void UHUDWidget::SetItemIconBySlot(const int32& _slotIndex, UTexture2D* _itemTex
 	}
 }
 
-UImage* UHUDWidget::getWeaponImageBySlot(int32 _slotIndex) const
+void UHUDWidget::UpdateDailyProgress(const float _dailyProgress, const float _weeklyProgress) const
+{
+	if (!DailyProgressBar || !WeeklyProgressBar)
+		return;
+    
+	DailyProgressBar->SetPercent(FMath::Clamp(_dailyProgress, 0.0f, 1.0f));
+	WeeklyProgressBar->SetPercent(FMath::Clamp(_weeklyProgress, 0.0f, 1.0f));
+}
+
+void UHUDWidget::UpdateCurrentDayTextBlock(EPlanetDayOfWeek _currentDay) const
+{
+	if (MON) MON->SetVisibility(ESlateVisibility::Hidden);
+	if (TUE) TUE->SetVisibility(ESlateVisibility::Hidden);
+	if (WED) WED->SetVisibility(ESlateVisibility::Hidden);
+	if (THU) THU->SetVisibility(ESlateVisibility::Hidden);
+	if (FRI) FRI->SetVisibility(ESlateVisibility::Hidden);
+	if (SAT) SAT->SetVisibility(ESlateVisibility::Hidden);
+	if (SUN) SUN->SetVisibility(ESlateVisibility::Hidden);
+
+	if (UTextBlock* currentDayText = getDayTextByDayOfWeek(_currentDay))
+	{
+		currentDayText->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+UImage* UHUDWidget::getWeaponImageBySlot(const int32 _slotIndex) const
 {
 	check(_slotIndex < WEAPON_MAX_SLOT)
 	
@@ -131,7 +157,7 @@ UImage* UHUDWidget::getWeaponImageBySlot(int32 _slotIndex) const
 	}
 }
 
-UImage* UHUDWidget::getItemImageBySlot(int32 _slotIndex) const
+UImage* UHUDWidget::getItemImageBySlot(const int32 _slotIndex) const
 {
 	check(_slotIndex < ITEM_MAX_SLOT)
 	
@@ -146,5 +172,22 @@ UImage* UHUDWidget::getItemImageBySlot(int32 _slotIndex) const
 		default:
 			checkNoEntry();
 			return nullptr;
+	}
+}
+
+UTextBlock* UHUDWidget::getDayTextByDayOfWeek(const EPlanetDayOfWeek& _dayOfWeek) const
+{
+	switch (_dayOfWeek)
+	{
+		case EPlanetDayOfWeek::Monday: return MON;
+		case EPlanetDayOfWeek::Tuesday: return TUE;
+		case EPlanetDayOfWeek::Wednesday: return WED;
+		case EPlanetDayOfWeek::Thursday: return THU;
+		case EPlanetDayOfWeek::Friday: return FRI;
+		case EPlanetDayOfWeek::Saturday: return SAT;
+		case EPlanetDayOfWeek::Sunday: return SUN;
+		default:
+		checkNoEntry();
+		return nullptr;
 	}
 }
