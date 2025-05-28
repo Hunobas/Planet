@@ -42,7 +42,7 @@ void UWaveManagerComponent::BeginPlay()
 
 	CurrentFieldScore = 0;
 	
-	// PlayWaveMode1();
+	PlayWaveMode1();
 	// PlayWaveMode2();
 }
 

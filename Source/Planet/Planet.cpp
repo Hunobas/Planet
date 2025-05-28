@@ -1,5 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
+// Planet.cpp
 #include "Planet.h"
 #include "Modules/ModuleManager.h"
 

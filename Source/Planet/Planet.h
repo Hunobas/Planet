@@ -1,5 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
+// Planet.h
 #pragma once
 
 #include "CoreMinimal.h"

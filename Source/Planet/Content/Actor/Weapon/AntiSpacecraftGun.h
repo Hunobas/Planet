@@ -28,19 +28,18 @@ public:
 	virtual void StartAttack() override;
 	virtual void StopAttack() override;
 
-	UPROPERTY(EditAnywhere, Category = "ASGun")
+	UPROPERTY(EditAnywhere, Category = "AS Gun")
 	FName MuzzleCenterTag;
-	UPROPERTY(EditAnywhere, Category = "ASGun")
+	UPROPERTY(EditAnywhere, Category = "AS Gun")
 	FName MuzzleLeftTag;
-	UPROPERTY(EditAnywhere, Category = "ASGun")
+	UPROPERTY(EditAnywhere, Category = "AS Gun")
 	FName MuzzleRightTag;
-	UPROPERTY(EditAnywhere, Category = "ASGun")
+	UPROPERTY(EditAnywhere, Category = "AS Gun")
 	TSubclassOf<ADefaultProjectile> ProjectileClass;
-	UPROPERTY(EditAnywhere, Category = "ASGun")
+	UPROPERTY(EditAnywhere, Category = "AS Gun")
 	float FireInterval			= 0.3f;
-
-	UPROPERTY(EditAnywhere, Category = "FX")
-	USoundBase* FireSound;
+	UPROPERTY(EditAnywhere, Category = "AS Gun")
+	int32 BurstFireMaxCount		= 4;
 
 	UPROPERTY(EditAnywhere, Category = "LV")
 	float Damage_LV2			= 40.0f;
@@ -58,6 +57,9 @@ public:
 	float FireRate_LV7			= 0.4f;
 	UPROPERTY(EditAnywhere, Category = "LV")
 	float FireInterval_LV7		= 0.1f;
+
+	UPROPERTY(EditAnywhere, Category = "FX")
+	USoundBase* FireSound;
 
 private:
 	void burstFire();

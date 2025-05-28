@@ -55,7 +55,6 @@ void AAntiSpacecraftGun::LevelUp(const int32& _newLevel)
 		break;
 	case 4:
 		bReleaseSideSpawnPoint = true;
-		
 		break;
 	case 5:
 		Damage = Damage_LV5;
@@ -68,6 +67,7 @@ void AAntiSpacecraftGun::LevelUp(const int32& _newLevel)
 		FireInterval = FireInterval_LV7;
 		break;
 	default:
+		checkNoEntry();
 		break;
 	}
 }
@@ -109,7 +109,7 @@ void AAntiSpacecraftGun::StopAttack()
 
 void AAntiSpacecraftGun::burstFire()
 {
-	if (mBurstFireCount++ >= 4)
+	if (mBurstFireCount++ >= BurstFireMaxCount)
 	{
 		GetWorldTimerManager().ClearTimer(mBurstFireTimerHandle);
 		mBurstFireCount = 0;

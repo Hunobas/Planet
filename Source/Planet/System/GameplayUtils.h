@@ -35,7 +35,7 @@ namespace GameplayUtils
 
 	inline float CalculateFireRate(const float& _baseFireRate, const float& _playerHaste = 100.0f)
 	{
-		return _baseFireRate * FMath::Clamp(100.0f / _playerHaste, 0.1f, 10.0f);
+		return _baseFireRate * FMath::Clamp(100.0f / _playerHaste, 0.05f, 100.0f);
 	}
 
 	inline float CalculateXPGain(const float& _baseXPGain, const float& _playerXPGain)
