@@ -23,11 +23,6 @@ public:
 	virtual void Tick(float _deltaTime) override;
 
 	UFUNCTION()
-	void StartAim();
-	UFUNCTION()
-	void StopAim();
-
-	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _otherActor, UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult);
 
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
@@ -38,7 +33,7 @@ public:
 	UStaticMeshComponent* GemMesh;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	float BaseMoveSpeed = 100.0f;
+	float BaseMoveSpeed = 50.0f;
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float XP = 2.f;
 	UPROPERTY(EditAnywhere, Category = "Combat")
@@ -57,10 +52,8 @@ private:
 
 	float mCurrentSpeed;
 	float mCachedAttractCosAngle;
-	bool bPlayerAiming;
     
 	float mMoveSpeedUpdateInterval;
-	bool bNeedRefreshMoveSpeed;
 	FVector mCachedPlayerLocation;
 	FVector mCachedPlayerForward;
 };

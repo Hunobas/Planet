@@ -22,9 +22,10 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
+	void UpdateHP(const float _currentHP, const float _maxHP) const;
+	void UpdateShield(const float _currentShield, const float _currentHP, const float _maxHP) const;
 	void UpdateXPProgress(const float _currentXP, const float _xpToNextLevel) const;
 	void UpdateCurrentLevel(const int32 _level) const;
-	void UpdateHP(const float _currentHP, const float _maxHP) const;
 	void UpdateAllWeaponIcons(const TArray<AWeaponPawn*>& _equippedWeapons) const;
 	void SetWeaponIconBySlot(const int32 _slotIndex, UTexture2D* _weaponTexture) const;
 	void UpdateAllItemIcons(const TArray<APassiveItem*>& _equippedItems) const;
@@ -36,6 +37,9 @@ public:
 	UProgressBar* HPProgressBar;
 	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
 	UTextBlock* CurrentHPOverMaxHp;
+
+	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
+	UProgressBar* ShieldProgressBar;
 	
 	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
 	UProgressBar* XPProgressBar;

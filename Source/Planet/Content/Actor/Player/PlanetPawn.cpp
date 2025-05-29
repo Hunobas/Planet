@@ -12,15 +12,15 @@
 #include "PlanetHUD.h"
 #include "PlayCamera.h"
 #include "OrbitMover.h"
-#include "JustAimManagerComponent.h"
-#include "RewardManager.h"
 #include "HPComponent.h"
+#include "ShieldComponent.h"
 #include "LevelComponent.h"
+#include "RewardManager.h"
+#include "JustAimManagerComponent.h"
 #include "WeaponSlotComponent.h"
 #include "PassiveItemSlotComponent.h"
 #include "DayOfWeekComponent.h"
 #include "PlayerDataAsset.h"
-#include "UObject/UnrealTypePrivate.h"
 
 APlanetPawn::APlanetPawn() : cPlanetController(nullptr)
 {
@@ -63,7 +63,7 @@ void APlanetPawn::StartAim()		// const 시 컴파일 에러
 	check(AimEffectTemplate);
 	mCurrentAimEffect = SpawnSystemAttachedFacingForward(AimEffectTemplate, PlanetMesh, false);
 
-	OnAimStart.Broadcast();
+	bPlayerAiming = true;
 }
 
 void APlanetPawn::StopAim()			// const 시 컴파일 에러
@@ -77,7 +77,7 @@ void APlanetPawn::StopAim()			// const 시 컴파일 에러
 		mCurrentAimEffect = nullptr;
 	}
 
-	OnAimRelease.Broadcast();
+	bPlayerAiming = false;
 }
 
 void APlanetPawn::composeComponent()
@@ -96,16 +96,17 @@ void APlanetPawn::composeComponent()
 
 	PlayCamera		= CreateDefaultSubobject<UPlayCamera>(TEXT("Play Camera"));
 	OrbitMover		= CreateDefaultSubobject<UOrbitMover>(TEXT("Orbit Mover"));
-	JustAimManager	= CreateDefaultSubobject<UJustAimManagerComponent>(TEXT("Just Aim Manager"));
 	HP				= CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
-	Level	= CreateDefaultSubobject<ULevelComponent>(TEXT("Level Manager"));
+	Shield			= CreateDefaultSubobject<UShieldComponent>(TEXT("Shield"));
+	Level			= CreateDefaultSubobject<ULevelComponent>(TEXT("Level Manager"));
 	RewardManager	= CreateDefaultSubobject<URewardManager>(TEXT("Reward Manager"));
+	JustAimManager	= CreateDefaultSubobject<UJustAimManagerComponent>(TEXT("Just Aim Manager"));
 	WeaponSlot		= CreateDefaultSubobject<UWeaponSlotComponent>(TEXT("Weapon Slot"));
 	ItemSlot		= CreateDefaultSubobject<UPassiveItemSlotComponent>(TEXT("Item Slot"));
 	DayOfWeek		= CreateDefaultSubobject<UDayOfWeekComponent>(TEXT("Day Of Week"));
 }
 
-void APlanetPawn::updatePlanetRotation(const FVector& _worldMousePosition)
+void APlanetPawn::updatePlanetRotation(const FVector& _worldMousePosition) const
 {
 	const FRotator newRotation = UKismetMathLibrary::FindLookAtRotation(
 		GetActorLocation(), 
@@ -117,32 +118,19 @@ void APlanetPawn::updatePlanetRotation(const FVector& _worldMousePosition)
 	check(DayOfWeek);
 	DayOfWeek->UpdateRotation(newRotation.Yaw);
 
-#ifdef DEBUG
-	DrawDebugLine(
-		GetWorld(),
-		GetActorLocation(),
-		_worldMousePosition,
-		FColor::Green,
-		false,
-		0.1f,
-		0,
-		2.0f
-	);
-
 	const FRotator meridianRotation = FRotator(0.0f, DayOfWeek->MeridianYaw, 0.0f);
 	const FVector meridianDirection = meridianRotation.Vector();
-    
-	DrawDebugLine(
-		GetWorld(),
-		GetActorLocation(),
-		GetActorLocation() + (meridianDirection * 1000.0f),
-		FColor::White,
-		false,
-		0.1f,
-		0,
-		5.0f
-	);
-#endif
+
+	// bool bNeedShowDashLine = DayOfWeek->DailyAngle < DayOfWeek->DayPassYawGap || DayOfWeek->DailyAngle > NOON_ANGLE;
+	//
+	// if (PlanetHUD->bDashLineVisible != bNeedShowDashLine)
+	// {
+	// 	PlanetHUD->ShowDashLine(bNeedShowDashLine);
+	// }
+	// else if (bNeedShowDashLine)
+	// {
+	PlanetHUD->UpdateDashLineDirection(meridianDirection);
+	// }
 }
 
 void APlanetPawn::resetToDefaultSettings()

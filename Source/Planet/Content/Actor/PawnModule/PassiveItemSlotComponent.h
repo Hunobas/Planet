@@ -34,6 +34,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Item Slot")
 	int32 RemainSlots = ITEM_MAX_SLOT;
 
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	EPassiveItemType TestItemType = EPassiveItemType::None;
+
 	TArray<APassiveItem*> EquippedItems;
 	
 private:

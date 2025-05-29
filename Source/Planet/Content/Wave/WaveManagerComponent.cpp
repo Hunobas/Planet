@@ -51,7 +51,7 @@ void UWaveManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	GetWorld()->GetTimerManager().ClearTimer(mWaveTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(mDifficultyTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(mListTimerHandle);
-
+	GetWorld()->GetTimerManager().ClearTimer(mSpawnIntervalTimerHandle);
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -97,25 +97,23 @@ void UWaveManagerComponent::PlayWaveMode2()
 
 void UWaveManagerComponent::SpawnEnemyWave()
 {
-	check(mEnemySpawn);
-	
 	if (mRuntimeSpawnableList.IsEmpty() || CurrentFieldScore > CurrentMaxFieldScore)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(mSpawnIntervalTimerHandle);
+		return;
+	}
+        
+	if (GetWorld()->GetTimerManager().IsTimerActive(mSpawnIntervalTimerHandle))
 		return;
 
-	while (CurrentFieldScore < CurrentMaxFieldScore)
-	{
-		TSubclassOf<AEnemyPawn> enemyClass = mRuntimeSpawnableList[FMath::RandRange(0, mRuntimeSpawnableList.Num() - 1)];
-		
-		EEnemyType enemyType = enemyClass.GetDefaultObject()->EnemyType;
-		USceneComponent* spawnPoint = getRandomPointForTypeOrNull(enemyType);
-
-		if (spawnPoint == nullptr)
-			continue;
-		
-		AEnemyPawn* spawnedEnemy = spawnEnemyOrNull(enemyClass, spawnPoint);
-		if (spawnedEnemy == nullptr)
-			return;
-	}
+	GetWorld()->GetTimerManager().SetTimer(
+		mSpawnIntervalTimerHandle,
+		this,
+		&UWaveManagerComponent::spawnSingleEnemy,
+		SpawnInterval,
+		true,
+		0.0f
+	);
 }
 
 void UWaveManagerComponent::SpawnEnemiesAtRandomRow(const TSubclassOf<AEnemyPawn>& _enemyClass)
@@ -139,6 +137,30 @@ void UWaveManagerComponent::EnemyDied(AEnemyPawn* _deadEnemy)
 	mPool->Release(_deadEnemy);
 
 	mFireManager->RemoveEnemy(_deadEnemy);
+}
+
+void UWaveManagerComponent::spawnSingleEnemy()
+{
+	if (mRuntimeSpawnableList.IsEmpty() || CurrentFieldScore > CurrentMaxFieldScore)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(mSpawnIntervalTimerHandle);
+		return;
+	}
+	
+	TSubclassOf<AEnemyPawn> enemyClass = mRuntimeSpawnableList[FMath::RandRange(0, mRuntimeSpawnableList.Num() - 1)];
+	EEnemyType enemyType = enemyClass.GetDefaultObject()->EnemyType;
+	USceneComponent* spawnPoint = getRandomPointForTypeOrNull(enemyType);
+    
+	if (spawnPoint == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[UWaveManagerComponent] 유효한 스폰 포인트 찾지 못함."));
+		GetWorld()->GetTimerManager().ClearTimer(mSpawnIntervalTimerHandle);
+	}
+	if (spawnEnemyOrNull(enemyClass, spawnPoint) == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[UWaveManagerComponent] 오브젝트 풀에서 액터 찾지 못함: %s"), *enemyClass->GetName());
+		GetWorld()->GetTimerManager().ClearTimer(mSpawnIntervalTimerHandle);
+	}
 }
 
 AEnemyPawn* UWaveManagerComponent::spawnEnemyOrNull(const TSubclassOf<AEnemyPawn>& _enemyClass, USceneComponent* _spawnPoint)

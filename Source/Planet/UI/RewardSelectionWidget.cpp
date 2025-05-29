@@ -74,11 +74,13 @@ void URewardSelectionWidget::SetupRewardButton(UButton* Button, const TScriptInt
     
     FString IconWidgetName = FString::Printf(TEXT("%s%d"), *REWARD_ICON , ButtonIndex + 1);
     FString NameWidgetName = FString::Printf(TEXT("%s%d"), *REWARD_NAME,  ButtonIndex + 1);
-    FString DescWidgetName = FString::Printf(TEXT("%s%d"), *REWARD_DESC, ButtonIndex + 1);
+	FString DescWidgetName = FString::Printf(TEXT("%s%d"), *REWARD_DESC, ButtonIndex + 1);
+    FString LVDescWidgetName = FString::Printf(TEXT("%s%d"), *REWARD_LV_DESC, ButtonIndex + 1);
     
     UImage* IconImage = Cast<UImage>(GetWidgetFromName(*IconWidgetName));
     UTextBlock* NameText = Cast<UTextBlock>(GetWidgetFromName(*NameWidgetName));
-    UTextBlock* DescText = Cast<UTextBlock>(GetWidgetFromName(*DescWidgetName));
+	UTextBlock* DescText = Cast<UTextBlock>(GetWidgetFromName(*DescWidgetName));
+    UTextBlock* LVDescText = Cast<UTextBlock>(GetWidgetFromName(*LVDescWidgetName));
     
     if (IconImage && RewardData->GetRewardIcon())
     {
@@ -89,11 +91,16 @@ void URewardSelectionWidget::SetupRewardButton(UButton* Button, const TScriptInt
     {
         NameText->SetText(TextData->DisplayName);
     }
+
+	if (DescText)
+	{
+		DescText->SetText(TextData->Description);
+	}
     
-    if (DescText)
+    if (LVDescText)
     {
         FText NextLevelDesc = GetNextLevelDescription(TextData, RewardData->GetCurrentLevel());
-        DescText->SetText(NextLevelDesc);
+        LVDescText->SetText(NextLevelDesc);
     }
     
     Button->SetVisibility(ESlateVisibility::Visible);
@@ -108,7 +115,7 @@ FRewardTextData* URewardSelectionWidget::GetLocalizedTextData(FName RewardIdenti
     return (*DataTablePtr)->FindRow<FRewardTextData>(RewardIdentifier, TEXT("RewardSelection"));
 }
 
-FText URewardSelectionWidget::GetNextLevelDescription(const FRewardTextData* TextData, int32 NextLevel) const
+FText URewardSelectionWidget::GetNextLevelDescription(const FRewardTextData* TextData, int32 NextLevel)
 {
     if (!TextData)
     	return FText::GetEmpty();

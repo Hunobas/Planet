@@ -9,6 +9,7 @@ enum class EPlanetDayOfWeek : uint8;
 class UUserWidget;
 class APlanetPawn;
 class UHUDWidget;
+class UCanvasPanel;
 class AWeaponPawn;
 class APassiveItem;
 
@@ -24,23 +25,32 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Reward")
     void ShowRewardSelection();
 
+    void OnHPChanged(const float& _currentHP, const float& _maxHP) const;
+    void OnShieldChanged(const float& _currentShield,const float _currentHP, const float& _maxHP) const;
     void OnXPGain(const float& _currentXP, const float& _xpToNextLevel) const;
     void OnLevelUp(const int32& _currentLevel) const;
-    void OnHPChanged(const float& _currentHP, const float& _maxHP) const;
     void OnWeaponSlotChanged(const TArray<AWeaponPawn*>& _equippedWeapons) const;
     void OnItemSlotChanged(const TArray<APassiveItem*>& _equippedItems) const;
     void OnDailyProgressChanged(const float _dailyProgress, const float _weeklyProgress) const;
     void OnCurrentDayChanged(EPlanetDayOfWeek _newDay) const;
 
+    void ShowDashLine(bool _bShow);
+    void UpdateDashLineDirection(const FVector& _direction) const;
+
     UPROPERTY(EditAnywhere, Category = "UI Component")
     TSubclassOf<UUserWidget> HUDClass;
-    
     UPROPERTY(EditAnywhere, Category = "UI Component")
     TSubclassOf<UUserWidget> RewardSelectionClass;
+    UPROPERTY(EditAnywhere, Category = "UI Component")
+    TSubclassOf<UUserWidget> DashLineClass;
+
+    bool bDashLineVisible;
 
 private:
     void beginLatePlay() const;
     
     APlanetPawn* cPlayerPawn;
     UHUDWidget* mHUDWidget;
+    UUserWidget* mDashLineWidget;
+    UCanvasPanel* mDashLineRootWidget;
 };

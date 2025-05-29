@@ -60,6 +60,9 @@ void AEnemyPawn::Initialize(UWaveManagerComponent* _waveManager, APawn* _targetP
 
 	check(BodyCollisionCapsule);
 	BodyCollisionCapsule->OnComponentBeginOverlap.AddUniqueDynamic(this, &AEnemyPawn::OnOverlapBegin);
+	check(HitDetectionCapsule);
+	HitDetectionCapsule->SetCollisionResponseToChannel(ECC_LASER, ECR_Block);
+	
 	OnTakeAnyDamage.AddUniqueDynamic(this, &AEnemyPawn::HandleDamageTaken);
 
 	setUpdateStrategy();

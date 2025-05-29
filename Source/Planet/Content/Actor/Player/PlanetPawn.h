@@ -14,6 +14,7 @@ class UCameraComponent;
 class UPlayCamera;
 class UOrbitMover;
 class UHPComponent;
+class UShieldComponent;
 class UJustAimManagerComponent;
 class URewardManager;
 class ULevelComponent;
@@ -59,6 +60,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
 	UHPComponent* HP;
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
+	UShieldComponent* Shield;
+	UPROPERTY(EditAnywhere, Category = "Actor Components")
 	ULevelComponent* Level;
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
 	URewardManager* RewardManager;
@@ -68,11 +71,6 @@ public:
 	UPassiveItemSlotComponent* ItemSlot;
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
 	UDayOfWeekComponent* DayOfWeek;
-
-	DECLARE_MULTICAST_DELEGATE(FOnAimStart)
-	FOnAimStart OnAimStart;
-	DECLARE_MULTICAST_DELEGATE(FOnAimRelease)
-	FOnAimRelease OnAimRelease;
 
 	UPROPERTY(EditAnywhere, Category = "Planet")
 	float VisibleDistance = 3000.0f;
@@ -86,10 +84,11 @@ public:
 	UNiagaraSystem* AimEffectTemplate;
 
 	APlanetHUD* PlanetHUD;
+	bool bPlayerAiming;
 	
 private:
 	void composeComponent();
-	void updatePlanetRotation(const FVector& _worldMousePosition);
+	void updatePlanetRotation(const FVector& _worldMousePosition) const;
 	void resetToDefaultSettings();
 	
 	UPROPERTY()

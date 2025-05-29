@@ -82,6 +82,9 @@ void ADefaultProjectile::OnOverlapBegin(UPrimitiveComponent* _overlappedComponen
 
 void ADefaultProjectile::reset()
 {
+	if (!IsValidLowLevel() || !CollisionBox || !CollisionBox->IsValidLowLevel())
+		return;
+	
 	GetWorld()->GetTimerManager().ClearTimer(mLifeSpanTimerHandle);
 	
 	check(CollisionBox);

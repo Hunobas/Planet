@@ -43,7 +43,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* JustAimAction;
 	UPROPERTY(EditAnywhere, Category = "Input")
-	float MouseMoveThreshold = 1.0f;
+	float MouseMoveThreshold = 0.5f;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	int32 InputBufferSize = 5;
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -63,4 +63,5 @@ private:
 	FVector2D mPreviousMousePosition = FVector2D::ZeroVector;
 	TArray<FVector2D> mInputHistory;
 	float mResetDelayElapsed = 0.0f;
+	bool bUIInputMode = false;
 };

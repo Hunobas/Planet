@@ -4,6 +4,7 @@
 #include "../Planet.h"
 #include "PlanetPawn.h"
 #include "PlayerPowerUpRewardData.h"
+#include "HPComponent.h"
 #include "WeaponSlotComponent.h"
 
 void UPlayerPowerUpRewardApplicator::Apply_Implementation(const TScriptInterface<IRewardData>& _rewardData,
@@ -15,6 +16,9 @@ void UPlayerPowerUpRewardApplicator::Apply_Implementation(const TScriptInterface
 		{
 		case EPlayerPowerUpType::HP:
 			_targetPlayer->RuntimeSettings.HP += HP_BOOST;
+
+			check(_targetPlayer->HP);
+			_targetPlayer->HP->AddMaxHP(HP_BOOST);
 			break;
 		case EPlayerPowerUpType::Damage:
 			_targetPlayer->RuntimeSettings.Damage += DAMAGE_BOOST;

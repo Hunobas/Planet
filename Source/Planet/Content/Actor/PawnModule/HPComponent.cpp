@@ -24,7 +24,8 @@ UHPComponent* UHPComponent::Initialize()
 	{
 		mPlanet = player;
 		MaxHP = mPlanet->RuntimeSettings.HP;
-		mPlanet->OnTakeAnyDamage.AddUniqueDynamic(this, &UHPComponent::OnTakeAnyDamage);
+		// 실드 모듈에서 먼저 차감하고 하드하게 OnTakeAnyDamage 호출
+		// mPlanet->OnTakeAnyDamage.AddUniqueDynamic(this, &UHPComponent::OnTakeAnyDamage);
 	}
 	
 	CurrentHP = MaxHP;
@@ -48,6 +49,19 @@ void UHPComponent::OnTakeAnyDamage(AActor* _damagedActor, float _damage, const U
 	if (CurrentHP <= 0.0f)
 	{
 		handleDeath();
+	}
+}
+
+void UHPComponent::AddMaxHP(const float _amount)
+{
+	CurrentHP += _amount;
+	MaxHP += _amount;
+
+	if (mPlanet)
+	{
+		check(mPlanet->PlanetHUD);
+		MaxHP = mPlanet->RuntimeSettings.HP;
+		mPlanet->PlanetHUD->OnHPChanged(CurrentHP, MaxHP);
 	}
 }
 

@@ -17,6 +17,11 @@ void UWeaponSlotComponent::BeginPlay()
 	
 	cOwner = Cast<APlanetPawn>(GetOwner());
 	EquipWeapon(DefaultWeaponType);
+
+	if (TestWeaponType != EWeaponType::None)
+	{
+		EquipWeapon(TestWeaponType);
+	}
 }
 
 bool UWeaponSlotComponent::EquipWeapon(const EWeaponType& _weaponType)

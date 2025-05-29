@@ -35,7 +35,7 @@ namespace GameplayUtils
 
 	inline float CalculateFireRate(const float& _baseFireRate, const float& _playerHaste = 100.0f)
 	{
-		return _baseFireRate * FMath::Clamp(100.0f / _playerHaste, 0.05f, 100.0f);
+		return _baseFireRate * FMath::Clamp(100.0f / _playerHaste, PlanetConst::UPDATE_FREQUENT_INTERVAL, 100.0f);
 	}
 
 	inline float CalculateXPGain(const float& _baseXPGain, const float& _playerXPGain)
@@ -189,6 +189,11 @@ namespace GameplayUtils
 
 		return pool;
 	}
+	
+#pragma endregion
+
+
+#pragma region Naiagara Helpers
 
 	/**
 	 * 이펙트를 소환해 컴포넌트 하위에 붙이고, 이펙트의 트랜스폼을 컴포넌트의 위치 및 정면 방향으로 조정합니다.
@@ -270,7 +275,7 @@ namespace GameplayUtils
 			false
 		);
 	}
-	
+
 #pragma endregion
 
 
@@ -348,6 +353,21 @@ namespace GameplayUtils
 		return EaseOut(num, 5);
 	}
 
+	inline float EaseIn(float num, int32 exp)
+	{
+		return FMath::Pow(num, exp);
+	}
+
+	inline float EaseInCubic(float num)
+	{
+		return EaseIn(num, 3);
+	}
+
+	inline float EaseInQuint(float num)
+	{
+		return EaseIn(num, 5);
+	}
+
 	inline float NormalizeAngle(float yaw)
 	{
 		while (yaw > 180.f)
@@ -362,6 +382,11 @@ namespace GameplayUtils
 		if (yaw < 0.0f)
 			yaw += 360.f;
 		return yaw;
+	}
+
+	inline float Saturate(float value)
+	{
+		return FMath::Clamp(value, 0.0f, 1.0f);
 	}
 
 	inline FRotator LerpAngle(FRotator a, FRotator b, float x)

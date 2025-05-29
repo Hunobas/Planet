@@ -36,6 +36,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Slot")
 	EWeaponType DefaultWeaponType;
 
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	EWeaponType TestWeaponType = EWeaponType::None;
+
 	TArray<AWeaponPawn*> EquippedWeapons;
 	
 private:

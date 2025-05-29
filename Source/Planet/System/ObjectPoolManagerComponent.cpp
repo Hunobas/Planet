@@ -127,6 +127,10 @@ AActor* UObjectPoolManagerComponent::createNewActor(const TSubclassOf<AActor>& _
 	FActorSpawnParameters spawnParams;
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
+#ifdef DEBUG
+	UE_LOG(LogTemp, Error, TEXT("[UObjectPoolManagerComponent] @@@@@@@@@벌써 불리면 안되는데@@@@@@@ Create New Actor: %s"), *_actorClass->GetName());
+#endif
+
 	AActor* newActor = world->SpawnActor<AActor>(_actorClass, _spawnTransform, spawnParams);
 	if (newActor)
 	{

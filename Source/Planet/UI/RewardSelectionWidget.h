@@ -49,7 +49,7 @@ private:
 	void CloseRewardSelection();
     
 	FRewardTextData* GetLocalizedTextData(FName RewardIdentifier) const;
-	FText GetNextLevelDescription(const FRewardTextData* TextData, int32 CurrentLevel) const;
+	static FText GetNextLevelDescription(const FRewardTextData* TextData, int32 CurrentLevel);
 
 	URewardManager* cRewardManager;
 	APlanetController* cPlanetController;

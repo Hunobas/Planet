@@ -7,11 +7,11 @@
 #include "PlanetController.h"
 #include "DefaultLaser.h"
 
-AEquatorWave::AEquatorWave(): FireSound(nullptr), cOwner(nullptr), LaserNum(6)
+AEquatorWave::AEquatorWave(): LaserNum(6), FireSound(nullptr), cOwner(nullptr)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	mLasers.SetNum(LaserNum);
+	mLasers.Reserve(LaserNum);
 	mMuzzles.SetNum(LaserNum);
 }
 
@@ -25,13 +25,14 @@ void AEquatorWave::BeginPlay()
 	initializeMuzzles();
 	bindControllerEvents();
 
-	check(mMuzzles[0]);
-	check(mMuzzles[1]);
-	ADefaultLaser* laser1 = spawnLaser(mMuzzles[0]);
-	ADefaultLaser* laser2 = spawnLaser(mMuzzles[1]);
-	mLasers.Add(laser1);
-	mLasers.Add(laser2);
-	
+    check(mMuzzles[0]);
+    check(mMuzzles[1]);
+    ADefaultLaser* laser1 = spawnLaser(mMuzzles[0]);
+    ADefaultLaser* laser2 = spawnLaser(mMuzzles[1]);
+    mLasers.Add(laser1);
+    mLasers.Add(laser2);
+
+	StopAttack();
 	StartAttack();
 }
 
@@ -82,25 +83,26 @@ void AEquatorWave::LevelUp(const int32& _newLevel)
 
 void AEquatorWave::StartAttack()
 {
-	Super::StartAttack();
-
 	check(mMuzzles[0]);
-
 	UGameplayStatics::PlaySoundAtLocation(
 		GetWorld(),
 		FireSound,
 		mMuzzles[0]->GetComponentLocation()
 	);
 
-	for (ADefaultLaser* laser : mLasers)
-	{
-		if (laser)
-		{
-			laser->MaxPierce = mMaxPierce;
-			laser->DamageInterval = DamageInterval;
-			laser->Fire();
-		}
-	}
+	GetWorld()->GetTimerManager().SetTimer(
+		mLaserTickHandle,
+		this,
+		&AEquatorWave::tickAllLasers,
+		DamageInterval,
+		true,
+		0.0f
+	);
+}
+
+void AEquatorWave::StopAttack()
+{
+	GetWorld()->GetTimerManager().ClearTimer(mLaserTickHandle);
 }
 
 void AEquatorWave::UpdateMuzzleOrbit(const float _weeklyAngle)
@@ -136,12 +138,20 @@ ADefaultLaser* AEquatorWave::spawnLaser(USceneComponent* _muzzle)
 		_muzzle,
 		FAttachmentTransformRules::SnapToTargetNotIncludingScale
 	);
-	laser->MaxPierce = mMaxPierce;
-	laser->DamageInterval = DamageInterval;
 	laser->Initialize(this);
-
 	
 	return laser;
+}
+
+void AEquatorWave::tickAllLasers()
+{
+	for (ADefaultLaser* laser : mLasers)
+	{
+		if (laser)
+		{
+			laser->FireTick();
+		}
+	}
 }
 
 void AEquatorWave::initializeMuzzles()

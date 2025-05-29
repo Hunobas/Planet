@@ -30,7 +30,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Config")
 	int32 MaxLevel = 5;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Config")
-	int32 CurrentLevel = 1;
+	int32 CurrentLevel = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Config")
 	float Rarity = 1.0f;
 	

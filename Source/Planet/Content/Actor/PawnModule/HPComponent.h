@@ -18,6 +18,8 @@ public:
 
 	UFUNCTION()
 	void OnTakeAnyDamage(AActor* _damagedActor, float _damage, const UDamageType* _damageType, AController* _instigatedBy, AActor* _damageCauser);
+
+	void AddMaxHP(const float _amount);
 	
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	float MaxHP;

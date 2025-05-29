@@ -30,6 +30,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Config")
 	int32 MaxLevel = 7;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Config")
-	int32 CurrentLevel = 1;
+	int32 CurrentLevel = 0;
 
 };

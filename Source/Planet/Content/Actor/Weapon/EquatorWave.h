@@ -22,6 +22,7 @@ protected:
 public:
 	virtual void LevelUp(const int32& _newLevel) override;
 	virtual void StartAttack() override;
+	virtual void StopAttack() override;
 
 	UFUNCTION()
 	void UpdateMuzzleOrbit(const float _weeklyAngle);
@@ -41,7 +42,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Equator Wave")
 	TSubclassOf<ADefaultLaser> LaserClass;
 	UPROPERTY(EditAnywhere, Category = "Equator Wave")
-	float DamageInterval		= 0.2f;
+	float DamageInterval		= 0.15f;
 	UPROPERTY(VisibleAnywhere, Category = "Equator Wave")
 	int32 LaserNum				= 6;
 	UPROPERTY(VisibleAnywhere, Category = "Equator Wave")
@@ -50,7 +51,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "LV")
 	float Damage_LV3			= 2.5f;
 	UPROPERTY(EditAnywhere, Category = "LV")
-	float DamageInterval_LV5	= 0.1f;
+	float DamageInterval_LV5	= 0.08f;
 	UPROPERTY(EditAnywhere, Category = "LV")
 	float Damage_LV6			= 3.8f;
 
@@ -59,6 +60,7 @@ public:
 
 private:
 	ADefaultLaser* spawnLaser(USceneComponent* _muzzle);
+	void tickAllLasers(); 
 	void initializeMuzzles();
 	void bindControllerEvents();
 
@@ -68,4 +70,6 @@ private:
 	
 	int32 mMaxPierce = 1;
 	static constexpr float ROTATION_MULTIPLIERS[6] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+
+	FTimerHandle mLaserTickHandle;
 };

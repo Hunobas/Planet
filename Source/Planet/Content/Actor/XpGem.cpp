@@ -10,7 +10,7 @@
 #include "FollowMover.h"
 #include "LevelComponent.h"
 
-AXpGem::AXpGem()
+AXpGem::AXpGem() : cTargetPlayer(nullptr), mPool(nullptr), mFollowMover(nullptr), mCurrentSpeed(10.0f), mCachedAttractCosAngle(0.0f), mMoveSpeedUpdateInterval(0.0f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -32,10 +32,6 @@ AXpGem* AXpGem::Initialize(APawn* _targetPlayer, const float& _XP, UObjectPoolMa
 	
 	reset();
 	TryGetFirstComponentWithTag(this, FOLLOW_MOVER_TAG, mFollowMover);
-
-	check(cTargetPlayer);
-	cTargetPlayer->OnAimStart.AddUFunction(this, FName("StartAim"));
-	cTargetPlayer->OnAimRelease.AddUFunction(this, FName("StopAim"));
 
 	check(Capsule);
 	Capsule->OnComponentBeginOverlap.AddUniqueDynamic(this, &AXpGem::OnOverlapBegin);
@@ -59,17 +55,6 @@ void AXpGem::Tick(float _deltaTime)
 	mFollowMover->MoveStep(_deltaTime);
 }
 
-void AXpGem::StartAim()
-{
-	bPlayerAiming = true;
-	bNeedRefreshMoveSpeed = true;
-}
-
-void AXpGem::StopAim()
-{
-	bPlayerAiming = false;
-}
-
 void AXpGem::OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _otherActor,
                             UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult)
 {
@@ -88,31 +73,26 @@ void AXpGem::OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _
 
 void AXpGem::reset()
 {
-	cTargetPlayer->OnAimStart.RemoveAll(this);
-	cTargetPlayer->OnAimRelease.RemoveAll(this);
-
 	check(Capsule);
 	Capsule->OnComponentBeginOverlap.RemoveAll(this);
-
-	bPlayerAiming = false;
-	bNeedRefreshMoveSpeed = true;
+	
 	mMoveSpeedUpdateInterval = 0.0f;
 }
 
 void AXpGem::updateMoveSpeed(float _deltaTime)
 {
 	mCurrentSpeed = BaseMoveSpeed;
-    
-	if (!bPlayerAiming)
+
+	check(cTargetPlayer);
+	if (!cTargetPlayer->bPlayerAiming)
 		return;
     
 	mMoveSpeedUpdateInterval += _deltaTime;
-	if (bNeedRefreshMoveSpeed || mMoveSpeedUpdateInterval >= CACHE_UPDATE_NORMAL_INTERVAL)
+	if (mMoveSpeedUpdateInterval >= UPDATE_NORMAL_INTERVAL)
 	{
 		mCachedPlayerLocation = cTargetPlayer->GetActorLocation();
 		mCachedPlayerForward = cTargetPlayer->PlanetMesh->GetForwardVector();
 		mMoveSpeedUpdateInterval = 0.0f;
-		bNeedRefreshMoveSpeed = false;
 	}
     
 	const FVector directionToGem = (GetActorLocation() - mCachedPlayerLocation).GetSafeNormal();

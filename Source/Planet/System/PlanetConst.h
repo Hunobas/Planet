@@ -18,9 +18,10 @@ namespace PlanetConst
 	static constexpr float PLAYTIME								= 1200.0f;
 	static constexpr EAutoReceiveInput::Type SINGLEPLAYER_INDEX	= EAutoReceiveInput::Player0;
 
-	static constexpr float CACHE_UPDATE_FREQUENT_INTERVAL		= 0.02f;	// 약 2프레임에 한 번
-	static constexpr float CACHE_UPDATE_NORMAL_INTERVAL			= 0.05f;	// 약 5프레임에 한 번
-	static constexpr float CACHE_UPDATE_INFREQUENT_INTERVAL		= 0.1f;		// 약 10프레임에 한 번
+	static constexpr float UPDATE_EACH_INTERVAL					= 0.016f;	// 약 1프레임에 한 번
+	static constexpr float UPDATE_FREQUENT_INTERVAL				= 0.032f;	// 약 2프레임에 한 번
+	static constexpr float UPDATE_NORMAL_INTERVAL				= 0.08f;	// 약 5프레임에 한 번
+	static constexpr float UPDATE_INFREQUENT_INTERVAL			= 0.16f;	// 약 10프레임에 한 번
 
 	static constexpr float ENEMY_FIRE_DELAY						= 2.0f;
 	static constexpr float JUSTAIM_WINDOW_DURATION				= 0.3f;
@@ -74,15 +75,18 @@ namespace PlanetConst
 	inline const FString REWARD_ICON(TEXT("RewardIcon"));
 	inline const FString REWARD_NAME(TEXT("RewardName"));
 	inline const FString REWARD_DESC(TEXT("RewardDesc"));
+	inline const FString REWARD_LV_DESC(TEXT("RewardLVDesc"));
 	
 #pragma endregion
 
 	
 #pragma region Order
 	
-	inline constexpr int32 HIGH_ORDER = 100;
-	inline constexpr int32 DEFAULT_ORDER = 0;
 	inline constexpr int32 LOW_ORDER = -100;
+	inline constexpr int32 DEFAULT_ORDER = 0;
+	inline constexpr int32 HIGH_ORDER = 100;
+	inline constexpr int32 HIGHER_ORDER = 1000;
+	inline constexpr int32 HIGHEST_ORDER = 9999;
 	
 #pragma endregion
 	

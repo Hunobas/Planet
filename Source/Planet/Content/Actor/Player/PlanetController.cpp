@@ -46,6 +46,8 @@ void APlanetController::OnPossess(APawn* _pawn)
 	SetViewTarget(_pawn);
 	bindInputMappings(_pawn);
 	SetInGameInputMode();
+
+	bShowMouseCursor = true;
 }
 
 void APlanetController::Tick(float DeltaTime)
@@ -55,9 +57,9 @@ void APlanetController::Tick(float DeltaTime)
 	FVector2D currentMousePosition;
 	if (!GetMousePosition(currentMousePosition.X, currentMousePosition.Y))
 		return;
-        
+	
 	const FVector2D mouseDelta = currentMousePosition - mPreviousMousePosition;
-	if (mouseDelta.SizeSquared() > MouseMoveThreshold)
+	if (!bUIInputMode && mouseDelta.SizeSquared() > MouseMoveThreshold)
 	{
 		OnLookValue.Broadcast(mouseDelta);
 		mPreviousMousePosition = currentMousePosition;
@@ -82,7 +84,7 @@ FVector2D APlanetController::GetEMAInput()
 
 void APlanetController::SetInGameInputMode()
 {
-	bShowMouseCursor = true;
+	bUIInputMode = false;
 	FInputModeGameAndUI inputMode;
 	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	inputMode.SetHideCursorDuringCapture(false);
@@ -91,7 +93,7 @@ void APlanetController::SetInGameInputMode()
 
 void APlanetController::SetUIInputMode(UUserWidget* _widget)
 {
-	bShowMouseCursor = true;
+	bUIInputMode = true;
 	FInputModeUIOnly inputMode;
 	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	SetInputMode(inputMode);

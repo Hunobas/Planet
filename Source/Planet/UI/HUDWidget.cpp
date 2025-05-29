@@ -20,13 +20,37 @@ void UHUDWidget::NativeConstruct()
 	checkf(cPlayerPawn, TEXT("[HUDWidget] PlayerPawn을 찾을 수 없습니다."));
 }
 
+void UHUDWidget::UpdateHP(const float _currentHP, const float _maxHP) const
+{
+	if (!HPProgressBar || !CurrentHPOverMaxHp)
+		return;
+    
+	const float progressPercent = _currentHP / FMath::Max(_maxHP, 1.0f);
+	HPProgressBar->SetPercent(Saturate(progressPercent));
+
+	const FString hpText = FString::Printf(TEXT("%.0f/%.0f"), _currentHP, _maxHP);
+	CurrentHPOverMaxHp->SetText(FText::FromString(hpText));
+}
+
+void UHUDWidget::UpdateShield(const float _currentShield, const float _currentHP, const float _maxHP) const
+{
+	if (!ShieldProgressBar || !CurrentHPOverMaxHp)
+		return;
+    
+	const float progressPercent = _currentShield / FMath::Max(_maxHP, 1.0f);
+	ShieldProgressBar->SetPercent(Saturate(progressPercent));
+
+	const FString hpText = FString::Printf(TEXT("%.0f/%.0f"), _currentHP + _currentShield, _maxHP);
+	CurrentHPOverMaxHp->SetText(FText::FromString(hpText));
+}
+
 void UHUDWidget::UpdateXPProgress(const float _currentXP, const float _xpToNextLevel) const
 {
 	if (!XPProgressBar)
 		return;
     
-	const float progressPercent = _xpToNextLevel > 0.0f ? _currentXP / _xpToNextLevel : 0.0f;
-	XPProgressBar->SetPercent(FMath::Clamp(progressPercent, 0.0f, 1.0f));
+	const float progressPercent = _currentXP / FMath::Max(_xpToNextLevel, 1.0f);
+	XPProgressBar->SetPercent(Saturate(progressPercent));
 }
 
 void UHUDWidget::UpdateCurrentLevel(const int32 _level) const
@@ -36,18 +60,6 @@ void UHUDWidget::UpdateCurrentLevel(const int32 _level) const
     
 	const FText levelText = FText::FromString(FString::FromInt(_level));
 	CurrentLevel->SetText(levelText);
-}
-
-void UHUDWidget::UpdateHP(const float _currentHP, const float _maxHP) const
-{
-	if (!HPProgressBar || !CurrentHPOverMaxHp)
-		return;
-    
-	const float progressPercent = _maxHP > 0.0f ? _currentHP / _maxHP : 0.0f;
-	HPProgressBar->SetPercent(FMath::Clamp(progressPercent, 0.0f, 1.0f));
-
-	const FString hpText = FString::Printf(TEXT("%.0f/%.0f"), _currentHP, _maxHP);
-	CurrentHPOverMaxHp->SetText(FText::FromString(hpText));
 }
 
 void UHUDWidget::UpdateAllWeaponIcons(const TArray<AWeaponPawn*>& _equippedWeapons) const
@@ -119,8 +131,8 @@ void UHUDWidget::UpdateDailyProgress(const float _dailyProgress, const float _we
 	if (!DailyProgressBar || !WeeklyProgressBar)
 		return;
     
-	DailyProgressBar->SetPercent(FMath::Clamp(_dailyProgress, 0.0f, 1.0f));
-	WeeklyProgressBar->SetPercent(FMath::Clamp(_weeklyProgress, 0.0f, 1.0f));
+	DailyProgressBar->SetPercent(Saturate(_dailyProgress));
+	WeeklyProgressBar->SetPercent(Saturate(_weeklyProgress));
 }
 
 void UHUDWidget::UpdateCurrentDayTextBlock(EPlanetDayOfWeek _currentDay) const
