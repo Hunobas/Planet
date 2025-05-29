@@ -20,6 +20,8 @@ void ULevelComponent::BeginPlay()
 
 void ULevelComponent::GainXP(float XP)
 {
+	UE_LOG(LogTemp, Warning, TEXT("XP: %f"), XP);
+	
 	CurrentXP += CalculateXPGain(XP, cOwner->RuntimeSettings.XpGain);
 	while (CurrentXP >= XPToNextLevel)
 	{

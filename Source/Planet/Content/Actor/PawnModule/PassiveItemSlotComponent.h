@@ -34,8 +34,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Item Slot")
 	int32 RemainSlots = ITEM_MAX_SLOT;
 
-	UPROPERTY(EditAnywhere, Category = "Debug")
-	EPassiveItemType TestItemType = EPassiveItemType::None;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug", meta = (ArraySizeEnum = "ITEM_MAX_SLOT", 
+			ToolTip = "게임 시작 시 각 슬롯에 장착할 아이템 타입을 설정합니다. 빈 슬롯은 None으로 설정하세요."))
+	TArray<EPassiveItemType> InitialItemTypes;
 
 	TArray<APassiveItem*> EquippedItems;
 	

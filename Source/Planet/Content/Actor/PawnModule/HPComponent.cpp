@@ -40,11 +40,7 @@ void UHPComponent::OnTakeAnyDamage(AActor* _damagedActor, float _damage, const U
 
 	CurrentHP = FMath::Clamp(CurrentHP - _damage, 0.0f, MaxHP);
 
-	if (mPlanet)
-	{
-		check(mPlanet->PlanetHUD);
-		mPlanet->PlanetHUD->OnHPChanged(CurrentHP, MaxHP);
-	}
+	updateUI();
 
 	if (CurrentHP <= 0.0f)
 	{
@@ -52,16 +48,29 @@ void UHPComponent::OnTakeAnyDamage(AActor* _damagedActor, float _damage, const U
 	}
 }
 
+void UHPComponent::Heal(const float _healAmount)
+{
+	if (_healAmount <= 0.0f)
+		return;
+    
+	if (CurrentHP >= MaxHP)
+		return;
+    
+	CurrentHP = FMath::Clamp(CurrentHP + _healAmount, 0.0f, MaxHP);
+    
+	updateUI();
+}
+
 void UHPComponent::AddMaxHP(const float _amount)
 {
 	CurrentHP += _amount;
 	MaxHP += _amount;
 
+	updateUI();
+
 	if (mPlanet)
 	{
-		check(mPlanet->PlanetHUD);
 		MaxHP = mPlanet->RuntimeSettings.HP;
-		mPlanet->PlanetHUD->OnHPChanged(CurrentHP, MaxHP);
 	}
 }
 
@@ -81,4 +90,13 @@ void UHPComponent::handleDeath() const
 			// gm->GameOver();
 		}
 	}
+}
+
+void UHPComponent::updateUI() const
+{
+	if (!mPlanet)
+		return;
+	
+	check(mPlanet->PlanetHUD);
+	mPlanet->PlanetHUD->OnHPChanged(CurrentHP, MaxHP);
 }

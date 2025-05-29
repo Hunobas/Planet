@@ -64,7 +64,7 @@ public:
                 return nullptr;
         }
 
-        if (IsValid(actor))
+        if (IsValid(actor) && !actor->IsActorBeingDestroyed())
         {
             actor->SetActorTransform(_spawnTransform);
             setActorActiveState(actor, true);

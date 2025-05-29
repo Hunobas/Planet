@@ -27,8 +27,6 @@ public:
 
 	void StartAim();
 	void StopAim();
-
-	void OnJustAimSuccess(const FVector& _targetLocation);
 	
 	UPROPERTY(EditAnywhere, Category = "Camera Setting")
 	FRotator SpringArmRotation		= {0.0f, -90.0f, 0};
@@ -44,6 +42,7 @@ public:
 	
 
 private:
+	void onJustAimSuccess(const FVector& _targetLocation);
 	void updateArmLength(float _deltaTime);
 	
 	APlanetPawn* mPlayerPawn;
@@ -56,5 +55,4 @@ private:
 	FRotator mStartControlRotation;
 	FRotator mTargetControlRotation;
 	float mJustAimingElapsedTime = 0.0f;
-	bool bIsJustAiming = false;
 };

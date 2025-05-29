@@ -4,7 +4,6 @@
 #include "../Planet.h"
 #include "PlanetPawn.h"
 #include "PlanetController.h"
-#include "PlayCamera.h"
 
 UJustAimManagerComponent::UJustAimManagerComponent(): JustAimSuccessTemplate(nullptr), cPlayerPawn(nullptr)
 {
@@ -38,7 +37,7 @@ void UJustAimManagerComponent::SucceedJustAim(USceneComponent* _firePoint) const
 {
 	check(_firePoint);
 
-	cPlayerPawn->PlayCamera->OnJustAimSuccess(_firePoint->GetComponentLocation());
+	OnSuccessJustAim.Broadcast(_firePoint);
 	
 	SpawnSystemAttachedFacingForward(JustAimSuccessTemplate, _firePoint);
 }

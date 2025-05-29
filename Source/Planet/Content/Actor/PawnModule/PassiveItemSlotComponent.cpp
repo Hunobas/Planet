@@ -17,9 +17,12 @@ void UPassiveItemSlotComponent::BeginPlay()
 
 	cOwner = Cast<APlanetPawn>(GetOwner());
 
-	if (TestItemType != EPassiveItemType::None)
+	for (EPassiveItemType& TestItemType : InitialItemTypes)
 	{
-		EquipItem(TestItemType);
+		if (TestItemType != EPassiveItemType::None)
+		{
+			EquipItem(TestItemType);
+		}
 	}
 }
 

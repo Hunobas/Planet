@@ -63,6 +63,7 @@ void APushPullLegsSplit::addShieldToPlayer(EPlanetDayOfWeek _newDay)
 	if (_newDay != EPlanetDayOfWeek::Monday && _newDay != EPlanetDayOfWeek::Wednesday && _newDay != EPlanetDayOfWeek::Friday)
 		return;
 
+	check(cOwner->Shield);
 	cOwner->Shield->AddShield(EachShield);
 	mWeeklyShield += EachShield;
 	

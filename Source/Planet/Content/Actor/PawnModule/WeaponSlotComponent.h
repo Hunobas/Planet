@@ -36,8 +36,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Slot")
 	EWeaponType DefaultWeaponType;
 
-	UPROPERTY(EditAnywhere, Category = "Debug")
-	EWeaponType TestWeaponType = EWeaponType::None;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug", meta = (ArraySizeEnum = "WEAPON_MAX_SLOT", 
+			ToolTip = "게임 시작 시 각 슬롯에 장착할 무기 타입을 설정합니다. 빈 슬롯은 None으로 설정하세요."))
+	TArray<EWeaponType> InitialWeaponTypes;
 
 	TArray<AWeaponPawn*> EquippedWeapons;
 	

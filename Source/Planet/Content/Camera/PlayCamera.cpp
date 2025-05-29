@@ -1,13 +1,13 @@
 // PlayCamera.cpp
 #include "PlayCamera.h"
 
+#include "JustAimManagerComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
-#include "../Planet.h"
 #include "PlanetPawn.h"
 
-UPlayCamera::UPlayCamera(): mPlayerPawn(nullptr), mSpringArm(nullptr), mCamera(nullptr)
+UPlayCamera::UPlayCamera(): mPlayerPawn(nullptr), mSpringArm(nullptr), mCamera(nullptr), mCurrentArmLength(0)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -26,6 +26,12 @@ void UPlayCamera::BeginPlay()
 
 	mSpringArm->SetRelativeRotation(SpringArmRotation);
 	mSpringArm->TargetArmLength    = DefaultArmLength;
+
+	check(mPlayerPawn->JustAimManager);
+	mPlayerPawn->JustAimManager->OnSuccessJustAim.AddLambda([this](const USceneComponent* _firePoint)
+	{
+		onJustAimSuccess(_firePoint->GetComponentLocation());
+	});
 }
 
 void UPlayCamera::TickComponent(float _deltaTime, enum ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction)
@@ -45,7 +51,7 @@ void UPlayCamera::StopAim()
 	bIsAiming = false;
 }
 
-void UPlayCamera::OnJustAimSuccess(const FVector& _targetLocation)
+void UPlayCamera::onJustAimSuccess(const FVector& _targetLocation)
 {
 	check(mPlayerPawn);
 	check(mCamera);
@@ -55,7 +61,6 @@ void UPlayCamera::OnJustAimSuccess(const FVector& _targetLocation)
 	mStartControlRotation = mPlayerPawn->GetControlRotation();
 	mTargetControlRotation = (_targetLocation - cameraLocation).Rotation();
 	mJustAimingElapsedTime = 0.0f;
-	// bIsJustAiming = true;
 
 	if (JustAimCameraShakeClass)
 	{
@@ -72,9 +77,6 @@ void UPlayCamera::OnJustAimSuccess(const FVector& _targetLocation)
 
 void UPlayCamera::updateArmLength(float _deltaTime)
 {
-	if (bIsJustAiming)
-		return;
-	
 	check(mSpringArm);
 
 	float targetLength = bIsAiming ? AimedArmLength : DefaultArmLength;

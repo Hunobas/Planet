@@ -27,6 +27,9 @@ public:
 	void SucceedJustAim(USceneComponent* _firePoint) const;
 	void FailJustAim();
 
+	DECLARE_MULTICAST_DELEGATE_OneParam(FOnSuccessJustAim, USceneComponent*& _firePoint);
+	FOnSuccessJustAim OnSuccessJustAim;
+
 	UPROPERTY(EditAnywhere, Category = "Just Aim")
 	float JustAimWindowAngle = 15.0f;
 

@@ -18,6 +18,9 @@ public:
 
 	UFUNCTION()
 	void OnTakeAnyDamage(AActor* _damagedActor, float _damage, const UDamageType* _damageType, AController* _instigatedBy, AActor* _damageCauser);
+	
+	UFUNCTION()
+	void Heal(const float _healAmount);
 
 	void AddMaxHP(const float _amount);
 	
@@ -28,6 +31,7 @@ public:
 
 private:
 	void handleDeath() const;
+	void updateUI() const;
 
 	APlanetPawn* mPlanet;
 	AEnemyPawn* mEnemy;
