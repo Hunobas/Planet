@@ -80,6 +80,15 @@ void APlanetPawn::StopAim()			// const 시 컴파일 에러
 	bPlayerAiming = false;
 }
 
+void APlanetPawn::HandleDied()
+{
+	SpawnSystemFacingForward(PlanetDieTemplate, this);
+	PlanetHUD->ShowLoseGame();
+
+	SetActorHiddenInGame(true);
+	SetActorTickEnabled(false);
+}
+
 void APlanetPawn::composeComponent()
 {
 	Capsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule Collider"));

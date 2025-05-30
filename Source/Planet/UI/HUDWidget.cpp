@@ -18,6 +18,15 @@ void UHUDWidget::NativeConstruct()
 
 	cPlayerPawn = Cast<APlanetPawn>(GetOwningPlayerPawn());
 	checkf(cPlayerPawn, TEXT("[HUDWidget] PlayerPawn을 찾을 수 없습니다."));
+
+	GetWorld()->GetTimerManager().SetTimer(
+		mGameTimeUpdateTimer,
+		this,
+		&UHUDWidget::updateGameTimeDisplay,
+		1.0f,
+		true,
+		0.0f
+	);
 }
 
 void UHUDWidget::UpdateHP(const float _currentHP, const float _maxHP) const
@@ -201,5 +210,19 @@ UTextBlock* UHUDWidget::getDayTextByDayOfWeek(const EPlanetDayOfWeek& _dayOfWeek
 		default:
 		checkNoEntry();
 		return nullptr;
+	}
+}
+
+void UHUDWidget::updateGameTimeDisplay() const
+{
+	if (GameTime)
+	{
+		float totalSeconds = UGameplayStatics::GetTimeSeconds(GetWorld());
+		
+		int32 minutes = FMath::FloorToInt(totalSeconds * TIMER_DURATION_RATIO);
+		int32 seconds = FMath::FloorToInt(FMath::Fmod(totalSeconds, TIMER_DURATION));
+		FString timeString = FString::Printf(TEXT("%02d:%02d"), minutes, seconds);
+		
+		GameTime->SetText(FText::FromString(timeString));
 	}
 }

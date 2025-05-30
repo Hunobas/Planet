@@ -18,6 +18,10 @@ class PLANET_API ASurvivorGameModeBase : public AGameModeBase
 public:
 	ASurvivorGameModeBase();
 
+protected:
+	virtual void BeginPlay() override;
+
+public:
 	UPROPERTY(EditAnywhere, Category="Object Pool")
 	UObjectPoolManagerComponent* ObjectPoolManager;
 
@@ -28,4 +32,12 @@ public:
 	UEnemyFireManagerComponent* FireManager;
 	UPROPERTY(BlueprintReadOnly, Category = "Enemy Fire Manager")
 	float EnemyFireDelay = PlanetConst::ENEMY_FIRE_DELAY;
+
+	UPROPERTY(EditAnywhere, Category = "Player")
+	TArray<TEnumAsByte<EAutoReceiveInput::Type>> Participants;
+
+private:
+	void winGame();
+	
+	FTimerHandle mWinGameTimerHandle;
 };

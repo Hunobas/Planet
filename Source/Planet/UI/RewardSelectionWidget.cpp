@@ -32,8 +32,6 @@ void URewardSelectionWidget::NativeConstruct()
 	if (RewardButton3) 
 		RewardButton3->OnClicked.AddUniqueDynamic(this, &URewardSelectionWidget::OnRewardButton3Clicked);
         
-	UGameplayStatics::SetGamePaused(GetWorld(), true);
-	
 	cPlanetController->SetUIInputMode(this);
 }
 
@@ -158,8 +156,6 @@ void URewardSelectionWidget::HandleRewardSelection(int32 ButtonIndex)
 
 void URewardSelectionWidget::CloseRewardSelection()
 {
-    UGameplayStatics::SetGamePaused(GetWorld(), false);
-	
 	check(cPlanetController);
 	cPlanetController->SetInGameInputMode();
 	

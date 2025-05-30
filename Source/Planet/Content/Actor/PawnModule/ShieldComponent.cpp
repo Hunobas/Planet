@@ -85,8 +85,14 @@ void UShieldComponent::AddShield(float _shieldAmount)
 
 void UShieldComponent::OnTakeAnyDamage(AActor* _damagedActor, float _damage, const UDamageType* _damageType, AController* _instigatedBy, AActor* _damageCauser)
 {
-    if (_damage <= 0.0f || CurrentShield <= 0.0f)
+    if (_damage <= 0.0f)
         return;
+
+    if (CurrentShield <= 0.0f)
+    {
+        cHPComponent->OnTakeAnyDamage(_damageCauser, _damage, _damageType, _instigatedBy, _damagedActor);
+        return;
+    }
     
     const float shieldDamage = FMath::Min(CurrentShield, _damage);
     CurrentShield = FMath::Max(0.0f, CurrentShield - shieldDamage);

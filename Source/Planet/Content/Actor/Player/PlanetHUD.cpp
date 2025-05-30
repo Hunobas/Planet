@@ -4,8 +4,8 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/CanvasPanel.h"
 
-#include "../Planet.h"
 #include "PlanetPawn.h"
+#include "PlanetController.h"
 #include "LevelComponent.h"
 #include "HPComponent.h"
 #include "ShieldComponent.h"
@@ -23,6 +23,9 @@ void APlanetHUD::BeginPlay()
 	
 	cPlayerPawn = Cast<APlanetPawn>(GetOwningPawn());
 	check(cPlayerPawn);
+
+	cPlayerController = Cast<APlanetController>(GetOwningPlayerController());
+	check(cPlayerController);
 
 	mHUDWidget = CreateWidget<UHUDWidget>(GetOwningPlayerController(), HUDClass);
 	check(mHUDWidget);
@@ -109,6 +112,46 @@ void APlanetHUD::OnDailyProgressChanged(const float _dailyProgress, const float 
 void APlanetHUD::OnCurrentDayChanged(EPlanetDayOfWeek _newDay) const
 {
 	mHUDWidget->UpdateCurrentDayTextBlock(_newDay);
+}
+
+void APlanetHUD::ShowWinGame()
+{
+	check(WinGameClass);
+	
+	if (mWinGameWidget)
+	{
+		mWinGameWidget->RemoveFromParent();
+		mWinGameWidget = nullptr;
+	}
+    
+	mWinGameWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), WinGameClass);
+	if (mWinGameWidget)
+	{
+		mWinGameWidget->AddToViewport(HIGHEST_ORDER);
+
+		check(cPlayerController);
+		cPlayerController->SetUIInputMode(mWinGameWidget);
+	}
+}
+
+void APlanetHUD::ShowLoseGame()
+{
+	check(LoseGameClass);
+	
+	if (mLoseGameWidget)
+	{
+		mLoseGameWidget->RemoveFromParent();
+		mLoseGameWidget = nullptr;
+	}
+    
+	mLoseGameWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), LoseGameClass);
+	if (mLoseGameWidget)
+	{
+		mLoseGameWidget->AddToViewport(HIGHEST_ORDER);
+
+		check(cPlayerController);
+		cPlayerController->SetUIInputMode(mLoseGameWidget);
+	}
 }
 
 void APlanetHUD::ShowDashLine(bool _bShow)

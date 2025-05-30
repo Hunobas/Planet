@@ -85,6 +85,7 @@ FVector2D APlanetController::GetEMAInput()
 void APlanetController::SetInGameInputMode()
 {
 	bUIInputMode = false;
+	UGameplayStatics::SetGamePaused(GetWorld(), false);
 	FInputModeGameAndUI inputMode;
 	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	inputMode.SetHideCursorDuringCapture(false);
@@ -94,6 +95,7 @@ void APlanetController::SetInGameInputMode()
 void APlanetController::SetUIInputMode(UUserWidget* _widget)
 {
 	bUIInputMode = true;
+	UGameplayStatics::SetGamePaused(GetWorld(), true);
 	FInputModeUIOnly inputMode;
 	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	SetInputMode(inputMode);

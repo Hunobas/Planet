@@ -12,9 +12,11 @@ namespace PlanetConst
 	static constexpr float DEGREES_PER_DAY						= 360.0f;
 	static constexpr float DEGREES_PER_WEEK						= 2520.0f;
 	static constexpr int32 DAY_PER_WEEK							= 7;
+	static constexpr float TIMER_DURATION						= 60.0f;
 	
 	static constexpr float DAY_TO_DEGREES_RATIO					= 1.0f / DEGREES_PER_DAY;	// 캐싱용
 	static constexpr float WEEK_TO_DEGREES_RATIO				= 1.0f / DEGREES_PER_WEEK;	// 캐싱용
+	static constexpr float TIMER_DURATION_RATIO					= 1.0f / TIMER_DURATION;	// 캐싱용
 	
 #pragma endregion
 	

@@ -87,7 +87,7 @@ void UHPComponent::handleDeath() const
 		}
 		else if (mPlanet)
 		{
-			// gm->GameOver();
+			mPlanet->HandleDied();
 		}
 	}
 }

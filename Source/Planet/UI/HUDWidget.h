@@ -90,11 +90,16 @@ public:
 	UTextBlock* SAT;
 	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
 	UTextBlock* SUN;
+	
+    UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
+    UTextBlock* GameTime;
 
 private:
 	UImage* getWeaponImageBySlot(const int32 _slotIndex) const;
 	UImage* getItemImageBySlot(const int32 _slotIndex) const;
 	UTextBlock* getDayTextByDayOfWeek(const EPlanetDayOfWeek& _dayOfWeek) const;
+	void updateGameTimeDisplay() const;
 	
 	APlanetPawn* cPlayerPawn;
+	FTimerHandle mGameTimeUpdateTimer;
 };

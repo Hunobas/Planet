@@ -41,6 +41,8 @@ protected:
 public:
 	void StartAim();
 	void StopAim();
+
+	void HandleDied();
 	
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
 	UCapsuleComponent* Capsule;
@@ -82,6 +84,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "FX")
 	UNiagaraSystem* AimEffectTemplate;
+	UPROPERTY(EditAnywhere, Category = "FX")
+	UNiagaraSystem* PlanetDieTemplate;
 
 	APlanetHUD* PlanetHUD;
 	bool bPlayerAiming;
