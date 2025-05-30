@@ -3,7 +3,6 @@
 
 #include "Engine/DamageEvents.h"
 
-#include "../Planet.h"
 #include "PlanetPawn.h"
 #include "EnemyPawn.h"
 #include "WaveManagerComponent.h"

@@ -121,7 +121,7 @@ void APlanetPawn::updatePlanetRotation(const FVector& _worldMousePosition) const
 	const FRotator meridianRotation = FRotator(0.0f, DayOfWeek->MeridianYaw, 0.0f);
 	const FVector meridianDirection = meridianRotation.Vector();
 
-	// bool bNeedShowDashLine = DayOfWeek->DailyAngle < DayOfWeek->DayPassYawGap || DayOfWeek->DailyAngle > NOON_ANGLE;
+	// bool bNeedShowDashLine = DayOfWeek->DailyAngle < DayOfWeek->DayPassYawGap || DayOfWeek->DailyAngle > PI_IN_DEGREES;
 	//
 	// if (PlanetHUD->bDashLineVisible != bNeedShowDashLine)
 	// {

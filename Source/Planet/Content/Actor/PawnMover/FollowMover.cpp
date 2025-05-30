@@ -2,7 +2,6 @@
 #include "FollowMover.h"
 
 #include "EnemyPawn.h"
-#include "XpGem.h"
 
 UFollowMover::UFollowMover(): mOwner(nullptr), mFollowActor(nullptr)
 {

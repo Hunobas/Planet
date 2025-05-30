@@ -3,7 +3,6 @@
 
 #include "Kismet/GameplayStatics.h"
 
-#include "../Planet.h"
 #include "EnemyFireManagerComponent.h"
 #include "WaveConfigDataAsset.h"
 #include "EnemyPawn.h"
@@ -13,7 +12,8 @@
 UWaveManagerComponent::UWaveManagerComponent(): Config_EnemySpawnInterval(5.0f), Config_DifficultyInterval(5.0f),
                                                 mEnemySpawn(nullptr),
                                                 mPool(nullptr),
-                                                mFireManager(nullptr), cTargetPlayer(nullptr)
+                                                mFireManager(nullptr), cTargetPlayer(nullptr),
+                                                mCurrentLevelConfig(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -50,6 +50,7 @@ void UWaveManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	GetWorld()->GetTimerManager().ClearTimer(mWaveTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(mDifficultyTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(mEnemyScaleTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(mListTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(mSpawnIntervalTimerHandle);
 	Super::EndPlay(EndPlayReason);
@@ -57,15 +58,22 @@ void UWaveManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void UWaveManagerComponent::PlayWaveMode1()
 {
-	updateMaxFieldScoreByGameTime();
-	updateSpawnableEnemyListByGameTime();
-
 	GetWorld()->GetTimerManager().SetTimer(
 		mDifficultyTimerHandle,
 		this,
 		&UWaveManagerComponent::updateMaxFieldScoreByGameTime,
 		Config_DifficultyInterval,
-		true
+		true,
+		0.0f
+	);
+
+	GetWorld()->GetTimerManager().SetTimer(
+		mEnemyScaleTimerHandle,
+		this,
+		&UWaveManagerComponent::updateEnemyScaleByGameTime,
+		Config_DifficultyInterval,
+		true,
+		0.0f
 	);
 
 	GetWorld()->GetTimerManager().SetTimer(
@@ -73,8 +81,9 @@ void UWaveManagerComponent::PlayWaveMode1()
 		this,
 		&UWaveManagerComponent::updateSpawnableEnemyListByGameTime,
 		Config_DifficultyInterval,
-		true
-		);
+		true,
+		0.0f
+	);
 	
 	GetWorld()->GetTimerManager().SetTimer(
 		mWaveTimerHandle,
@@ -192,8 +201,33 @@ void UWaveManagerComponent::updateMaxFieldScoreByGameTime()
 {
 	const float elapsedTime = UGameplayStatics::GetTimeSeconds(this);
 
-	check(Config_MaxFieldScoreCurve.GetRichCurveConst());
-	CurrentMaxFieldScore = Config_MaxFieldScoreCurve.GetRichCurveConst()->Eval(elapsedTime);
+	if (Config_MaxFieldScoreCurve.GetRichCurveConst())
+	{
+		CurrentMaxFieldScore = Config_MaxFieldScoreCurve.GetRichCurveConst()->Eval(elapsedTime);
+	}
+}
+
+void UWaveManagerComponent::updateEnemyScaleByGameTime()
+{
+	check(mCurrentLevelConfig);
+	const float elapsedTime = UGameplayStatics::GetTimeSeconds(this);
+    
+	if (mCurrentLevelConfig->HPScaleCurve.GetRichCurveConst())
+	{
+		Config_ScaleSettings.HPScale = mCurrentLevelConfig->HPScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
+	}
+	if (mCurrentLevelConfig->DamageScaleCurve.GetRichCurveConst())
+	{
+		Config_ScaleSettings.DamageScale = mCurrentLevelConfig->DamageScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
+	}
+	if (mCurrentLevelConfig->SpeedScaleCurve.GetRichCurveConst())
+	{
+		Config_ScaleSettings.SpeedScale = mCurrentLevelConfig->SpeedScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
+	}
+	if (mCurrentLevelConfig->XPDropScaleCurve.GetRichCurveConst())
+	{
+		Config_ScaleSettings.XPDropScale = mCurrentLevelConfig->XPDropScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
+	}
 }
 
 void UWaveManagerComponent::updateSpawnableEnemyListByGameTime()
@@ -223,13 +257,13 @@ bool UWaveManagerComponent::loadWaveConfigForCurrentLevel()
 		return false;
 	}
 
-	UWaveConfigDataAsset* waveConfig = WaveConfigDatas[levelIndex - 1];
+	mCurrentLevelConfig = WaveConfigDatas[levelIndex - 1];
 
-	Config_SpawnInfos			= waveConfig->SpawnInfos;
-	Config_EnemySpawnInterval	= waveConfig->EnemySpawnInterval;
-	Config_DifficultyInterval	= waveConfig->DifficultyInterval;
-	Config_MaxFieldScoreCurve	= waveConfig->MaxFieldScoreCurve;
-	Config_ScaleSettings		= waveConfig->ScaleSettings;
+	Config_SpawnInfos			= mCurrentLevelConfig->SpawnInfos;
+	Config_EnemySpawnInterval	= mCurrentLevelConfig->EnemySpawnInterval;
+	Config_DifficultyInterval	= mCurrentLevelConfig->DifficultyInterval;
+	Config_MaxFieldScoreCurve	= mCurrentLevelConfig->MaxFieldScoreCurve;
+	Config_ScaleSettings		= mCurrentLevelConfig->ScaleSettings;
 
 	return true;
 }

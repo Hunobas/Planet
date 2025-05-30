@@ -1,14 +1,20 @@
 // PlanetConst.h
 #pragma once
 
-
-
 namespace PlanetConst
 {
 	
 #pragma region Math
 
-	static constexpr float PI_IN_DEGREES = 180.0f;
+	static constexpr float PI_IN_DEGREES						= 180.0f;
+	static constexpr float EPSILON								= 0.001f;
+	
+	static constexpr float DEGREES_PER_DAY						= 360.0f;
+	static constexpr float DEGREES_PER_WEEK						= 2520.0f;
+	static constexpr int32 DAY_PER_WEEK							= 7;
+	
+	static constexpr float DAY_TO_DEGREES_RATIO					= 1.0f / DEGREES_PER_DAY;	// 캐싱용
+	static constexpr float WEEK_TO_DEGREES_RATIO				= 1.0f / DEGREES_PER_WEEK;	// 캐싱용
 	
 #pragma endregion
 	
@@ -41,13 +47,9 @@ namespace PlanetConst
 	static constexpr float HASTE_BOOST							= 5.0f;
 	static constexpr float XP_GAIN_BOOST						= 10.0f;
 	static constexpr float XP_SPEED_BOOST						= 20.0f;
-    
-	static constexpr float EPSILON = 0.001f;
-	static constexpr float DEGREES_PER_DAY = 360.0f;
-	static constexpr float DEGREES_PER_WEEK = 2520.0f;
-	static constexpr int32 DAY_PER_WEEK = 7;
-	static constexpr float MIDNIGHT_ANGLE = EPSILON;
-	static constexpr float NOON_ANGLE = 180.0f;
+	
+	static constexpr float MIDNIGHT_ANGLE						= EPSILON;
+	static constexpr float NOON_ANGLE							= PI_IN_DEGREES;
 	
 #pragma endregion
 

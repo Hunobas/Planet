@@ -37,9 +37,9 @@ public:
 	void UpdateRotation(float _planetYaw);
     
 	UFUNCTION(BlueprintCallable, Category = "Day of Week")
-	float GetDailyProgress() const { return DailyAngle / DEGREES_PER_DAY; }
+	float GetDailyProgress() const { return DailyAngle * DAY_TO_DEGREES_RATIO; }
 	UFUNCTION(BlueprintCallable, Category = "Day of Week")
-	float GetWeeklyProgress() const { return WeeklyAngle / DEGREES_PER_WEEK; }
+	float GetWeeklyProgress() const { return WeeklyAngle * WEEK_TO_DEGREES_RATIO; }
 
 	UPROPERTY(BlueprintAssignable, Category = "Day of Week")
 	FOnDayChanged OnDayChanged;
@@ -56,13 +56,9 @@ public:
 	EPlanetDayOfWeek CurrentDay;
 	UPROPERTY(VisibleAnywhere, Category = "Day of Week")
 	float MeridianYaw;
-	
-	UPROPERTY(EditAnywhere, Category = "Debug")
-	bool bDebugMode = false;
 
 private:
 	void updateCurrentDay();
-	void broadcastDayChange(EPlanetDayOfWeek _newDay);
 	EPlanetDayOfWeek calculateDay() const;
 
 	APlanetPawn* cOwner;

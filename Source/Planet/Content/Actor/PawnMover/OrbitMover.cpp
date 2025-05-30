@@ -1,8 +1,6 @@
 // OrbitMover.cpp
 #include "OrbitMover.h"
 
-#include "../Planet.h"
-
 UOrbitMover::UOrbitMover(): cTargetSun(nullptr), mOwner(nullptr), mOrbitRadius(0), mOrbitPeriod(PLAYTIME), mCurrentAngle(0)
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -42,8 +40,8 @@ void UOrbitMover::TickComponent(float _deltaTime, ELevelTick _tickType, FActorCo
 
 void UOrbitMover::MoveStep(float _deltaTime)
 {
-	mCurrentAngle += (_deltaTime / mOrbitPeriod) * 360.0f;
-	mCurrentAngle = FMath::Fmod(mCurrentAngle, 360.0f);
+	mCurrentAngle += (_deltaTime / mOrbitPeriod) * DEGREES_PER_DAY;
+	mCurrentAngle = FMath::Fmod(mCurrentAngle, DEGREES_PER_DAY);
 	
 	const float rad		 = FMath::DegreesToRadians(mCurrentAngle);
 	const float X		 = mTargetLocation.X + mOrbitRadius * FMath::Cos(rad);

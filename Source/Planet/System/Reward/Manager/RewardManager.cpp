@@ -1,7 +1,6 @@
 // RewardManager.cpp
 #include "RewardManager.h"
 
-#include "../Planet.h"
 #include "PlanetPawn.h"
 #include "RewardSelector.h"
 #include "WeaponRewardData.h"

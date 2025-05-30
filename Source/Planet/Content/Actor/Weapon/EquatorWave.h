@@ -38,13 +38,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Equator Wave")
 	FName LaserMuzzle5Tag;
 	UPROPERTY(EditAnywhere, Category = "Equator Wave")
-	FName LaserMuzzle6Tag;
-	UPROPERTY(EditAnywhere, Category = "Equator Wave")
 	TSubclassOf<ADefaultLaser> LaserClass;
 	UPROPERTY(EditAnywhere, Category = "Equator Wave")
 	float DamageInterval		= 0.15f;
 	UPROPERTY(VisibleAnywhere, Category = "Equator Wave")
-	int32 LaserNum				= 6;
+	int32 LaserNum				= 5;
 	UPROPERTY(VisibleAnywhere, Category = "Equator Wave")
 	float PlanetRadius			= 100.0f;
 
@@ -69,7 +67,7 @@ private:
 	TArray<ADefaultLaser*> mLasers;
 	
 	int32 mMaxPierce = 1;
-	static constexpr float ROTATION_MULTIPLIERS[6] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+	static constexpr float ROTATION_MULTIPLIERS[5] = {2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
 
 	FTimerHandle mLaserTickHandle;
 };

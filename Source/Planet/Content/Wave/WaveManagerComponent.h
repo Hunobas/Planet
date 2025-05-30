@@ -64,6 +64,7 @@ private:
 	AEnemyPawn* spawnEnemyOrNull(const TSubclassOf<AEnemyPawn>& _enemyClass, USceneComponent* _spawnPoint);
 	USceneComponent* getRandomPointForTypeOrNull(const EEnemyType& _type) const;
 	void updateMaxFieldScoreByGameTime();
+	void updateEnemyScaleByGameTime();
 	void updateSpawnableEnemyListByGameTime();
 	bool loadWaveConfigForCurrentLevel();
 	
@@ -72,9 +73,12 @@ private:
 	UEnemyFireManagerComponent* mFireManager;
 	TArray<TSubclassOf<AEnemyPawn>> mRuntimeSpawnableList;
 	APawn* cTargetPlayer;
+
+	UWaveConfigDataAsset* mCurrentLevelConfig;
 	
 	FTimerHandle mWaveTimerHandle;
 	FTimerHandle mDifficultyTimerHandle;
+	FTimerHandle mEnemyScaleTimerHandle;
 	FTimerHandle mListTimerHandle;
 	FTimerHandle mSpawnIntervalTimerHandle;
 };

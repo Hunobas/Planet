@@ -4,7 +4,7 @@
 #include "CoreMinimal.h"
 #include "PassiveItemType.h"
 #include "Components/ActorComponent.h"
-#include "../Planet.h"
+#include "PlanetConst.h"
 #include "PassiveItemSlotComponent.generated.h"
 
 enum class EPassiveItemType : uint8;
@@ -30,9 +30,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Item Slot")
 	TMap<EPassiveItemType, TSubclassOf<APassiveItem>> ItemTypeToClassMap;
 	UPROPERTY(EditAnywhere, Category = "Item Slot", meta=(ClampMin=1, ClampMax=12))
-	int32 MaxSlots = ITEM_MAX_SLOT;
+	int32 MaxSlots = PlanetConst::ITEM_MAX_SLOT;
 	UPROPERTY(VisibleAnywhere, Category = "Item Slot")
-	int32 RemainSlots = ITEM_MAX_SLOT;
+	int32 RemainSlots = PlanetConst::ITEM_MAX_SLOT;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug", meta = (ArraySizeEnum = "ITEM_MAX_SLOT", 
 			ToolTip = "게임 시작 시 각 슬롯에 장착할 아이템 타입을 설정합니다. 빈 슬롯은 None으로 설정하세요."))

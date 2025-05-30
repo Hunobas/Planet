@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "../Planet.h"
 #include "JustAimManagerComponent.generated.h"
 
 class USceneComponent;

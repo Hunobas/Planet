@@ -2,8 +2,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PlanetConst.h"
 #include "Engine/DataAsset.h"
-#include "../Planet.h"
 #include "EnemyScaleSetting.h"
 #include "WaveConfigDataAsset.generated.h"
 
@@ -19,7 +19,7 @@ struct FSpawnInfo
 	UPROPERTY(EditAnywhere, Category = "Wave Config", meta=(ClampMin="0"))
 	int32 UnlockTime = 0;
 	UPROPERTY(EditAnywhere, Category = "Wave Config", meta=(ClampMin="0"))
-	int32 LockTime = PLAYTIME;
+	int32 LockTime = PlanetConst::PLAYTIME;
 };
 
 UCLASS(Blueprintable)
@@ -41,4 +41,13 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "WaveConfig")
 	FEnemyScaleSetting ScaleSettings;
+
+	UPROPERTY(EditAnywhere, Category = "Enemy Scale")
+	FRuntimeFloatCurve HPScaleCurve;
+	UPROPERTY(EditAnywhere, Category = "Enemy Scale")
+	FRuntimeFloatCurve DamageScaleCurve;
+	UPROPERTY(EditAnywhere, Category = "Enemy Scale")
+	FRuntimeFloatCurve SpeedScaleCurve;
+	UPROPERTY(EditAnywhere, Category = "Enemy Scale")
+	FRuntimeFloatCurve XPDropScaleCurve;
 };

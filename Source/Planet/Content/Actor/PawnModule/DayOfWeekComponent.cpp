@@ -1,12 +1,12 @@
 // DayOfWeekComponent.cpp
 #include "DayOfWeekComponent.h"
 
-#include "../Planet.h"
 #include "PlanetPawn.h"
 #include "PlanetHUD.h"
 
 UDayOfWeekComponent::UDayOfWeekComponent() : DailyAngle(0.0f), WeeklyAngle(0.0f), CurrentDay(EPlanetDayOfWeek::Monday),
-    MeridianYaw(180.0f), mWeeklyAngleStack(0.0f), mPreviousPlanetYaw(0.0f)
+                                             MeridianYaw(180.0f), cOwner(nullptr), mWeeklyAngleStack(0.0f),
+                                             mPreviousPlanetYaw(0.0f)
 {
     PrimaryComponentTick.bCanEverTick = false;
 }
@@ -64,7 +64,7 @@ void UDayOfWeekComponent::updateCurrentDay()
     
     if (newDay != CurrentDay)
     {
-        broadcastDayChange(newDay);
+        OnDayChanged.Broadcast(newDay);
         CurrentDay = newDay;
 
         check(cOwner->PlanetHUD);
@@ -76,23 +76,4 @@ EPlanetDayOfWeek UDayOfWeekComponent::calculateDay() const
 {
     const int32 dayIndex = static_cast<int32>(WeeklyAngle / DEGREES_PER_DAY) % DAY_PER_WEEK;
     return static_cast<EPlanetDayOfWeek>(dayIndex);
-}
-
-void UDayOfWeekComponent::broadcastDayChange(EPlanetDayOfWeek _newDay)
-{
-    OnDayChanged.Broadcast(_newDay);
-
-#ifdef DEBUG
-    if (bDebugMode)
-    {
-        const TCHAR* dayNames[] = {
-            TEXT("월요일"), TEXT("화요일"), TEXT("수요일"), TEXT("목요일"),
-            TEXT("금요일"), TEXT("토요일"), TEXT("일요일")
-        };
-        
-        UE_LOG(LogTemp, Warning, TEXT("요일 변경: %s -> %s"), 
-            dayNames[static_cast<int32>(CurrentDay)], 
-            dayNames[static_cast<int32>(_newDay)]);
-    }
-#endif
 }
