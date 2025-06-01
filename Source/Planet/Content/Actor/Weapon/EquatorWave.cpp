@@ -87,7 +87,7 @@ void AEquatorWave::StartAttack()
 		mMuzzles[0]->GetComponentLocation()
 	);
 
-	GetWorld()->GetTimerManager().SetTimer(
+	GetWorldTimerManager().SetTimer(
 		mLaserTickHandle,
 		this,
 		&AEquatorWave::tickAllLasers,
@@ -99,7 +99,7 @@ void AEquatorWave::StartAttack()
 
 void AEquatorWave::StopAttack()
 {
-	GetWorld()->GetTimerManager().ClearTimer(mLaserTickHandle);
+	GetWorldTimerManager().ClearTimer(mLaserTickHandle);
 }
 
 void AEquatorWave::UpdateMuzzleOrbit(const float _weeklyAngle)

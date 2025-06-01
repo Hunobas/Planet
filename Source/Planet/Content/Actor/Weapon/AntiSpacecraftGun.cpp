@@ -75,7 +75,7 @@ void AAntiSpacecraftGun::LevelUp(const int32& _newLevel)
 void AAntiSpacecraftGun::Fire()
 {
 	Super::Fire();
-
+	
 	GetWorldTimerManager().SetTimer(
 		mBurstFireTimerHandle,
 		this,
@@ -109,6 +109,12 @@ void AAntiSpacecraftGun::StopAttack()
 
 void AAntiSpacecraftGun::burstFire()
 {
+	if (!IsValid(this) || !IsValid(mPool) || !IsValid(cOwner))
+	{
+		GetWorldTimerManager().ClearTimer(mBurstFireTimerHandle);
+		return;
+	}
+	
 	if (mBurstFireCount++ >= BurstFireMaxCount)
 	{
 		GetWorldTimerManager().ClearTimer(mBurstFireTimerHandle);
@@ -134,12 +140,11 @@ void AAntiSpacecraftGun::burstFire()
 
 ADefaultProjectile* AAntiSpacecraftGun::spawnProjectileOrNull(const USceneComponent* _muzzle)
 {
-	check(_muzzle);
-	check(mPool);
-	check(ProjectileClass);
-
-	ADefaultProjectile* projectile = mPool->AcquireOrNull(ProjectileClass, _muzzle->GetComponentTransform());
-	if (projectile)
+	if (!IsValid(_muzzle) || !IsValid(mPool) || !ProjectileClass)
+		return nullptr;
+    
+	ADefaultProjectile* projectile = mPool->AcquireOrNull<ADefaultProjectile>(ProjectileClass, _muzzle->GetComponentTransform());
+	if (IsValid(projectile))
 	{
 		projectile->Initialize(this, mPool);
 		projectile->MaxPierce = mMaxPierce;

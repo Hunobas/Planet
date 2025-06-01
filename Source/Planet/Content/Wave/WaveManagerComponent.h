@@ -53,6 +53,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Wave Config")
 	float SpawnInterval = 0.5f;
 
+	UWaveConfigDataAsset* CurrentLevelConfig;
 	TArray<FSpawnInfo>	Config_SpawnInfos;
 	float				Config_EnemySpawnInterval;
 	float				Config_DifficultyInterval;
@@ -68,13 +69,15 @@ private:
 	void updateSpawnableEnemyListByGameTime();
 	bool loadWaveConfigForCurrentLevel();
 	
+	UPROPERTY()
 	AEnemySpawnCelestial* mEnemySpawn;
+	UPROPERTY()
 	UObjectPoolManagerComponent* mPool;
+	UPROPERTY()
 	UEnemyFireManagerComponent* mFireManager;
+	
 	TArray<TSubclassOf<AEnemyPawn>> mRuntimeSpawnableList;
 	APawn* cTargetPlayer;
-
-	UWaveConfigDataAsset* mCurrentLevelConfig;
 	
 	FTimerHandle mWaveTimerHandle;
 	FTimerHandle mDifficultyTimerHandle;

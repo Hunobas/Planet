@@ -34,7 +34,7 @@ void APlanetHUD::BeginPlay()
 	check(mDashLineWidget);
 	mDashLineRootWidget = Cast<UCanvasPanel>(mDashLineWidget->GetRootWidget());
 
-	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &APlanetHUD::beginLatePlay);
+	GetWorldTimerManager().SetTimerForNextTick(this, &APlanetHUD::beginLatePlay);
 }
 
 void APlanetHUD::beginLatePlay() const

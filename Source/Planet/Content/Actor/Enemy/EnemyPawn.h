@@ -78,13 +78,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = "FX")
 	UNiagaraSystem* EnemyDieTemplate;
 
+	APawn* TargetPawn;
+	
 private:
 	void reset(const FEnemyScaleSetting& _scaleSettings);
 	void setUpdateStrategy();
 	void spawnXpGem() const;
 
 	UWaveManagerComponent* cWaveManager;
-	APawn* cTargetPawn;
 	UFlyingMover* mFlyingMover;
 	UFollowMover* mFollowMover;
 	UHPComponent* mHP;

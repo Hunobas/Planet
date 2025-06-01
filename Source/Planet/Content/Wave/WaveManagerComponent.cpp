@@ -9,11 +9,11 @@
 #include "EnemySpawnCelestial.h"
 #include "ObjectPoolManagerComponent.h"
 
-UWaveManagerComponent::UWaveManagerComponent(): Config_EnemySpawnInterval(5.0f), Config_DifficultyInterval(5.0f),
+UWaveManagerComponent::UWaveManagerComponent(): CurrentLevelConfig(nullptr), Config_EnemySpawnInterval(5.0f),
+                                                Config_DifficultyInterval(5.0f),
                                                 mEnemySpawn(nullptr),
-                                                mPool(nullptr),
-                                                mFireManager(nullptr), cTargetPlayer(nullptr),
-                                                mCurrentLevelConfig(nullptr)
+                                                mPool(nullptr), mFireManager(nullptr),
+                                                cTargetPlayer(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -209,24 +209,24 @@ void UWaveManagerComponent::updateMaxFieldScoreByGameTime()
 
 void UWaveManagerComponent::updateEnemyScaleByGameTime()
 {
-	check(mCurrentLevelConfig);
+	check(CurrentLevelConfig);
 	const float elapsedTime = UGameplayStatics::GetTimeSeconds(this);
     
-	if (mCurrentLevelConfig->HPScaleCurve.GetRichCurveConst())
+	if (CurrentLevelConfig->HPScaleCurve.GetRichCurveConst())
 	{
-		Config_ScaleSettings.HPScale = mCurrentLevelConfig->HPScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
+		Config_ScaleSettings.HPScale = CurrentLevelConfig->HPScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
 	}
-	if (mCurrentLevelConfig->DamageScaleCurve.GetRichCurveConst())
+	if (CurrentLevelConfig->DamageScaleCurve.GetRichCurveConst())
 	{
-		Config_ScaleSettings.DamageScale = mCurrentLevelConfig->DamageScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
+		Config_ScaleSettings.DamageScale = CurrentLevelConfig->DamageScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
 	}
-	if (mCurrentLevelConfig->SpeedScaleCurve.GetRichCurveConst())
+	if (CurrentLevelConfig->SpeedScaleCurve.GetRichCurveConst())
 	{
-		Config_ScaleSettings.SpeedScale = mCurrentLevelConfig->SpeedScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
+		Config_ScaleSettings.SpeedScale = CurrentLevelConfig->SpeedScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
 	}
-	if (mCurrentLevelConfig->XPDropScaleCurve.GetRichCurveConst())
+	if (CurrentLevelConfig->XPDropScaleCurve.GetRichCurveConst())
 	{
-		Config_ScaleSettings.XPDropScale = mCurrentLevelConfig->XPDropScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
+		Config_ScaleSettings.XPDropScale = CurrentLevelConfig->XPDropScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
 	}
 }
 
@@ -257,13 +257,13 @@ bool UWaveManagerComponent::loadWaveConfigForCurrentLevel()
 		return false;
 	}
 
-	mCurrentLevelConfig = WaveConfigDatas[levelIndex - 1];
+	CurrentLevelConfig = WaveConfigDatas[levelIndex - 1];
 
-	Config_SpawnInfos			= mCurrentLevelConfig->SpawnInfos;
-	Config_EnemySpawnInterval	= mCurrentLevelConfig->EnemySpawnInterval;
-	Config_DifficultyInterval	= mCurrentLevelConfig->DifficultyInterval;
-	Config_MaxFieldScoreCurve	= mCurrentLevelConfig->MaxFieldScoreCurve;
-	Config_ScaleSettings		= mCurrentLevelConfig->ScaleSettings;
+	Config_SpawnInfos			= CurrentLevelConfig->SpawnInfos;
+	Config_EnemySpawnInterval	= CurrentLevelConfig->EnemySpawnInterval;
+	Config_DifficultyInterval	= CurrentLevelConfig->DifficultyInterval;
+	Config_MaxFieldScoreCurve	= CurrentLevelConfig->MaxFieldScoreCurve;
+	Config_ScaleSettings		= CurrentLevelConfig->ScaleSettings;
 
 	return true;
 }

@@ -20,7 +20,7 @@ void ASurvivorGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetWorld()->GetTimerManager().SetTimer(
+	GetWorldTimerManager().SetTimer(
 		mWinGameTimerHandle,
 		this,
 		&ASurvivorGameModeBase::winGame,

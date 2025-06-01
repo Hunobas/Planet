@@ -29,7 +29,7 @@ void ADefaultLaser::Initialize(AWeaponPawn* _owner)
 
     if (LaserType == ELaserType::Finite)
     {
-        GetWorld()->GetTimerManager().SetTimer(
+        GetWorldTimerManager().SetTimer(
             mLifeSpanTimerHandle,
             this,
             &ADefaultLaser::destroyLaser,
@@ -89,7 +89,7 @@ void ADefaultLaser::updateLaserEndPosition(const AActor* _targetEnemy) const
 
 void ADefaultLaser::destroyLaser()
 {
-    GetWorld()->GetTimerManager().ClearTimer(mLifeSpanTimerHandle);
+    GetWorldTimerManager().ClearTimer(mLifeSpanTimerHandle);
 
     if (LaserEffect)
     {

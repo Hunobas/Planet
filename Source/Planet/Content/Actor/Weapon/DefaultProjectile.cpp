@@ -44,7 +44,7 @@ void ADefaultProjectile::Initialize(AWeaponPawn* _owner, UObjectPoolManagerCompo
 		ProjectileMovement->Velocity = GetActorForwardVector() * Speed;
 	}
     
-	GetWorld()->GetTimerManager().SetTimer(
+	GetWorldTimerManager().SetTimer(
 		mLifeSpanTimerHandle,
 		this,
 		&ADefaultProjectile::returnToPool,
@@ -85,7 +85,7 @@ void ADefaultProjectile::reset()
 	if (!IsValidLowLevel() || !CollisionBox || !CollisionBox->IsValidLowLevel())
 		return;
 	
-	GetWorld()->GetTimerManager().ClearTimer(mLifeSpanTimerHandle);
+	GetWorldTimerManager().ClearTimer(mLifeSpanTimerHandle);
 	
 	check(CollisionBox);
 	CollisionBox->OnComponentBeginOverlap.RemoveAll(this);

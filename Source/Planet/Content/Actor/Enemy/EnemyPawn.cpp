@@ -20,7 +20,7 @@
 #include "ObjectPoolManagerComponent.h"
 #include "XpGem.h"
 
-AEnemyPawn::AEnemyPawn() : cTargetPawn(nullptr), mFlyingMover(nullptr), mFollowMover(nullptr), mHP(nullptr), mHPWidget(nullptr)
+AEnemyPawn::AEnemyPawn() : TargetPawn(nullptr), mFlyingMover(nullptr), mFollowMover(nullptr), mHP(nullptr), mHPWidget(nullptr)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -47,7 +47,7 @@ void AEnemyPawn::BeginPlay()
 void AEnemyPawn::Initialize(UWaveManagerComponent* _waveManager, APawn* _targetPlayer)
 {
 	cWaveManager = _waveManager;
-	cTargetPawn = _targetPlayer;
+	TargetPawn = _targetPlayer;
 
 	check(cWaveManager);
 	reset(cWaveManager->Config_ScaleSettings);
@@ -89,8 +89,8 @@ void AEnemyPawn::MoveStep(float _deltaTime)
 		mFlyingMover->MoveStep(_deltaTime);
 	}
 
-	check(cTargetPawn);
-	FVector direction = (cTargetPawn->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+	check(TargetPawn);
+	FVector direction = (TargetPawn->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 	SetActorRotation(direction.Rotation());
 }
 
@@ -125,13 +125,13 @@ void AEnemyPawn::HandleDied()
 void AEnemyPawn::OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _otherActor,
 	UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult)
 {
-	check(cTargetPawn);
+	check(TargetPawn);
 
-	if (EnemyType != EEnemyType::Melee || Cast<APawn>(_otherActor) != cTargetPawn)
+	if (EnemyType != EEnemyType::Melee || Cast<APawn>(_otherActor) != TargetPawn)
 		return;
 	
 	FDamageEvent damageEvent;
-	cTargetPawn->TakeDamage(RuntimeSettings.Damage, damageEvent, GetController(), this);
+	TargetPawn->TakeDamage(RuntimeSettings.Damage, damageEvent, GetController(), this);
 	HandleDied();
 }
 
@@ -160,8 +160,8 @@ void AEnemyPawn::setUpdateStrategy()
 	{
 		mUpdateStrategy = MakeUnique<InputDrivenUpdateStrategy>(this);
 
-		check(cTargetPawn);
-		if (APlanetController* PC = Cast<APlanetController>(cTargetPawn->GetController()))
+		check(TargetPawn);
+		if (APlanetController* PC = Cast<APlanetController>(TargetPawn->GetController()))
 		{
 			PC->OnLookValue.AddLambda([this](const FVector2D& _inputValue)
 			{
@@ -180,6 +180,6 @@ void AEnemyPawn::spawnXpGem() const
 	
 	if (AXpGem* XpGem = pool->AcquireOrNull(XpGemClass, GetActorTransform()))
 	{
-		XpGem->Initialize(cTargetPawn, RuntimeSettings.XPDrop, pool);
+		XpGem->Initialize(TargetPawn, RuntimeSettings.XPDrop, pool);
 	}
 }

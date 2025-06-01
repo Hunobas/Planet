@@ -65,8 +65,11 @@ private:
 	void burstFire();
 	ADefaultProjectile* spawnProjectileOrNull(const USceneComponent* _muzzle);
 
+	UPROPERTY()
 	APlanetPawn* cOwner;
+	UPROPERTY()
 	UObjectPoolManagerComponent* mPool;
+	
 	USceneComponent* mMuzzleCenter;
 	USceneComponent* mMuzzleLeft;
 	USceneComponent* mMuzzleRight;

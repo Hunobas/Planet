@@ -57,7 +57,9 @@ void AWeekendShift::adjustPremiumPay(EPlanetDayOfWeek _newDay)
 	}
 	else if (_newDay == EPlanetDayOfWeek::Monday)
 	{
-		mWaveManager->Config_ScaleSettings.XPDropScale -= mThisWeekPay;
+		check(mWaveManager->CurrentLevelConfig);
+		float originWeekPay = mWaveManager->Config_ScaleSettings.XPDropScale - mThisWeekPay;
+		mWaveManager->Config_ScaleSettings.XPDropScale = FMath::Max(originWeekPay, mWaveManager->CurrentLevelConfig->ScaleSettings.XPDropScale);
 		mThisWeekPay = 0.0f;
 	}
 }
