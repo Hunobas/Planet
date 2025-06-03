@@ -2,7 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Containers/Queue.h"
 #include "EnemyFireManagerComponent.generated.h"
 
 class AEnemyPawn;
@@ -21,18 +21,27 @@ public:
 	virtual void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
 	
 	UFUNCTION(BlueprintCallable, Category="Fire Manager")
-	void FireRandomEnemy();
+	void FireOnBeat();
+	UFUNCTION(BlueprintCallable, Category="Fire Manager")
+	void FireOnBeatAt(const int32 _index);
 	
-	void AddEnemy(AEnemyPawn* _spawnedEnemy, USceneComponent* _spawnPoint);
-	void RemoveEnemy(AEnemyPawn* _deadEnemy);
+	void RegisterRangedEnemy(AEnemyPawn* _spawnedEnemy, USceneComponent* _spawnPoint);
+	void UnregisterRangedEnemy(AEnemyPawn* _deadEnemy);
+	
 	void EnqueueFireComponent(UFiringComponent* _fireComponent);
 	void DequeueFireComponent(const UFiringComponent* _firedComponent);
 
 private:
+	UFiringComponent* getNextPointOrNull();
+	UFiringComponent* getPointAtIndexOrNull(const int32 _index) const;
+	static bool isEnemyValidForFiring(const AEnemyPawn* _enemy);
+
+	UPROPERTY()
 	AEnemySpawnCelestial* mEnemySpawn;
+	UPROPERTY()
 	TArray<AEnemyPawn*> mRangedEnemies;
 
 	FCriticalSection mQueueCriticalSection;
 	TQueue<UFiringComponent*> mFireComponentQueue;
-	TSet<UFiringComponent*> mActiveFireComponents;
+	int32 mCurrentFireIndex = 0;
 };

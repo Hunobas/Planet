@@ -1,11 +1,11 @@
 // HPComponent.cpp
 #include "HPComponent.h"
 
+#include "../Planet.h"
 #include "EnemyPawn.h"
 #include "PlanetHUD.h"
 #include "PlanetPawn.h"
 #include "SurvivorGameModeBase.h"
-#include "WaveManagerComponent.h"
 
 UHPComponent::UHPComponent(): MaxHP(100.0f), CurrentHP(100.0f), mPlanet(nullptr), mEnemy(nullptr)
 {

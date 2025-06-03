@@ -18,7 +18,6 @@ UWaveManagerComponent::UWaveManagerComponent(): CurrentLevelConfig(nullptr), Con
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-// Called when the game starts
 void UWaveManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -43,7 +42,8 @@ void UWaveManagerComponent::BeginPlay()
 	CurrentFieldScore = 0;
 	
 	PlayWaveMode1();
-	// PlayWaveMode2();
+	// FTimerHandle timerHandle;
+	// GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &UWaveManagerComponent::PlayWaveMode2, 0.1f, false);
 }
 
 void UWaveManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -98,7 +98,7 @@ void UWaveManagerComponent::PlayWaveMode2()
 {
 	updateSpawnableEnemyListByGameTime();
 
-	for (USceneComponent* spawnPoint : mEnemySpawn->GetNthRowSpawnPoints(2))
+	for (USceneComponent* spawnPoint : mEnemySpawn->RangedSpawnPoints)
 	{
 		spawnEnemyOrNull(mRuntimeSpawnableList[0], spawnPoint);
 	}
@@ -145,7 +145,7 @@ void UWaveManagerComponent::EnemyDied(AEnemyPawn* _deadEnemy)
 	CurrentFieldScore -= _deadEnemy->RuntimeSettings.FieldScore;
 	mPool->Release(_deadEnemy);
 
-	mFireManager->RemoveEnemy(_deadEnemy);
+	mFireManager->UnregisterRangedEnemy(_deadEnemy);
 }
 
 void UWaveManagerComponent::spawnSingleEnemy()
@@ -183,7 +183,8 @@ AEnemyPawn* UWaveManagerComponent::spawnEnemyOrNull(const TSubclassOf<AEnemyPawn
 		spawnedEnemy->SetOwner(GetOwner());
 		spawnedEnemy->Initialize(this, cTargetPlayer);
 		CurrentFieldScore += spawnedEnemy->RuntimeSettings.FieldScore;
-		mFireManager->AddEnemy(spawnedEnemy, _spawnPoint);
+
+		mFireManager->RegisterRangedEnemy(spawnedEnemy, _spawnPoint);
 	}
 	return spawnedEnemy;
 }

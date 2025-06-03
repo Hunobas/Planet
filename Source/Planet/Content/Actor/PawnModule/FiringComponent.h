@@ -25,6 +25,7 @@ public:
 	void StartFireSequence(const TFunction<void(const UFiringComponent*)>& _callback = TFunction<void(const UFiringComponent*)>());
 	void Fire();
 	void HandleJustAim();
+	void StopFireSequence();
 
 	UPROPERTY(EditAnywhere, Category = "Firing")
 	TEnumAsByte<EAutoReceiveInput::Type> TargetPlayer;
@@ -45,6 +46,7 @@ public:
 
 	USceneComponent* MuzzlePoint;
 	APawn* TargetPawn;
+	bool bIsCurrentlyFiring = false;
 
 private:
 	void setOwnerParams();

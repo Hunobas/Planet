@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Containers/Queue.h"
+#include "Containers/CircularQueue.h"
 #include "HAL/CriticalSection.h"
 #include "ObjectPoolManagerComponent.generated.h"
 
@@ -64,7 +64,7 @@ public:
                 return nullptr;
         }
 
-        if (IsValid(actor) && !actor->IsActorBeingDestroyed())
+        if (IsValid(actor))
         {
             actor->SetActorTransform(_spawnTransform);
             setActorActiveState(actor, true);
@@ -80,24 +80,26 @@ public:
 private:
     struct FPoolData
     {
-        TQueue<AActor*, EQueueMode::Mpsc> Available;
-        // TQueue<AActor*, EQueueMode::Mpsc> InUse;
+        TCircularQueue<AActor*> Available;
         TSubclassOf<AActor> ActorClass;
+        int32 PoolCapacity;
         
-        FPoolData() : ActorClass(nullptr) {}
-        FPoolData(const TSubclassOf<AActor>& _actorClass) : ActorClass(_actorClass) {}
+        FPoolData() : Available(256), ActorClass(nullptr), PoolCapacity(256) { }
+        FPoolData(const TSubclassOf<AActor>& _actorClass, int32 _capacity) 
+            : Available(FMath::Max(_capacity * 2, 64)),
+              ActorClass(_actorClass), 
+              PoolCapacity(FMath::Max(_capacity * 2, 64))
+        { }
     };
 
     TMap<TSubclassOf<AActor>, FPoolData*> mPoolMap;
+    mutable FCriticalSection mPoolCriticalSection;
 
     UPROPERTY()
     TArray<AActor*> mAllPooledActors;
-
-    mutable FCriticalSection mPoolCriticalSection;
-
     
-    void repopulatePool(const TSubclassOf<AActor>& _actorClass, const int32& _count);
+    void repopulatePool(const TSubclassOf<AActor>& _actorClass, const int32 _count);
     static void setActorActiveState(AActor* _actor, bool _active);
-    FPoolData* getOrCreatePoolData(const TSubclassOf<AActor>& _actorClass);
+    FPoolData* getOrCreatePoolData(const TSubclassOf<AActor>& _actorClass, int32 _suggestedCapacity = 256);
     AActor* createNewActor(const TSubclassOf<AActor>& _actorClass, const FTransform& _spawnTransform);
 };

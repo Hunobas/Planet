@@ -6,6 +6,7 @@
 
 class APlanetPawn;
 class AEnemyPawn;
+class UFiringComponent;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PLANET_API UHPComponent : public UActorComponent

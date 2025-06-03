@@ -34,6 +34,8 @@ void UFiringComponent::BeginPlay()
 void UFiringComponent::StartFireSequence(const TFunction<void(const UFiringComponent*)>& _callback)
 {
 	check(mOwner);
+
+	bIsCurrentlyFiring = true;
     
 	SpawnSystemAttachedFacingForward(JustAimDefaultNS, MuzzlePoint);
 
@@ -45,8 +47,14 @@ void UFiringComponent::StartFireSequence(const TFunction<void(const UFiringCompo
 
 void UFiringComponent::Fire()
 {
-	check(mOwner);
+	bIsCurrentlyFiring = false;
+	invokeDequeueCallback();
+	
+	if (!mOwner || !mOwner->IsValidLowLevel() || mOwner->IsActorBeingDestroyed() || !mOwner->IsActorTickEnabled())
+		return;
+	
 	check(TargetPawn);
+	mOwner->GetWorldTimerManager().ClearTimer(mJustAimWindowTimerHandle);
 	
 	SpawnSystemAttachedFacingForward(MuzzleTemplate, MuzzlePoint);
 	// TODO: mMuzzlePoint로부터 cTargetPawn을 찾을 때까지 레이캐스팅 한 뒤 피격 이펙트 소환
@@ -60,8 +68,6 @@ void UFiringComponent::Fire()
 	{
 		mTargetPlanet->JustAimManager->FailJustAim();
 	}
-
-	invokeDequeueCallback();
 }
 
 void UFiringComponent::HandleJustAim()
@@ -73,15 +79,26 @@ void UFiringComponent::HandleJustAim()
 
 	if (bIsInJustAimWindow && mTargetPlanet->JustAimManager->HasJustAimed(MuzzlePoint))
 	{
+		bIsCurrentlyFiring = false;
+		invokeDequeueCallback();
+		
 		FDamageEvent damageEvent;
 		mEnemyOwner->TakeDamage(JustAimDamage, damageEvent, mTargetPlanet->GetController(), mEnemyOwner);
 		mTargetPlanet->JustAimManager->SucceedJustAim(MuzzlePoint);
-
-		invokeDequeueCallback();
     
 		mEnemyOwner->GetWorldTimerManager().ClearTimer(mFireTimerHandle);
 		bIsInJustAimWindow = false;
 	}
+}
+
+void UFiringComponent::StopFireSequence()
+{
+	if (!mEnemyOwner)
+		return;
+
+	bIsCurrentlyFiring = false;
+	mEnemyOwner->GetWorldTimerManager().ClearTimer(mJustAimWindowTimerHandle);
+	mEnemyOwner->GetWorldTimerManager().ClearTimer(mFireTimerHandle);
 }
 
 void UFiringComponent::setOwnerParams()
@@ -129,7 +146,7 @@ void UFiringComponent::invokeDequeueCallback()
 {
 	if (!mDequeueCallback)
 		return;
-		
+
 	mDequeueCallback(this);
 	mDequeueCallback = nullptr;
 }

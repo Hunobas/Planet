@@ -51,8 +51,10 @@ public:
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* _overlappedComponent, AActor* _otherActor, UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult);
 
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 	UFUNCTION()
-	void HandleDamageTaken(AActor* _damagedActor, float _damage, const class UDamageType* _damageType, class AController* _instigatedBy, AActor* _damageCauser);
+	void HandleDamageTaken(AActor* _damagedActor, float _damage, const UDamageType* _damageType, AController* _instigatedBy, AActor* _damageCauser);
 
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
 	UCapsuleComponent* BodyCollisionCapsule;

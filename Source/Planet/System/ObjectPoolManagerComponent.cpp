@@ -40,8 +40,8 @@ void UObjectPoolManagerComponent::EndPlay(const EEndPlayReason::Type _endPlayRea
 	{
 		delete pair.Value;
 	}
-	mPoolMap.Empty();
     
+	mPoolMap.Empty();
 	Super::EndPlay(_endPlayReason);
 }
 
@@ -50,19 +50,26 @@ void UObjectPoolManagerComponent::Release(AActor* _actor)
     if (!IsValid(_actor))
         return;
 
-    FScopeLock lock(&mPoolCriticalSection);
-    
-    TSubclassOf<AActor> actorClass = _actor->GetClass();
-    FPoolData* poolData = getOrCreatePoolData(actorClass);
-    
-    if (!poolData)
-        return;
+	FScopeLock lock(&mPoolCriticalSection);
+	
+	TSubclassOf<AActor> actorClass = _actor->GetClass();
+	FPoolData* poolData = getOrCreatePoolData(actorClass);
+	
+	if (!poolData)
+		return;
 
 	setActorActiveState(_actor, false);
-	poolData->Available.Enqueue(_actor);
+	
+	if (!poolData->Available.Enqueue(_actor))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[ObjectPool] %s 클래스 풀 가득 참 - 액터 파괴됨."), 
+			   *actorClass->GetName());
+		_actor->Destroy();
+		mAllPooledActors.Remove(_actor);
+	}
 }
 
-void UObjectPoolManagerComponent::repopulatePool(const TSubclassOf<AActor>& _actorClass, const int32& _count)
+void UObjectPoolManagerComponent::repopulatePool(const TSubclassOf<AActor>& _actorClass, const int32 _count)
 {
     if (!_actorClass || _count <= 0)
         return;
@@ -73,22 +80,37 @@ void UObjectPoolManagerComponent::repopulatePool(const TSubclassOf<AActor>& _act
 
     FScopeLock lock(&mPoolCriticalSection);
     
-    FPoolData* poolData = getOrCreatePoolData(_actorClass);
-    if (!poolData)
-        return;
+	FPoolData* poolData = getOrCreatePoolData(_actorClass, _count);
+	if (!poolData)
+		return;
 
     FActorSpawnParameters spawnParams;
     spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-    for (int32 i = 0; i < _count; ++i)
-    {
-	    if (AActor* newActor = world->SpawnActor<AActor>(_actorClass, FVector::ZeroVector, FRotator::ZeroRotator, spawnParams))
-        {
-            setActorActiveState(newActor, false);
-            poolData->Available.Enqueue(newActor);
-            mAllPooledActors.Add(newActor);
-        }
-    }
+	int32 successfullyCreated = 0;
+	for (int32 i = 0; i < _count; ++i)
+	{
+		if (AActor* newActor = world->SpawnActor<AActor>(_actorClass, FVector::ZeroVector, FRotator::ZeroRotator, spawnParams))
+		{
+			setActorActiveState(newActor, false);
+            
+			if (poolData->Available.Enqueue(newActor))
+			{
+				mAllPooledActors.Add(newActor);
+				successfullyCreated++;
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("[ObjectPool] Queue full during prepopulation for %s at %d/%d"), 
+					   *_actorClass->GetName(), i, _count);
+				newActor->Destroy();
+				break;
+			}
+		}
+	}
+    
+	UE_LOG(LogTemp, Log, TEXT("[ObjectPool] Successfully created %d/%d actors for %s (Queue capacity: %d)"), 
+		   successfullyCreated, _count, *_actorClass->GetName(), poolData->PoolCapacity);
 }
 
 void UObjectPoolManagerComponent::setActorActiveState(AActor* _actor, bool _active)
@@ -99,11 +121,9 @@ void UObjectPoolManagerComponent::setActorActiveState(AActor* _actor, bool _acti
 	_actor->SetActorTickEnabled(_active);
 	_actor->SetActorEnableCollision(_active);
 	_actor->SetActorHiddenInGame(!_active);
-	
-	_actor->ForceNetUpdate();
 }
 
-UObjectPoolManagerComponent::FPoolData* UObjectPoolManagerComponent::getOrCreatePoolData(const TSubclassOf<AActor>& _actorClass)
+UObjectPoolManagerComponent::FPoolData* UObjectPoolManagerComponent::getOrCreatePoolData(const TSubclassOf<AActor>& _actorClass, int32 _suggestedCapacity)
 {
 	if (!_actorClass)
 		return nullptr;
@@ -113,8 +133,13 @@ UObjectPoolManagerComponent::FPoolData* UObjectPoolManagerComponent::getOrCreate
 		return *foundPoolData;
 	}
 
-	FPoolData* newPoolData = new FPoolData(_actorClass);
+	int32 finalCapacity = FMath::Max(_suggestedCapacity * 2, 256);
+	FPoolData* newPoolData = new FPoolData(_actorClass, finalCapacity);
 	mPoolMap.Add(_actorClass, newPoolData);
+    
+	UE_LOG(LogTemp, Log, TEXT("[ObjectPool] Created new pool for %s with capacity %d"), 
+		   *_actorClass->GetName(), finalCapacity);
+    
 	return newPoolData;
 }
 
