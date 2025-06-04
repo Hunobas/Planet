@@ -30,7 +30,7 @@ bool UPassiveItemSlotComponent::EquipItem(const EPassiveItemType& _itemType)
 {
 	check(ItemTypeToClassMap[_itemType]);
 	check(cOwner);
-	check(cOwner->PlanetMesh);
+	check(cOwner->LookPoint);
 	check(RemainSlots > 0);
 	
 	for (int32 i = 0; i < EquippedItems.Num(); i++)
@@ -48,7 +48,7 @@ bool UPassiveItemSlotComponent::EquipItem(const EPassiveItemType& _itemType)
 			{
 				EquippedItems[i] = newItem;
 				newItem->AttachToComponent(
-					cOwner->PlanetMesh,
+					cOwner->LookPoint,
 					FAttachmentTransformRules::SnapToTargetNotIncludingScale
 				);
 				RemainSlots--;

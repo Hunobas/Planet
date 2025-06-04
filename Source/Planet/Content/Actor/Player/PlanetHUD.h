@@ -38,7 +38,7 @@ public:
     void ShowLoseGame();
 
     void ShowDashLine(bool _bShow);
-    void UpdateDashLineDirection(const FVector& _direction) const;
+    void UpdateDashLineDirection() const;
 
     UPROPERTY(EditAnywhere, Category = "UI Component")
     TSubclassOf<UUserWidget> HUDClass;

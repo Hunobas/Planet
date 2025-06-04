@@ -174,9 +174,8 @@ void AEquatorWave::bindControllerEvents()
 	check(PC);
 	
 	check(cOwner);
-	check(cOwner->DayOfWeek);
 	PC->OnLookValue.AddLambda([this](const FVector2D& _inputValue)
 	{
-		UpdateMuzzleOrbit(cOwner->DayOfWeek->WeeklyAngle);
+		UpdateMuzzleOrbit(cOwner->WeeklyPointAngle);
 	});
 }

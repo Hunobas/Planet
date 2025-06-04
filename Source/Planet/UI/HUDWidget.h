@@ -21,6 +21,8 @@ class PLANET_API UHUDWidget : public UUserWidget
 protected:
 	virtual void NativeConstruct() override;
 
+	virtual void NativeTick(const FGeometry& _myGeometry, float _deltaTime) override;
+
 public:
 	void UpdateHP(const float _currentHP, const float _maxHP) const;
 	void UpdateShield(const float _currentShield, const float _currentHP, const float _maxHP) const;
@@ -31,6 +33,7 @@ public:
 	void UpdateAllItemIcons(const TArray<APassiveItem*>& _equippedItems) const;
 	void SetItemIconBySlot(const int32 _slotIndex, UTexture2D* _itemTexture) const;
 	void UpdateDailyProgress(const float _dailyProgress, const float _weeklyProgress) const;
+	void UpdateRotationBarAlpha(float _deltaTime);
 	void UpdateCurrentDayTextBlock(EPlanetDayOfWeek _currentDay) const;
 
 	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
@@ -75,6 +78,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
 	UProgressBar* DailyProgressBar;
 	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
+	UProgressBar* RotationSlowBar;
+	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
+	UProgressBar* RotationFastBar;
+	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
 	UProgressBar* WeeklyProgressBar;
 	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
 	UTextBlock* MON;
@@ -102,4 +109,8 @@ private:
 	
 	APlanetPawn* cPlayerPawn;
 	FTimerHandle mGameTimeUpdateTimer;
+
+	float mCurrentFastAlpha = 0.0f;
+	float mCurrentSlowAlpha = 0.0f;
+	float AlphaInterpSpeed = 2.0f;
 };

@@ -27,7 +27,6 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 	
-	FVector2D GetEMAInput();
 	void SetInGameInputMode();
 	void SetUIInputMode(UUserWidget* _widget);
 
@@ -41,8 +40,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* AimAction;
 	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* JustAimAction;
-	UPROPERTY(EditAnywhere, Category = "Input")
 	float MouseMoveThreshold = 0.5f;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	int32 InputBufferSize = 5;
@@ -55,13 +52,9 @@ public:
 	
 private:
 	void bindInputMappings(APawn* _pawn);
-	void setLastLookInput(const FInputActionValue& _value);
-	void resetLastLookInput(const FInputActionValue& _value);
 	
 	UEnhancedInputLocalPlayerSubsystem* mEISubsystem;
 	
 	FVector2D mPreviousMousePosition = FVector2D::ZeroVector;
-	TArray<FVector2D> mInputHistory;
-	float mResetDelayElapsed = 0.0f;
 	bool bUIInputMode = false;
 };

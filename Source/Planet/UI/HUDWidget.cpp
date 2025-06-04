@@ -29,6 +29,16 @@ void UHUDWidget::NativeConstruct()
 	);
 }
 
+void UHUDWidget::NativeTick(const FGeometry& _myGeometry, float _deltaTime)
+{
+	Super::NativeTick(_myGeometry, _deltaTime);
+
+	if(cPlayerPawn)
+	{
+		UpdateRotationBarAlpha(_deltaTime);
+	}
+}
+
 void UHUDWidget::UpdateHP(const float _currentHP, const float _maxHP) const
 {
 	if (!HPProgressBar || !CurrentHPOverMaxHp)
@@ -139,9 +149,56 @@ void UHUDWidget::UpdateDailyProgress(const float _dailyProgress, const float _we
 {
 	if (!DailyProgressBar || !WeeklyProgressBar)
 		return;
-    
-	DailyProgressBar->SetPercent(Saturate(_dailyProgress));
+
+	const float saturatedDailyProgress = Saturate(_dailyProgress);
+	DailyProgressBar->SetPercent(saturatedDailyProgress);
+	RotationSlowBar->SetPercent(saturatedDailyProgress);
+	RotationFastBar->SetPercent(saturatedDailyProgress);
 	WeeklyProgressBar->SetPercent(Saturate(_weeklyProgress));
+}
+
+void UHUDWidget::UpdateRotationBarAlpha(float _deltaTime)
+{
+	if(!RotationSlowBar || !RotationFastBar || !cPlayerPawn)
+		return;
+
+	const float multiplier = cPlayerPawn->RotationSpeedMultiplier;
+
+	if(multiplier == 1.0f)
+	{
+		mCurrentFastAlpha = 0.0f;
+		mCurrentSlowAlpha = 0.0f;
+		RotationFastBar->SetRenderOpacity(0.0f);
+		RotationSlowBar->SetRenderOpacity(0.0f);
+		return;
+	}
+	else if(multiplier > 1.0f)
+	{
+		float targetFastAlpha = FMath::Lerp(0.0f, 0.8f, multiplier - 1);
+
+		mCurrentFastAlpha = FMath::FInterpTo(
+			mCurrentFastAlpha,
+			targetFastAlpha,
+			_deltaTime,
+			AlphaInterpSpeed
+		);
+		mCurrentSlowAlpha = 0.0f;
+	}
+	else if(multiplier < 1.0f)
+	{
+		float targetSlowAlpha = FMath::Lerp(0.0f, 0.8f, 1 - multiplier);
+
+		mCurrentSlowAlpha = FMath::FInterpTo(
+			mCurrentSlowAlpha,
+			targetSlowAlpha,
+			_deltaTime,
+			AlphaInterpSpeed
+		);
+		mCurrentFastAlpha = 0.0f;
+	}
+
+	RotationFastBar->SetRenderOpacity(mCurrentFastAlpha);
+	RotationSlowBar->SetRenderOpacity(mCurrentSlowAlpha);
 }
 
 void UHUDWidget::UpdateCurrentDayTextBlock(EPlanetDayOfWeek _currentDay) const

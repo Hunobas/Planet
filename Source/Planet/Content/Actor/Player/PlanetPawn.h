@@ -39,6 +39,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	virtual void Tick(float _deltaTime) override;
+	
 	void StartAim();
 	void StopAim();
 
@@ -52,6 +54,8 @@ public:
 	USpringArmComponent* SpringArm;
 	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
 	UCameraComponent* Camera;
+	UPROPERTY(EditAnywhere, Category = "Blueprint Components")
+	USceneComponent* LookPoint;
 	
 	UPROPERTY(EditAnywhere, Category = "Actor Components")
 	UPlayCamera* PlayCamera;
@@ -75,7 +79,17 @@ public:
 	UDayOfWeekComponent* DayOfWeek;
 
 	UPROPERTY(EditAnywhere, Category = "Planet")
-	float VisibleDistance = 3000.0f;
+	float VisibleDistance		= 3000.0f;
+	UPROPERTY(EditAnywhere, Category = "Planet")
+	float DefaultRotationSpeed	= 30.0f;
+	UPROPERTY(EditAnywhere, Category = "Planet")
+	float MouseYawCoefficient	= 0.1f;
+	UPROPERTY(EditAnywhere, Category = "Planet")
+	float MaxSpeedMultiplier	= 5.0f;
+	UPROPERTY(EditAnywhere, Category = "Planet")
+	float MinSpeedMultiplier	= 0.1f;
+	UPROPERTY(EditAnywhere, Category = "Planet")
+	float FrictionCoefficient	= 0.2f;
 
 	UPROPERTY(EditAnywhere, Category="Combat")
 	UPlayerDataAsset* BaseSettings;
@@ -89,14 +103,23 @@ public:
 
 	APlanetHUD* PlanetHUD;
 	bool bPlayerAiming;
+	float RotationSpeedMultiplier;
+	float WeeklyPointAngle;
 	
 private:
 	void composeComponent();
-	void updatePlanetRotation(const FVector& _worldMousePosition) const;
+	void updatePlanetRotationSpeed(const FVector& _worldMousePosition);
 	void resetToDefaultSettings();
 	
 	UPROPERTY()
 	UNiagaraComponent* mCurrentAimEffect;
 	
 	APlanetController* cPlanetController;
+
+	float mPreviousYaw;
+	bool bIsMouseMoving = false;
+	float mCurrentRotationSpeed;
+
+	// Obsolete
+	void updatePlanetRotation(const FVector& _worldMousePosition) const;
 };

@@ -31,7 +31,7 @@ bool UWeaponSlotComponent::EquipWeapon(const EWeaponType& _weaponType)
 {
 	check(WeaponTypeToClassMap[_weaponType]);
 	check(cOwner);
-	check(cOwner->PlanetMesh);
+	check(cOwner->LookPoint);
 	check(RemainSlots > 0);
 	
 	for (int32 i = 0; i < EquippedWeapons.Num(); i++)
@@ -49,7 +49,7 @@ bool UWeaponSlotComponent::EquipWeapon(const EWeaponType& _weaponType)
 			{
 				EquippedWeapons[i] = newWeapon;
 				newWeapon->AttachToComponent(
-					cOwner->PlanetMesh,
+					cOwner->LookPoint,
 					FAttachmentTransformRules::SnapToTargetNotIncludingScale
 				);
 				RemainSlots--;

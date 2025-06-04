@@ -6,6 +6,7 @@ namespace PlanetConst
 	
 #pragma region Math
 
+	static constexpr float PI_HALF								= PI / 2;							
 	static constexpr float PI_IN_DEGREES						= 180.0f;
 	static constexpr float EPSILON								= 0.001f;
 	
@@ -17,6 +18,7 @@ namespace PlanetConst
 	static constexpr float DAY_TO_DEGREES_RATIO					= 1.0f / DEGREES_PER_DAY;	// 캐싱용
 	static constexpr float WEEK_TO_DEGREES_RATIO				= 1.0f / DEGREES_PER_WEEK;	// 캐싱용
 	static constexpr float TIMER_DURATION_RATIO					= 1.0f / TIMER_DURATION;	// 캐싱용
+	static constexpr float PI_HALF_RATIO						= 1.0f / PI_HALF;
 	
 #pragma endregion
 	

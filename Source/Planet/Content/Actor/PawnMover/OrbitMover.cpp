@@ -41,7 +41,6 @@ void UOrbitMover::TickComponent(float _deltaTime, ELevelTick _tickType, FActorCo
 void UOrbitMover::MoveStep(float _deltaTime)
 {
 	mCurrentAngle += (_deltaTime / mOrbitPeriod) * DEGREES_PER_DAY;
-	mCurrentAngle = FMath::Fmod(mCurrentAngle, DEGREES_PER_DAY);
 	
 	const float rad		 = FMath::DegreesToRadians(mCurrentAngle);
 	const float X		 = mTargetLocation.X + mOrbitRadius * FMath::Cos(rad);

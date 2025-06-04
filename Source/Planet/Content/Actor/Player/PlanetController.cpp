@@ -66,22 +66,6 @@ void APlanetController::Tick(float DeltaTime)
 	}
 }
 
-FVector2D APlanetController::GetEMAInput()
-{
-	if (mInputHistory.IsEmpty())
-		return FVector2D::ZeroVector;
-    
-	FVector2D ema = mInputHistory[0];
-    
-	for (int32 i = 1; i < mInputHistory.Num(); i++)
-	{
-		ema.X = RecentInputWeight * mInputHistory[i].X + (1 - RecentInputWeight) * ema.X;
-		ema.Y = RecentInputWeight * mInputHistory[i].Y + (1 - RecentInputWeight) * ema.Y;
-	}
-    
-	return ema;
-}
-
 void APlanetController::SetInGameInputMode()
 {
 	bUIInputMode = false;
@@ -110,32 +94,5 @@ void APlanetController::bindInputMappings(APawn* _pawn)
 			EIC->BindAction(AimAction,  ETriggerEvent::Started,   planetPawn, &APlanetPawn::StartAim);
 			EIC->BindAction(AimAction,  ETriggerEvent::Completed, planetPawn, &APlanetPawn::StopAim);
 		}
-
-		EIC->BindAction(JustAimAction, ETriggerEvent::Triggered, this, &APlanetController::setLastLookInput);
-		EIC->BindAction(JustAimAction, ETriggerEvent::None, this, &APlanetController::resetLastLookInput);
 	}
-}
-
-void APlanetController::setLastLookInput(const FInputActionValue& _value)
-{
-	mResetDelayElapsed = 0.0f;
-	
-	FVector2D NewInput = _value.Get<FVector2D>();
-
-	mInputHistory.Add(NewInput);
-	if (mInputHistory.Num() > InputBufferSize)
-		mInputHistory.RemoveAt(0);
-}
-
-void APlanetController::resetLastLookInput(const FInputActionValue& _value)
-{
-	mResetDelayElapsed += 0.01f;
-	if (mResetDelayElapsed <= InputResetDelay)
-		return;
-
-	mResetDelayElapsed = 0.0f;
-
-	mInputHistory.Add(FVector2D::ZeroVector);
-	if (mInputHistory.Num() > InputBufferSize)
-		mInputHistory.RemoveAt(0);
 }
