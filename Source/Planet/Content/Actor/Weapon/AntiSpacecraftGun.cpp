@@ -3,12 +3,21 @@
 
 #include "../Planet.h"
 #include "PlanetPawn.h"
+#include "PlanetController.h"
+#include "DayOfWeekComponent.h"
 #include "ObjectPoolManagerComponent.h"
 #include "DefaultProjectile.h"
 
-AAntiSpacecraftGun::AAntiSpacecraftGun(): FireSound(nullptr), cOwner(nullptr), mPool(nullptr), mMuzzleCenter(nullptr),
+AAntiSpacecraftGun::AAntiSpacecraftGun(): DailyAngle(0.0f), WeeklyAngle(0.0f), ReloadSound(nullptr), FireSound(nullptr),
+                                          cOwner(nullptr),
+                                          mPool(nullptr),
+                                          mMuzzleCenter(nullptr),
                                           mMuzzleLeft(nullptr),
-                                          mMuzzleRight(nullptr)
+                                          mMuzzleRight(nullptr), mFireRate(BaseFireRate), bIsReloadDelayElasped(false),
+                                          mWeeklyAngleStack(0.0f),
+                                          mReloadYaw(180.0f),
+                                          mCurrentDay(EPlanetDayOfWeek::Monday),
+                                          bIsDayPassed(false)
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
@@ -36,8 +45,35 @@ void AAntiSpacecraftGun::BeginPlay()
 	cOwner = Cast<APlanetPawn>(GetOwner());
 	mPool = GetObjectPoolManager(this);
 
+	if (APlanetController* PlanetController = Cast<APlanetController>(cOwner->GetController()))
+	{
+		PlanetController->OnLookValue.AddLambda([this](const FVector2D& _inputValue)
+		{
+			UpdateRotation();
+		});
+	}
+
 	StopAttack();
 	StartAttack();
+}
+
+void AAntiSpacecraftGun::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (bIsReloadDelayElasped && bIsDayPassed)
+	{
+		check(ReloadSound);
+		UGameplayStatics::PlaySoundAtLocation(
+			GetWorld(),
+			ReloadSound,
+			mMuzzleCenter->GetComponentLocation()
+		);
+		
+		Fire();
+		bIsReloadDelayElasped = false;
+		bIsDayPassed = false;
+	}
 }
 
 void AAntiSpacecraftGun::LevelUp(const int32& _newLevel)
@@ -51,7 +87,7 @@ void AAntiSpacecraftGun::LevelUp(const int32& _newLevel)
 		break;
 	case 3:
 		BaseFireRate = FireRate_LV3;
-		FireInterval = FireInterval_LV3;
+		BurstFireMaxCount = BurstFireMaxCount_LV3;
 		break;
 	case 4:
 		bReleaseSideSpawnPoint = true;
@@ -64,7 +100,7 @@ void AAntiSpacecraftGun::LevelUp(const int32& _newLevel)
 		break;
 	case 7:
 		BaseFireRate = FireRate_LV7;
-		FireInterval = FireInterval_LV7;
+		BurstFireMaxCount = BurstFireMaxCount_LV7;
 		break;
 	default:
 		checkNoEntry();
@@ -80,7 +116,7 @@ void AAntiSpacecraftGun::Fire()
 		mBurstFireTimerHandle,
 		this,
 		&AAntiSpacecraftGun::burstFire,
-		FireInterval,
+		mFireRate,
 		true,
 		0.0f
 	);
@@ -88,23 +124,42 @@ void AAntiSpacecraftGun::Fire()
 
 void AAntiSpacecraftGun::StartAttack()
 {
+	check(cOwner);
 	const float playerHaste = cOwner->RuntimeSettings.Haste;
-	const float fireRate = CalculateFireRate(BaseFireRate, playerHaste);
-
-	GetWorldTimerManager().SetTimer(
-		mFireTimerHandle,
-		this,
-		&AAntiSpacecraftGun::Fire,
-		fireRate,
-		true,
-		0.0f
-	);
+	
+	mFireRate = CalculateFireRate(BaseFireRate, playerHaste);
+	mReloadYaw = cOwner->PreviousYaw;
+	
+	Fire();
 }
 
 void AAntiSpacecraftGun::StopAttack()
 {
-	GetWorldTimerManager().ClearTimer(mFireTimerHandle);
 	GetWorldTimerManager().ClearTimer(mBurstFireTimerHandle);
+	GetWorldTimerManager().ClearTimer(mReloadTimerHandle);
+}
+
+void AAntiSpacecraftGun::UpdateRotation()
+{
+	if (!IsValid(this) || !IsValid(cOwner))
+		return;
+	
+	const float planetYaw = cOwner->PreviousYaw;
+	const float spendAngle = ToFixedAngle(planetYaw - mReloadYaw);      // 0~360
+	const float presentYaw = NormalizeAngle(planetYaw - mReloadYaw);    // -180~180
+
+	if (DailyAngle >= NOON_ANGLE && presentYaw > 5 && presentYaw <= mDayPassYawGap)
+	{
+		mWeeklyAngleStack = FMath::Modulo(mWeeklyAngleStack + DEGREES_PER_DAY, DEGREES_PER_WEEK);
+		DailyAngle = EPSILON;
+	}
+	else
+	{
+		DailyAngle = FMath::Modulo(MIDNIGHT_ANGLE + spendAngle, DEGREES_PER_DAY);
+	}
+	WeeklyAngle = FMath::Modulo(mWeeklyAngleStack + DailyAngle, DEGREES_PER_WEEK);
+
+	updateCurrentDay();
 }
 
 void AAntiSpacecraftGun::burstFire()
@@ -119,11 +174,22 @@ void AAntiSpacecraftGun::burstFire()
 	{
 		GetWorldTimerManager().ClearTimer(mBurstFireTimerHandle);
 		mBurstFireCount = 0;
+
+		mReloadYaw = cOwner->PreviousYaw;
+		GetWorldTimerManager().SetTimer(
+			mReloadTimerHandle,
+			this,
+			&AAntiSpacecraftGun::onReloadComplete,
+			ReloadDelay,
+			false
+		);
+		
 		return;
 	}
 
 	if (ADefaultProjectile* centerProjectile = spawnProjectileOrNull(mMuzzleCenter))
 	{
+		check(FireSound);
 		UGameplayStatics::PlaySoundAtLocation(
 			GetWorld(),
 			FireSound,
@@ -136,6 +202,11 @@ void AAntiSpacecraftGun::burstFire()
 		spawnProjectileOrNull(mMuzzleLeft);
 		spawnProjectileOrNull(mMuzzleRight);
 	}
+}
+
+void AAntiSpacecraftGun::onReloadComplete()
+{
+	bIsReloadDelayElasped = true;
 }
 
 ADefaultProjectile* AAntiSpacecraftGun::spawnProjectileOrNull(const USceneComponent* _muzzle)
@@ -151,4 +222,21 @@ ADefaultProjectile* AAntiSpacecraftGun::spawnProjectileOrNull(const USceneCompon
 	}
 	
 	return projectile;
+}
+
+void AAntiSpacecraftGun::updateCurrentDay()
+{
+	const EPlanetDayOfWeek newDay = calculateDay();
+    
+	if (newDay != mCurrentDay)
+	{
+		mCurrentDay = newDay;
+		bIsDayPassed = true;
+	}
+}
+
+EPlanetDayOfWeek AAntiSpacecraftGun::calculateDay() const
+{
+	const int32 dayIndex = static_cast<int32>(WeeklyAngle / DEGREES_PER_DAY) % DAY_PER_WEEK;
+	return static_cast<EPlanetDayOfWeek>(dayIndex);
 }

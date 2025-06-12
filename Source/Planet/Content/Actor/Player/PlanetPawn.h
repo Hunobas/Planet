@@ -105,6 +105,7 @@ public:
 	bool bPlayerAiming;
 	float RotationSpeedMultiplier;
 	float WeeklyPointAngle;
+	float PreviousYaw;
 	
 private:
 	void composeComponent();
@@ -116,7 +117,6 @@ private:
 	
 	APlanetController* cPlanetController;
 
-	float mPreviousYaw;
 	bool bIsMouseMoving = false;
 	float mCurrentRotationSpeed;
 

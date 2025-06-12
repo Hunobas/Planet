@@ -160,11 +160,11 @@ void APlanetPawn::updatePlanetRotationSpeed(const FVector& _worldMousePosition)
 	LookPoint->SetWorldRotation(currentRotation);
 	
 	const float currentYaw = currentRotation.Yaw;
-	const float deltaYaw = currentYaw - mPreviousYaw;
+	const float deltaYaw = currentYaw - PreviousYaw;
 	RotationSpeedMultiplier = FMath::Clamp(EaseInCubic(deltaYaw * MouseYawCoefficient) + 1, MinSpeedMultiplier, MaxSpeedMultiplier);
 	mCurrentRotationSpeed = DefaultRotationSpeed * RotationSpeedMultiplier;
 
-	mPreviousYaw = currentYaw;
+	PreviousYaw = currentYaw;
 	bIsMouseMoving = true;
 
 	WeeklyPointAngle = FMath::Modulo(WeeklyPointAngle + deltaYaw, DEGREES_PER_WEEK);
