@@ -38,7 +38,7 @@ void UPlayCamera::TickComponent(float _deltaTime, enum ELevelTick _tickType, FAc
 {
 	Super::TickComponent(_deltaTime, _tickType, _thisTickFunction);
 
-	updateArmLength(_deltaTime);
+	// updateArmLength(_deltaTime);
 }
 
 void UPlayCamera::StartAim()

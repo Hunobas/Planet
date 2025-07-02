@@ -25,7 +25,7 @@ void UDayOfWeekComponent::UpdateRotation(float _planetYaw)
         return;
     mPreviousPlanetYaw = _planetYaw;
     
-    const float spendAngle = ToFixedAngle(_planetYaw - MeridianYaw);      // 0~360
+    SpendAngle = ToFixedAngle(_planetYaw - MeridianYaw);      // 0~360
     const float presentYaw = NormalizeAngle(_planetYaw - MeridianYaw);    // -180~180
     
     if (DailyAngle >= NOON_ANGLE)
@@ -35,7 +35,7 @@ void UDayOfWeekComponent::UpdateRotation(float _planetYaw)
             // 요일 진행
             mWeeklyAngleStack = FMath::Modulo(mWeeklyAngleStack + DEGREES_PER_DAY, DEGREES_PER_WEEK);
         }
-        DailyAngle = FMath::Modulo(MIDNIGHT_ANGLE + spendAngle, DEGREES_PER_DAY);
+        DailyAngle = FMath::Modulo(MIDNIGHT_ANGLE + SpendAngle, DEGREES_PER_DAY);
     }
     else
     {
@@ -47,7 +47,7 @@ void UDayOfWeekComponent::UpdateRotation(float _planetYaw)
         }
         else
         {
-            DailyAngle = FMath::Modulo(MIDNIGHT_ANGLE + spendAngle, DEGREES_PER_DAY);
+            DailyAngle = FMath::Modulo(MIDNIGHT_ANGLE + SpendAngle, DEGREES_PER_DAY);
         }
     }
 

@@ -157,48 +157,27 @@ void UHUDWidget::UpdateDailyProgress(const float _dailyProgress, const float _we
 	WeeklyProgressBar->SetPercent(Saturate(_weeklyProgress));
 }
 
-void UHUDWidget::UpdateRotationBarAlpha(float _deltaTime)
+void UHUDWidget::UpdateRotationBarAlpha(float _deltaTime) const
 {
 	if(!RotationSlowBar || !RotationFastBar || !cPlayerPawn)
 		return;
 
-	const float multiplier = cPlayerPawn->RotationSpeedMultiplier;
+	check(cPlayerPawn->DayOfWeek);
+	const float spendAngle = cPlayerPawn->DayOfWeek->SpendAngle;
 
-	if(multiplier == 1.0f)
+	if(spendAngle > -EPSILON && spendAngle < EPSILON)
 	{
-		mCurrentFastAlpha = 0.0f;
-		mCurrentSlowAlpha = 0.0f;
 		RotationFastBar->SetRenderOpacity(0.0f);
 		RotationSlowBar->SetRenderOpacity(0.0f);
-		return;
 	}
-	else if(multiplier > 1.0f)
+	else if(spendAngle >= EPSILON)
 	{
-		float targetFastAlpha = FMath::Lerp(0.0f, 0.8f, multiplier - 1);
-
-		mCurrentFastAlpha = FMath::FInterpTo(
-			mCurrentFastAlpha,
-			targetFastAlpha,
-			_deltaTime,
-			AlphaInterpSpeed
-		);
-		mCurrentSlowAlpha = 0.0f;
+		RotationFastBar->SetRenderOpacity(0.8f);
 	}
-	else if(multiplier < 1.0f)
+	else
 	{
-		float targetSlowAlpha = FMath::Lerp(0.0f, 0.8f, 1 - multiplier);
-
-		mCurrentSlowAlpha = FMath::FInterpTo(
-			mCurrentSlowAlpha,
-			targetSlowAlpha,
-			_deltaTime,
-			AlphaInterpSpeed
-		);
-		mCurrentFastAlpha = 0.0f;
+		RotationSlowBar->SetRenderOpacity(0.8f);
 	}
-
-	RotationFastBar->SetRenderOpacity(mCurrentFastAlpha);
-	RotationSlowBar->SetRenderOpacity(mCurrentSlowAlpha);
 }
 
 void UHUDWidget::UpdateCurrentDayTextBlock(EPlanetDayOfWeek _currentDay) const

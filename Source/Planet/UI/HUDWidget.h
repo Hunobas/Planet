@@ -33,7 +33,7 @@ public:
 	void UpdateAllItemIcons(const TArray<APassiveItem*>& _equippedItems) const;
 	void SetItemIconBySlot(const int32 _slotIndex, UTexture2D* _itemTexture) const;
 	void UpdateDailyProgress(const float _dailyProgress, const float _weeklyProgress) const;
-	void UpdateRotationBarAlpha(float _deltaTime);
+	void UpdateRotationBarAlpha(float _deltaTime) const;
 	void UpdateCurrentDayTextBlock(EPlanetDayOfWeek _currentDay) const;
 
 	UPROPERTY(EditAnywhere, Category = "UI", meta = (BindWidget))
@@ -109,8 +109,4 @@ private:
 	
 	APlanetPawn* cPlayerPawn;
 	FTimerHandle mGameTimeUpdateTimer;
-
-	float mCurrentFastAlpha = 0.0f;
-	float mCurrentSlowAlpha = 0.0f;
-	float AlphaInterpSpeed = 2.0f;
 };

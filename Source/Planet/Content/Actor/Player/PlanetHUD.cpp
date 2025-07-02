@@ -58,12 +58,6 @@ void APlanetHUD::beginLatePlay() const
 	check(cPlayerPawn->DayOfWeek);
 	OnCurrentDayChanged(cPlayerPawn->DayOfWeek->CurrentDay);
 
-	check(cPlayerController);
-	cPlayerController->OnLookValue.AddLambda([this](const FVector2D& _inputValue)
-	{
-		UpdateDashLineDirection();
-	});
-
 	mDashLineWidget->AddToViewport(LOW_ORDER);
 	mHUDWidget->AddToViewport(DEFAULT_ORDER);
 }
@@ -176,14 +170,11 @@ void APlanetHUD::ShowDashLine(bool _bShow)
 	}
 }
 
-void APlanetHUD::UpdateDashLineDirection() const
+void APlanetHUD::UpdateDashLineDirection(const FVector& _direction) const
 {
 	check(mDashLineRootWidget);
-	check(cPlayerController);
-	check(cPlayerPawn->PlanetMesh);
 
-	FVector direction = cPlayerController->WorldMouseLocation - cPlayerPawn->PlanetMesh->GetComponentLocation();
-	const float rotationAngle = FMath::RadiansToDegrees(FMath::Atan2(direction.Y, direction.X));
+	const float rotationAngle = FMath::RadiansToDegrees(FMath::Atan2(_direction.Y, _direction.X));
 	
 	FWidgetTransform transform = mDashLineRootWidget->GetRenderTransform();
 	transform.Angle = rotationAngle;

@@ -8,7 +8,6 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "NiagaraComponent.h"
 
-#include "PlanetConst.h"
 #include "PlanetController.h"
 #include "PlanetHUD.h"
 #include "PlayCamera.h"
@@ -45,44 +44,13 @@ void APlanetPawn::BeginPlay()
 	check(PlanetMesh);
 	PlanetMesh->SetRelativeRotation(FRotator(0, DEGREES_PER_DAY / 2, 0));
 
-	mCurrentRotationSpeed = DefaultRotationSpeed;
 	cPlanetController->OnLookValue.AddLambda([this](const FVector2D& _inputValue)
 	{
-		check(cPlanetController);
-		updatePlanetRotationSpeed(cPlanetController->WorldMouseLocation);
+		updatePlanetRotation(cPlanetController->WorldMouseLocation);
 	});
 }
 
-void APlanetPawn::Tick(float _deltaTime)
-{
-	Super::Tick(_deltaTime);
-
-	if(!bIsMouseMoving)
-	{
-		mCurrentRotationSpeed = FMath::FInterpTo(
-			mCurrentRotationSpeed,
-			DefaultRotationSpeed,
-			_deltaTime,
-			FrictionCoefficient
-		);
-	}
-	bIsMouseMoving = false;
-
-	check(PlanetMesh);
-	const float deltaRotation = mCurrentRotationSpeed * _deltaTime;
-	const FRotator newRotation = FRotator(
-		0.0f,
-		PlanetMesh->GetRelativeRotation().Yaw + deltaRotation,
-		0.0f
-	);
-
-	PlanetMesh->SetRelativeRotation(newRotation);
-
-	check(DayOfWeek);
-	DayOfWeek->UpdateRotation(newRotation.Yaw);
-}
-
-void APlanetPawn::StartAim()
+void APlanetPawn::StartAim()		// const 시 컴파일 에러
 {
 	check(PlayCamera);
 	PlayCamera->StartAim();
@@ -98,7 +66,7 @@ void APlanetPawn::StartAim()
 	bPlayerAiming = true;
 }
 
-void APlanetPawn::StopAim()
+void APlanetPawn::StopAim()			// const 시 컴파일 에러
 {
 	check(PlayCamera);
 	PlayCamera->StopAim();
@@ -135,9 +103,6 @@ void APlanetPawn::composeComponent()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
 
-	LookPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Look Point"));
-	LookPoint->SetupAttachment(RootComponent);
-
 	PlayCamera		= CreateDefaultSubobject<UPlayCamera>(TEXT("Play Camera"));
 	OrbitMover		= CreateDefaultSubobject<UOrbitMover>(TEXT("Orbit Mover"));
 	HP				= CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
@@ -150,24 +115,31 @@ void APlanetPawn::composeComponent()
 	DayOfWeek		= CreateDefaultSubobject<UDayOfWeekComponent>(TEXT("Day Of Week"));
 }
 
-void APlanetPawn::updatePlanetRotationSpeed(const FVector& _worldMousePosition)
+void APlanetPawn::updatePlanetRotation(const FVector& _worldMousePosition) const
 {
-	const FRotator currentRotation = UKismetMathLibrary::FindLookAtRotation(
+	const FRotator newRotation = UKismetMathLibrary::FindLookAtRotation(
 		GetActorLocation(), 
 		_worldMousePosition
 	);
 
-	LookPoint->SetWorldRotation(currentRotation);
-	
-	const float currentYaw = currentRotation.Yaw;
-	const float deltaYaw = currentYaw - PreviousYaw;
-	RotationSpeedMultiplier = FMath::Clamp(EaseInCubic(deltaYaw * MouseYawCoefficient) + 1, MinSpeedMultiplier, MaxSpeedMultiplier);
-	mCurrentRotationSpeed = DefaultRotationSpeed * RotationSpeedMultiplier;
+	PlanetMesh->SetWorldRotation(FRotator(0, newRotation.Yaw, 0));
 
-	PreviousYaw = currentYaw;
-	bIsMouseMoving = true;
+	check(DayOfWeek);
+	DayOfWeek->UpdateRotation(newRotation.Yaw);
 
-	WeeklyPointAngle = FMath::Modulo(WeeklyPointAngle + deltaYaw, DEGREES_PER_WEEK);
+	const FRotator meridianRotation = FRotator(0.0f, DayOfWeek->MeridianYaw, 0.0f);
+	const FVector meridianDirection = meridianRotation.Vector();
+
+	// bool bNeedShowDashLine = DayOfWeek->DailyAngle < DayOfWeek->DayPassYawGap || DayOfWeek->DailyAngle > PI_IN_DEGREES;
+	//
+	// if (PlanetHUD->bDashLineVisible != bNeedShowDashLine)
+	// {
+	// 	PlanetHUD->ShowDashLine(bNeedShowDashLine);
+	// }
+	// else if (bNeedShowDashLine)
+	// {
+	PlanetHUD->UpdateDashLineDirection(meridianDirection);
+	// }
 }
 
 void APlanetPawn::resetToDefaultSettings()
@@ -184,18 +156,4 @@ void APlanetPawn::resetToDefaultSettings()
 	{
 		HP->Initialize();
 	}
-}
-
-// [Obsolete]
-void APlanetPawn::updatePlanetRotation(const FVector& _worldMousePosition) const
-{
-	const FRotator newRotation = UKismetMathLibrary::FindLookAtRotation(
-		GetActorLocation(), 
-		_worldMousePosition
-	);
-
-	PlanetMesh->SetWorldRotation(FRotator(0, newRotation.Yaw, 0));
-
-	check(DayOfWeek);
-	DayOfWeek->UpdateRotation(newRotation.Yaw);
 }

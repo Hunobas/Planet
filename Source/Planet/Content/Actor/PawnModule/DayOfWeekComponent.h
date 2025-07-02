@@ -57,6 +57,8 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Day of Week")
 	float MeridianYaw;
 
+	float SpendAngle;
+
 private:
 	void updateCurrentDay();
 	EPlanetDayOfWeek calculateDay() const;
