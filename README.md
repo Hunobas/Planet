@@ -14,6 +14,8 @@
 
 ## 🧠 시스템 아키텍처 개요 (UML 기반)
 
+| 시스템 이름 | 구조 이미지 |
+|-------------|-------------|
 | 리워드 시스템 구조 예시 | <img width="1661" height="603" alt="RewardSystemUML" src="https://github.com/user-attachments/assets/31e6ad5a-8174-4bc7-b887-685da3a2093e" /> |
 | 오브젝트 풀링 구조 예시 | <img width="1514" height="419" alt="ObjectPoolUML" src="https://github.com/user-attachments/assets/8d5cfb42-c472-4d3d-a8bb-a8d04b06e8e9" /> |
 
