@@ -1,6 +1,8 @@
 # 🎮 TOGU : Planet Survivors
-**언리얼 5.4 기반 로그라이크 TPS 슈팅 게임 | 개인 프로젝트 (2024.05 ~ 2024.07)**
+
 ![PlayDemoGIF](https://github.com/user-attachments/assets/9257c9b1-f15a-492e-9788-a3118e2ce21c)
+
+**언리얼 5.4 기반 로그라이크 Top-down 슈팅 게임 | 개인 프로젝트 (2024.05 ~ 2024.07)**
 ---
 
 ## 🔗 데모 및 실시간 시연 영상
@@ -12,10 +14,8 @@
 
 ## 🧠 시스템 아키텍처 개요 (UML 기반)
 
-| 리워드 시스템 구조 예시 | 오브젝트 풀링 구조 예시 |
-|----------------------|----------------------|
-| <img width="1661" height="603" alt="RewardSystemUML" src="https://github.com/user-attachments/assets/31e6ad5a-8174-4bc7-b887-685da3a2093e" />
- | <img width="1514" height="419" alt="ObjectPoolUML" src="https://github.com/user-attachments/assets/8d5cfb42-c472-4d3d-a8bb-a8d04b06e8e9" /> |
+| 리워드 시스템 구조 예시 | <img width="1661" height="603" alt="RewardSystemUML" src="https://github.com/user-attachments/assets/31e6ad5a-8174-4bc7-b887-685da3a2093e" /> |
+| 오브젝트 풀링 구조 예시 | <img width="1514" height="419" alt="ObjectPoolUML" src="https://github.com/user-attachments/assets/8d5cfb42-c472-4d3d-a8bb-a8d04b06e8e9" /> |
 
 *UML은 실제 코드와 대응되며, 각 시스템은 다음과 같은 원칙에 기반해 설계되었습니다.*
 
@@ -43,8 +43,8 @@
 - 플레이어 스탯: `UPlayerDataAsset`
 - CSV 및 DataTable 기반으로 디자이너가 직접 밸런싱 가능
 
-- 📄 [**디자이너용 가이드: 신규 무기/아이템 추가법**](https://your-guide-link-here)
-- 📄 [**디자이너용 가이드: 신규 몬스터 추가법**](https://your-guide-link-here)
+- 📄 [**디자이너용 가이드: 신규 무기/아이템 추가법**](https://ethereal-judo-1f1.notion.site/223486e2cdb980c5a807f920ebad70a6)
+- 📄 [**디자이너용 가이드: 신규 몬스터 추가법**](https://ethereal-judo-1f1.notion.site/223486e2cdb98001869cef28bb9bfbb5)
 
 ---
 
@@ -56,12 +56,13 @@
 
 ## 🧩 기타 게임 시스템
 
-### ▪️ Planet Torque
-- 마우스 회전값 누적으로 보조무기 트리거
+### ▪️ Planet Torque 식 DayOfWeek 시스템
+- 마우스 회전값 누적으로 요일 변화
+- 요일별 무기/아이템 기능 트리거
 
-### ▪️ Sigmoid Wave System
-- 시그모이드 커브 기반 FieldScore 난이도 증가
-- 시간 경과에 따라 고난이도 몬스터 등장
+### ▪️ Super Hot like 플레이어 입력 기반 AI
+- 더 큰/더 빠른 마우스 입력값 -> 더 빠른 적 AI
+- 마우스 입력을 멈출 경우 -> 멈추고 제자리에서 가만히 있음
 
 ---
 
