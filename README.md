@@ -1,48 +1,79 @@
-# Save The Earth! Without Keyboard (in production)
+# 🎮 TOGU : Planet Survivors
+**언리얼 5.4 기반 로그라이크 TPS 슈팅 게임 | 개인 프로젝트 (2024.05 ~ 2024.07)**
+![PlayDemoGIF](https://github.com/user-attachments/assets/9257c9b1-f15a-492e-9788-a3118e2ce21c)
+---
 
-![Untitledvideo-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/da3ba9e3-a6de-4619-a9be-64dce96ffd9b)
+## 🔗 데모 및 실시간 시연 영상
+- ▶️ [**Play Demo (시스템 설명 포함)**](https://youtu.be/1-GPB7u94ic)
+- 🎮 [**직접 플레이용 빌드 다운로드**](https://drive.google.com/drive/folders/1s_h8lspvXMmB7Nm8zqnCxm9qfz-Yd-3D?usp=sharing)
+- 📄 [**코드 설명 PDF**](https://github.com/user-attachments/files/21538989/_._2.pdf)
+---
 
-![image](https://github.com/user-attachments/assets/416d7b18-5f91-43bd-9432-6e73abd8ea92)
 
-# About
-Unreal 3D TPS shooter game inspired by Vampire Survivors.
+## 🧠 시스템 아키텍처 개요 (UML 기반)
 
-- [Go To Play](https://drive.google.com/drive/folders/1Eu-mHCERa7LGEWnDuUfecRwAdXO3PLlG?usp=sharing)
-- [Play Demo](https://www.youtube.com/watch?v=y_v1nA_0aPI&ab_channel=%ED%9B%84%EB%85%B8%EB%B0%94%EC%8A%A4)
+| 리워드 시스템 구조 예시 | 오브젝트 풀링 구조 예시 |
+|----------------------|----------------------|
+| <img width="1661" height="603" alt="RewardSystemUML" src="https://github.com/user-attachments/assets/31e6ad5a-8174-4bc7-b887-685da3a2093e" />
+ | <img width="1514" height="419" alt="ObjectPoolUML" src="https://github.com/user-attachments/assets/8d5cfb42-c472-4d3d-a8bb-a8d04b06e8e9" /> |
 
-### Features
-- 1 playable **Planet**
-- 1 **Mainweapon**
-- 1 **Subweapon**
-- Rotation Status special gimmick: accumulates every time player camera moves and triggers any secondary attack
-- 3 unique **Enemy Types**
+*UML은 실제 코드와 대응되며, 각 시스템은 다음과 같은 원칙에 기반해 설계되었습니다.*
 
-### More to come features
-- 1 more playable **Planet**
-- 1 more **Mainweapon**
-- 5 more **Subweapon**
-- 3 more **Bosses** with 3 more **Stages**
-- 1 more **enemy type**
-- many many kinds of **Passive Items**
+---
 
-# Controls
-### USE MOUSE ONLY
+## ⚙️ 주요 시스템 설명
 
-# Game System
+### 🟡 1. Object Pooling System
+- `UObjectPoolManager`, `FPoolData`, `Acquire() / Release()` 패턴 기반
+- 실시간 디버그 UI로 풀 상태 시각화
+- GC 및 Spawn 비용 최소화를 위한 구조
 
-### Planet Torque
+---
 
-![Untitledvideo1-ezgif com-video-to-gif-converter (1)](https://github.com/user-attachments/assets/d6f363f7-b987-4a16-8ce2-d919cd6fbc3f)
+### 🟢 2. Reward System
+- `URewardManager`, `URewardSelector`, `URewardSelectionWidget` 간의 MVC 구조
+- `IRewardData`, `IRewardApplicator` 언리얼 인터페이스 기반 확장성 확보
+- UMG 연동으로 레벨업 보상 UI 구현
 
-In-game stats that accumulate based on mouse input.
-This stat cycles between values from 0 to 360 while accumulating, and you can control or trigger the firing of a weapon linked to this stat.
+---
 
-### Enemy Wave
+### 🔵 3. Data-Driven Balancing
+- 웨이브 구성: `UWaveConfigDataAsset`
+- 적 스탯 구성: `UEnemyDataAsset`
+- 플레이어 스탯: `UPlayerDataAsset`
+- CSV 및 DataTable 기반으로 디자이너가 직접 밸런싱 가능
 
-![Untitledvideo2-ezgif com-video-to-gif-converter (1)](https://github.com/user-attachments/assets/dd68c407-825d-426a-b3ce-9d28def10dcd)
+- 📄 [**디자이너용 가이드: 신규 무기/아이템 추가법**](https://your-guide-link-here)
+- 📄 [**디자이너용 가이드: 신규 몬스터 추가법**](https://your-guide-link-here)
 
-**Celestial Body** Actor: An actor attached to the player, creating spawn point components on a spherical virtual surface where enemies are spawned.
+---
 
-**Field Score** and **Spawnable Enemy List**: Small waves of enemies are spawned every 5 seconds, with each enemy having an individual field score. When the total field score, **Current Field Score**, exceeds **Max Field Score**, the spawning of small waves is designed to stop. The **Max Field Score** increases over time following a sigmoid function. Additionally, as in-game time progresses, enemies with higher field scores are added to the **Spawnable Enemy List**, while those with lower field scores are removed.
+### 🔴 4. MetaSound 연동
+- `ClimateFixCue` Beat 콜백에 따라 적 스폰 트리거
+- 사운드 연동으로 긴장감 있는 전투 연출
 
-**Threatening Waves**: Large waves are summoned every 1 minute to keep the player on edge. The summoned large waves also affect the **Current Field Score**.
+---
+
+## 🧩 기타 게임 시스템
+
+### ▪️ Planet Torque
+- 마우스 회전값 누적으로 보조무기 트리거
+
+### ▪️ Sigmoid Wave System
+- 시그모이드 커브 기반 FieldScore 난이도 증가
+- 시간 경과에 따라 고난이도 몬스터 등장
+
+---
+
+## 🔧 개발 기술 스택
+
+`C++`, `Unreal Engine 5.4`, `UMG`, `UInterface`, `BlueprintCallable`, `UObjectPool`,  
+`UDataTable`, `Delegate`, `Enhanced Input`, `Component Architecture`, `Modular OOP`, `MetaSound`
+
+---
+
+## ✍️ 느낀 점
+
+- 언리얼 메모리 모델(GC, CDO, UPROPERTY)을 겪으며 메모리 구조 이해
+- MVC 아키텍처, 인터페이스 기반 확장, 리팩토링 능력 향상
+- 디자이너 친화적인 구조를 고려한 Data-Driven 시스템과 문서화 가이드를 직접 제작
