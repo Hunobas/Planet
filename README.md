@@ -9,7 +9,6 @@
 - ▶️ [**Play Demo (시스템 설명 포함)**](https://youtu.be/1-GPB7u94ic)
 - 🎮 [**직접 플레이용 빌드 다운로드**](https://drive.google.com/drive/folders/1s_h8lspvXMmB7Nm8zqnCxm9qfz-Yd-3D?usp=sharing)
 - 📄 [**TOGU 코드설명.pdf**](https://github.com/user-attachments/files/21565193/TOGU.pdf)
-)
 ---
 
 
