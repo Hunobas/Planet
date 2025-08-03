@@ -2,7 +2,7 @@
 
 ![PlayDemoGIF](https://github.com/user-attachments/assets/9257c9b1-f15a-492e-9788-a3118e2ce21c)
 
-**언리얼 5.4 기반 로그라이크 Top-down 슈팅 게임 | 개인 프로젝트 (2024.05 ~ 2024.07)**
+**언리얼 5.4 기반 로그라이크 Top-down 슈팅 게임 | 개인 프로젝트 (2025.05 ~ 2025.07)**
 ---
 
 ## 🔗 데모 및 실시간 시연 영상
