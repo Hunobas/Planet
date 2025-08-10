@@ -16,43 +16,40 @@ class PLANET_API AEnemySpawnCelestial : public AActor
 public:	
 	AEnemySpawnCelestial();
 	
-	// Pawn::BeginPlay 에서 호출
+	// UWaveManagerComponent::BeginPlay 에서 호출
 	AEnemySpawnCelestial* Initialize(APawn* _targetPawn);
 
-	USceneComponent* GetRandomSpawnPoint();
-	USceneComponent* GetRandomActiveSpawnPointOrNull();
+	USceneComponent* GetRandomMeleeSpawnPoint();
+	USceneComponent* GetRandomRangedSpawnPointOrNull();
+	TArray<USceneComponent*> GetNthRowSpawnPoints(const int32& n) const;
 	TArray<USceneComponent*> GetRandomRowSpawnPoints() const;
-	TArray<USceneComponent*> GetNthRowSpawnPoints(const int& n) const;
 	
 	void SetOccupiedSpawnPoint(USceneComponent* _spawnPoint, bool _active);
-	void SetActiveAllSpawnPoints(bool _active);
 
 	UPROPERTY(EditAnywhere, Category = "Components")
 	USceneComponent* Root;
 	UPROPERTY(EditAnywhere, Category = "Components")
-	TArray<USceneComponent*> SpawnPoints;
+	TArray<USceneComponent*> MeleeSpawnPoints;
+	UPROPERTY(EditAnywhere, Category = "Components")
+	TArray<USceneComponent*> RangedSpawnPoints;
 
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
-	float EnemySpawnRadius	= 2000.0f;
+	float MeleeSpawnRadius	= 3500.0f;
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
-	int32 PointsPerRow	= 24;
+	float RangedSpawnRadius	= 1500.0f;
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
-	int32 NumRows		= 5;
+	int32 PointsPerCircle	= 24;
 	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
-	float PitchInterval	= 15.0f;
+	int32 NumCircles		= 3;
+	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
+	float RadiusInterval	= 100.0f;
 	UPROPERTY(VisibleAnywhere, Category = "Enemy Spawn")
-	float YawInterval	= 360.0f / PointsPerRow;
-	UPROPERTY(EditAnywhere, Category = "Enemy Spawn")
-	float HalfFOV		= 60.0f;
-
-	UCameraComponent* PlayerCamera;
+	float YawInterval		= 360.0f / PointsPerCircle;
 	
 private:
 	APawn* cPlayerPawn;
 	
-	TArray<bool> mIsPointsActive;
 	TArray<bool> mIsPointsOccupied;
 
 	void composeSpawnPointScenes();
-	void updatePlayerFacingSpawnPoint();
 };

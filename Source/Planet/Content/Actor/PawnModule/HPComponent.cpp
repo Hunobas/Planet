@@ -1,0 +1,102 @@
+// HPComponent.cpp
+#include "HPComponent.h"
+
+#include "../Planet.h"
+#include "EnemyPawn.h"
+#include "PlanetHUD.h"
+#include "PlanetPawn.h"
+#include "SurvivorGameModeBase.h"
+
+UHPComponent::UHPComponent(): MaxHP(100.0f), CurrentHP(100.0f), mPlanet(nullptr), mEnemy(nullptr)
+{
+	PrimaryComponentTick.bCanEverTick = false;
+}
+
+UHPComponent* UHPComponent::Initialize()
+{
+	if (AEnemyPawn* enemy = Cast<AEnemyPawn>(GetOwner()))
+	{
+		mEnemy = enemy;
+		MaxHP = mEnemy->RuntimeSettings.HP;
+		mEnemy->OnTakeAnyDamage.AddUniqueDynamic(this, &UHPComponent::OnTakeAnyDamage);
+	}
+	else if (APlanetPawn* player = Cast<APlanetPawn>(GetOwner()))
+	{
+		mPlanet = player;
+		MaxHP = mPlanet->RuntimeSettings.HP;
+		// 실드 모듈에서 먼저 차감하고 하드하게 OnTakeAnyDamage 호출
+		// mPlanet->OnTakeAnyDamage.AddUniqueDynamic(this, &UHPComponent::OnTakeAnyDamage);
+	}
+	
+	CurrentHP = MaxHP;
+
+	return this;
+}
+
+void UHPComponent::OnTakeAnyDamage(AActor* _damagedActor, float _damage, const UDamageType* _damageType, AController* _instigatedBy, AActor* _damageCauser)
+{
+	if (_damage <= 0.0f)
+		return;
+
+	CurrentHP = FMath::Clamp(CurrentHP - _damage, 0.0f, MaxHP);
+
+	updateUI();
+
+	if (CurrentHP <= 0.0f)
+	{
+		handleDeath();
+	}
+}
+
+void UHPComponent::Heal(const float _healAmount)
+{
+	if (_healAmount <= 0.0f)
+		return;
+    
+	if (CurrentHP >= MaxHP)
+		return;
+    
+	CurrentHP = FMath::Clamp(CurrentHP + _healAmount, 0.0f, MaxHP);
+    
+	updateUI();
+}
+
+void UHPComponent::AddMaxHP(const float _amount)
+{
+	CurrentHP += _amount;
+	MaxHP += _amount;
+
+	updateUI();
+
+	if (mPlanet)
+	{
+		MaxHP = mPlanet->RuntimeSettings.HP;
+	}
+}
+
+void UHPComponent::handleDeath() const
+{
+	UWorld* world = GetWorld();
+	if (!world) return;
+
+	if (ASurvivorGameModeBase* gm = GetPlanetGameMode(this))
+	{
+		if (mEnemy)
+		{
+			mEnemy->HandleDied();
+		}
+		else if (mPlanet)
+		{
+			mPlanet->HandleDied();
+		}
+	}
+}
+
+void UHPComponent::updateUI() const
+{
+	if (!mPlanet)
+		return;
+	
+	check(mPlanet->PlanetHUD);
+	mPlanet->PlanetHUD->OnHPChanged(CurrentHP, MaxHP);
+}

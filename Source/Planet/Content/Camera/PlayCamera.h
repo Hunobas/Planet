@@ -18,59 +18,41 @@ class PLANET_API UPlayCamera : public UActorComponent
 
 public:
 	UPlayCamera();
-	
-	virtual void BeginPlay() override;
 
 protected:
-	virtual void TickComponent(float _deltaTime, ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
+	virtual void BeginPlay() override;
 
 public:
-	void Look(const FInputActionValue& _value);
+	virtual void TickComponent(float _deltaTime, enum ELevelTick _tickType, FActorComponentTickFunction* _thisTickFunction) override;
+
 	void StartAim();
 	void StopAim();
-
-	void OnJustAimSuccess(const FVector& _targetLocation);
-
-	UPROPERTY(EditAnywhere, Category = "Look")
-	float DefaultRotationalSpeed	= 30.0f;
-
-	UPROPERTY(EditAnywhere, Category = "Spring Arm")
-	FVector SpringArmLocation		= {0, 40.f, 70.f};
-	UPROPERTY(EditAnywhere, Category = "Spring Arm")
-	float SocketOffYMax				= 120.f;
-	UPROPERTY(EditAnywhere, Category = "Spring Arm")
-	float SocketOffYMin				= 215.f;
-	UPROPERTY(EditAnywhere, Category = "Spring Arm")
-	float DefaultArmLength			= 500.f;
-	UPROPERTY(EditAnywhere, Category = "Spring Arm")
-	float AimedArmLength			= 250.f;
+	
+	UPROPERTY(EditAnywhere, Category = "Camera Setting")
+	FRotator SpringArmRotation		= {0.0f, -90.0f, 0};
+	UPROPERTY(EditAnywhere, Category = "Camera Setting")
+	float DefaultArmLength			= 3000.0f;
+	UPROPERTY(EditAnywhere, Category = "Camera Setting")
+	float AimedArmLength			= 2900.0f;
 	UPROPERTY(EditAnywhere, Category = "Spring Arm")
 	float ArmLengthInterpSpeed		= 5.0f;
-	UPROPERTY(EditAnywhere, Category = "Spring Arm")
-	float DefaultRotationLagSpeed	= 30.0f;
 
-	UPROPERTY(EditAnywhere, Category = "Just Aim")
-	float JustAimingDuration		= 0.08f;
-	UPROPERTY(EditAnywhere, Category = "Just Aim")
-	float JustAimedArmLength		= 350.f;
 	UPROPERTY(EditAnywhere, Category = "Just Aim")
 	TSubclassOf<UCameraShakeBase> JustAimCameraShakeClass;
+	
 
 private:
-	void updateSocketOffY();
+	void onJustAimSuccess(const FVector& _targetLocation);
 	void updateArmLength(float _deltaTime);
-	void updateJustAimRotation(float _deltaTime);
 	
 	APlanetPawn* mPlayerPawn;
 	USpringArmComponent* mSpringArm;
 	UCameraComponent* mCamera;
 
 	float mCurrentArmLength;
-	float mRotationalSpeed;
-	bool bIsAiming;
+	bool bIsAiming = false;
 
 	FRotator mStartControlRotation;
 	FRotator mTargetControlRotation;
 	float mJustAimingElapsedTime = 0.0f;
-	bool bIsJustAiming = false;
 };

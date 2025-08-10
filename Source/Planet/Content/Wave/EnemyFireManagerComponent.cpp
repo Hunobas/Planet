@@ -1,8 +1,6 @@
 // EnemyFireManagerComponent.h
 #include "EnemyFireManagerComponent.h"
 
-#include "Camera/CameraComponent.h"
-
 #include "EnemyPawn.h"
 #include "EnemySpawnCelestial.h"
 #include "FiringComponent.h"
@@ -15,6 +13,7 @@ UEnemyFireManagerComponent::UEnemyFireManagerComponent(): mEnemySpawn(nullptr)
 UEnemyFireManagerComponent* UEnemyFireManagerComponent::Initialize(AEnemySpawnCelestial* _enemySpawn)
 {
 	mEnemySpawn = _enemySpawn;
+	mFireComponentQueue.Empty();
 	return this;
 }
 
@@ -22,19 +21,18 @@ void UEnemyFireManagerComponent::TickComponent(float _deltaTime, ELevelTick _tic
 {
 	Super::TickComponent(_deltaTime, _tickType, _thisTickFunction);
 
-	UFiringComponent* currentFireComponent = nullptr;
-	if (mFireComponentQueue.Peek(currentFireComponent))
+	UFiringComponent* fp = nullptr;
+	if (mFireComponentQueue.Peek(fp))
 	{
-		currentFireComponent->HandleJustAim();
+		fp->HandleJustAim();
 
-// #ifdef DEBUG
-		if (APawn* cPlayerPawn = currentFireComponent->TargetPawn)
+#ifdef DEBUG
+		if (APawn* cPlayerPawn = fp->TargetPawn)
 		{
-			const FVector PlayerForwardPos = cPlayerPawn->GetActorLocation() + mEnemySpawn->PlayerCamera->GetForwardVector() * mEnemySpawn->EnemySpawnRadius;
 			DrawDebugLine(
 				GetWorld(),
-				PlayerForwardPos,
-				currentFireComponent->MuzzlePoint->GetComponentLocation(),
+				cPlayerPawn->GetActorLocation(),
+				fp->MuzzlePoint->GetComponentLocation(),
 				FColor::Yellow,
 				false,
 				0.1f,
@@ -42,105 +40,129 @@ void UEnemyFireManagerComponent::TickComponent(float _deltaTime, ELevelTick _tic
 				5.0f
 			);
 		}
-// #endif
+#endif
 	}
 }
 
-void UEnemyFireManagerComponent::AddEnemy(AEnemyPawn* _spawnedEnemy, USceneComponent* _spawnPoint)
+void UEnemyFireManagerComponent::FireOnBeat()
+{
+	if (UFiringComponent* fp = getNextPointOrNull())
+	{
+		fp->StopFireSequence();
+		EnqueueFireComponent(fp);
+		fp->StartFireSequence([this](const UFiringComponent* _firedComponent){
+			DequeueFireComponent(_firedComponent);
+		});
+	}
+}
+
+void UEnemyFireManagerComponent::FireOnBeatAt(const int32 _index)
+{
+	if (UFiringComponent* fp = getPointAtIndexOrNull(_index))
+	{
+		fp->StopFireSequence();
+		EnqueueFireComponent(fp);
+		fp->StartFireSequence([this](const UFiringComponent* _firedComponent){
+			DequeueFireComponent(_firedComponent);
+		});
+	}
+}
+
+void UEnemyFireManagerComponent::RegisterRangedEnemy(AEnemyPawn* _spawnedEnemy, USceneComponent* _spawnPoint)
 {
 	if (_spawnedEnemy->EnemyType != EEnemyType::Ranged)
 		return;
 
 	_spawnedEnemy->AttachToComponent(_spawnPoint, FAttachmentTransformRules::KeepWorldTransform);
 	mEnemySpawn->SetOccupiedSpawnPoint(_spawnPoint, true);
-	mRangedEnemies.Add(_spawnedEnemy);
+	mRangedEnemies.AddUnique(_spawnedEnemy);
 }
 
-void UEnemyFireManagerComponent::RemoveEnemy(AEnemyPawn* _deadEnemy)
+void UEnemyFireManagerComponent::UnregisterRangedEnemy(AEnemyPawn* _deadEnemy)
 {
 	if (_deadEnemy->EnemyType != EEnemyType::Ranged)
 		return;
+
+	if (UFiringComponent* fp = _deadEnemy->GetComponentByClass<UFiringComponent>())
+	{
+		fp->StopFireSequence();
+	}
 
 	USceneComponent* spawnPoint = _deadEnemy->GetRootComponent()->GetAttachParent();
 	check(spawnPoint);
 	
 	mEnemySpawn->SetOccupiedSpawnPoint(spawnPoint, false);
-	mRangedEnemies.RemoveSingleSwap(_deadEnemy);
+	mRangedEnemies.RemoveSingle(_deadEnemy);
 }
 
 void UEnemyFireManagerComponent::EnqueueFireComponent(UFiringComponent* _fireComponent)
 {
-	FScopeLock Lock(&mQueueCriticalSection);
+	FScopeLock lock(&mQueueCriticalSection);
 	mFireComponentQueue.Enqueue(_fireComponent);
-	mActiveFireComponents.Add(_fireComponent);
 }
 
 void UEnemyFireManagerComponent::DequeueFireComponent(const UFiringComponent* _firedComponent)
 {
-	FScopeLock Lock(&mQueueCriticalSection);
-	
+	FScopeLock lock(&mQueueCriticalSection);
 	UFiringComponent* result;
 	mFireComponentQueue.Dequeue(result);
-	mActiveFireComponents.Remove(result);
 
-	checkf(result == _firedComponent, TEXT("[UEnemyFireManagerComponent] dQ 실패: 예상 %s, 실제 %s"), 
-			*_firedComponent->GetName(), *GetNameSafe(result));
+	if (result != _firedComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[UEnemyFireManagerComponent] dQ 실패: 예상 %s, 실제 %s"), 
+				*_firedComponent->GetName(), *GetNameSafe(result));
+	}
 }
 
-void UEnemyFireManagerComponent::FireRandomFacingEnemy()
+UFiringComponent* UEnemyFireManagerComponent::getNextPointOrNull()
 {
-	TArray<AEnemyPawn*> facingEnemies = getPlayerFacingEnemies();
-
-	TArray<UFiringComponent*> allFirePoints;
-	for (AEnemyPawn* enemy : facingEnemies)
+	if (mRangedEnemies.IsEmpty())
+		return nullptr;
+    
+	const int32 safeIndex = mCurrentFireIndex++ % mRangedEnemies.Num();
+	AEnemyPawn* enemy = mRangedEnemies[safeIndex];
+    
+	if (isEnemyValidForFiring(enemy))
 	{
-		TArray<UFiringComponent*> firePoints;
-		enemy->GetComponents<UFiringComponent>(firePoints);
-		allFirePoints.Append(firePoints);
-	}
-
-	TArray<UFiringComponent*> availableFirePoints;
-	for (UFiringComponent* fp : allFirePoints)
-	{
-		if (!mActiveFireComponents.Contains(fp))
+		if (UFiringComponent* firingComp = enemy->GetComponentByClass<UFiringComponent>())
 		{
-			availableFirePoints.Add(fp);
+			if (!firingComp->bIsCurrentlyFiring)
+			{
+				return firingComp;
+			}
 		}
 	}
-
-	if (availableFirePoints.IsEmpty())
-	{
-		UE_LOG(LogTemp, Display, TEXT("[EnemyFireManagerComponent] 가용한 fire point가 없음."));
-		return;
-	}
-
-	UFiringComponent* selectedFirePoint = availableFirePoints[FMath::RandRange(0, availableFirePoints.Num()-1)];
-	EnqueueFireComponent(selectedFirePoint);
-	selectedFirePoint->StartFireSequence([this](const UFiringComponent* _firedComponent){
-		DequeueFireComponent(_firedComponent);
-	});
+    
+	return nullptr;
 }
 
-TArray<AEnemyPawn*> UEnemyFireManagerComponent::getPlayerFacingEnemies()
+UFiringComponent* UEnemyFireManagerComponent::getPointAtIndexOrNull(const int32 _index) const
 {
-	TArray<AEnemyPawn*> facingEnemies;
-	
-	check(mEnemySpawn->PlayerCamera);
-	float camYaw = mEnemySpawn->PlayerCamera->GetComponentRotation().Yaw;
-	
-	for (AEnemyPawn* enemy : mRangedEnemies)
+	if (mRangedEnemies.IsEmpty())
+		return nullptr;
+    
+	const int32 safeIndex = _index % mRangedEnemies.Num();
+	AEnemyPawn* enemy = mRangedEnemies[safeIndex];
+    
+	if (isEnemyValidForFiring(enemy))
 	{
-		if (!IsValid(enemy))
-			continue;
-		
-		float enemyYaw = enemy->GetActorRotation().Yaw;
-		float deltaYaw = FMath::FindDeltaAngleDegrees(camYaw, enemyYaw);
-
-		if (FMath::Abs(deltaYaw) >= PI_IN_DEGREES - mEnemySpawn->HalfFOV)
+		if (UFiringComponent* firingComp = enemy->GetComponentByClass<UFiringComponent>())
 		{
-			facingEnemies.Add(enemy);
+			if (!firingComp->bIsCurrentlyFiring)
+			{
+				return firingComp;
+			}
 		}
 	}
+    
+	return nullptr;
+}
 
-	return facingEnemies;
+bool UEnemyFireManagerComponent::isEnemyValidForFiring(const AEnemyPawn* _enemy)
+{
+	return _enemy && 
+	   _enemy->IsValidLowLevel() && 
+	   !_enemy->IsActorBeingDestroyed() &&
+	   _enemy->IsActorTickEnabled() &&
+	   _enemy->EnemyType == EEnemyType::Ranged;
 }

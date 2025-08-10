@@ -5,9 +5,12 @@
 #include "Components/ActorComponent.h"
 #include "Components/SceneComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 
+#include "PlanetConst.h"
 #include "SurvivorGameModeBase.h"
+#include "ObjectPoolManagerComponent.h"		// 없을 시 빌드 에러
 
 namespace GameplayUtils
 {
@@ -19,10 +22,63 @@ namespace GameplayUtils
 		return (_pawnDamage + _weaponDamage) * _activeBuffScale;
 	}
 
-	inline float CalulateDefaultSigmoid(const float& roughStart, const float& roughEnd, const float& _inclination, const float& _inflectionPoint, const float& x)
+	inline float CalculateCriticalDamage(const float& _pawnDamage, const float& _weaponDamage = 0.0f, const float& _playerCritial = 5.0f, const float& _playerCritialDamage = 150.0f, const float& _activeBuffScale = 1.0f)
 	{
-		return roughStart + (roughEnd - roughStart)
-			/ (1 + FMath::Exp(_inclination * (_inflectionPoint - x)));
+		float damage = CalculateDamage(_pawnDamage, _weaponDamage, _activeBuffScale);
+		
+		if (FMath::RandRange(0.0f, 100.0f) < _playerCritial)
+		{
+			return damage * _playerCritialDamage * 0.01f;
+		}
+		return damage;
+	}
+
+	inline float CalculateFireRate(const float& _baseFireRate, const float& _playerHaste = 100.0f)
+	{
+		return _baseFireRate * FMath::Clamp(100.0f / _playerHaste, PlanetConst::UPDATE_FREQUENT_INTERVAL, 100.0f);
+	}
+
+	inline float CalculateXPGain(const float& _baseXPGain, const float& _playerXPGain)
+	{
+		return _baseXPGain * _playerXPGain * 0.01f;
+	}
+
+	inline float CalculateXPSpeed(const float& _baseXPSpeed, const float& _playerXPSpeed)
+	{
+		return _baseXPSpeed + _playerXPSpeed;
+	}
+
+	inline float CalculateXPToNextLevel(const int32& _currentLevel)
+	{
+		float XPToNextLevel;
+		
+		if (_currentLevel == 1)
+		{
+			XPToNextLevel = 5;
+		}
+		else if (_currentLevel <= 20)
+		{
+			XPToNextLevel = 5 + (_currentLevel - 1) * 10;
+		}
+		else if (_currentLevel <= 40)
+		{
+			XPToNextLevel = 195 + (_currentLevel - 20) * 13;
+		}
+		else
+		{
+			XPToNextLevel = 455 + (_currentLevel - 40) * 16;
+		}
+
+		if (_currentLevel == 20)
+		{
+			XPToNextLevel += 600;
+		}
+		else if (_currentLevel == 40)
+		{
+			XPToNextLevel += 2400;
+		}
+		
+		return XPToNextLevel;
 	}
 	
 #pragma endregion
@@ -119,31 +175,107 @@ namespace GameplayUtils
 	}
 
 	/**
+	 * 현재 게임 모드가 가진 오브젝트 풀 매니저를 가져옵니다.
+	 * @param _worldContextObject	꺼내올 게임 모드의 월드 컨텍스트에 속한 오브젝트
+	 * @return						우리 오브젝트 풀 매니저
+	 */
+	inline UObjectPoolManagerComponent* GetObjectPoolManager(const UObject* _worldContextObject)
+	{
+		UObjectPoolManagerComponent* pool;
+		if (!TryGetFirstComponentWithTag(GetPlanetGameMode(_worldContextObject), PlanetConst::OBJECT_POOL_TAG, pool))
+		{
+			checkf(false, TEXT("[WaveManager] 오브젝트 풀 컴포넌트 불러오기 실패."));
+		}
+
+		return pool;
+	}
+	
+#pragma endregion
+
+
+#pragma region Naiagara Helpers
+
+	/**
 	 * 이펙트를 소환해 컴포넌트 하위에 붙이고, 이펙트의 트랜스폼을 컴포넌트의 위치 및 정면 방향으로 조정합니다.
 	 * @param _systemTemplate		소환할 Niagara 시스템 템플릿
 	 * @param _attachToComponent	이펙트를 붙일 SceneComponent
-	 * @return						소환된 이펙트 컴포넌트
+	 * @param bAutoDestroy			소환한 이펙트의 자동 소멸 여부
+	 * @return						소환된 이펙트 컴포넌트 (실패 시 nullptr)
 	 */
-	inline UNiagaraComponent* SpawnSystemAttachedFacingForward(UNiagaraSystem* _systemTemplate, USceneComponent* _attachToComponent)
+	inline UNiagaraComponent* SpawnSystemAttachedFacingForward(UNiagaraSystem* _systemTemplate, USceneComponent* _attachToComponent, bool bAutoDestroy = true)
 	{
 		if (_systemTemplate == nullptr)
 			return nullptr;
 		
 		check(_attachToComponent);
 
-		const FRotator forwardRotation = _attachToComponent->GetComponentRotation();
-
 		return UNiagaraFunctionLibrary::SpawnSystemAttached(
 			_systemTemplate,
 			_attachToComponent,
 			NAME_None,
 			FVector::ZeroVector,
-			forwardRotation,
+			FRotator::ZeroRotator,
 			EAttachLocation::SnapToTarget,
-			true
+			bAutoDestroy
 		);
 	}
-	
+
+	/**
+	 * 이펙트를 소환해 액터 위치에 스폰하고, 이펙트의 트랜스폼을 액터의 위치 및 정면 방향으로 조정합니다.
+	 * @param _systemTemplate     소환할 Niagara 시스템 템플릿
+	 * @param _actor              이펙트를 스폰할 AActor
+	 * @return                    소환된 Niagara 컴포넌트 (실패 시 nullptr)
+	 */
+	inline UNiagaraComponent* SpawnSystemFacingForward(UNiagaraSystem* _systemTemplate, const AActor* _actor)
+	{
+		if (_systemTemplate == nullptr)
+			return nullptr;
+
+		check(_actor);
+
+		UWorld* world = _actor->GetWorld();
+		check(world);
+
+		const FVector location = _actor->GetActorLocation();
+		const FRotator rotation = _actor->GetActorRotation();
+
+		return UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			world,
+			_systemTemplate,
+			location,
+			rotation
+		);
+	}
+
+	/**
+	 * 나이아가라 컴포넌트를 부드럽게 페이드아웃시킨 후 제거합니다.
+	 * 새로운 파티클 생성을 중단하고, 기존 파티클들이 자연스럽게 사라질 때까지 대기 후 컴포넌트를 파괴합니다.
+	 * @param _world				타이머 매니저를 가져올 월드 컨텍스트
+	 * @param out_niagaraComponent	페이드아웃할 나이아가라 컴포넌트
+	 * @param _fadeTime				페이드아웃 시간 (초)
+	 */
+	inline void FadeOutNiagaraComponent(UWorld* _world, UNiagaraComponent& out_niagaraComponent, float _fadeTime = 2.0f)
+	{
+		if (!_world)
+			return;
+
+		out_niagaraComponent.SetVariableFloat(FName("SpawnRate"), 0.0f);
+
+		FTimerHandle fadeOutTimer;
+		_world->GetTimerManager().SetTimer(
+			fadeOutTimer,
+			[&out_niagaraComponent]() mutable
+			{
+				if (IsValid(&out_niagaraComponent))
+				{
+					out_niagaraComponent.DestroyComponent();
+				}
+			},
+			_fadeTime,
+			false
+		);
+	}
+
 #pragma endregion
 
 
@@ -151,7 +283,6 @@ namespace GameplayUtils
 
 	/**
 	 * 월드 컨텍스트로부터 레벨 이름 "/Game/Maps/Level_3"을 얻어서 "Level_3" 에서 뒤쪽 숫자 3만 파싱합니다.
-	 * 실패 시 -1 반환
 	 * @param _world	파싱할 월드 컨텍스트
 	 * @return			현재 레벨 인덱스, 실패하면 -1
 	 */
@@ -187,6 +318,21 @@ namespace GameplayUtils
 		return FCString::Atoi(*numberStr);
 	}
 
+	/**
+	 * 열거형 값을 "Enum명::값" 형식에서 "값"만 추출합니다.
+	 * @tparam	EnumType  UENUM()으로 선언된 열거형 타입
+	 * @param	EnumeratorValue  변환할 열거형 값
+	 * @return	"값" 부분의 문자열
+	 */
+	template<typename EnumType>
+	inline FString GetEnumValueString(const EnumType EnumeratorValue)
+	{
+		const FString FullString = UEnum::GetValueAsString(EnumeratorValue);
+		FString ValuePart;
+		FullString.Split(TEXT("::"), nullptr, &ValuePart, ESearchCase::CaseSensitive, ESearchDir::FromStart);
+		return ValuePart;
+	}
+
 #pragma endregion
 	
 	
@@ -207,13 +353,40 @@ namespace GameplayUtils
 		return EaseOut(num, 5);
 	}
 
-	inline float NormalizeAngle(float degree)
+	inline float EaseIn(float num, int32 exp)
 	{
-		while (degree > 180.f)
-			degree -= 360.f;
-		while (degree < -180.f)
-			degree += 360.f;
-		return degree;
+		return FMath::Pow(num, exp);
+	}
+
+	inline float EaseInCubic(float num)
+	{
+		return EaseIn(num, 3);
+	}
+
+	inline float EaseInQuint(float num)
+	{
+		return EaseIn(num, 5);
+	}
+
+	inline float NormalizeAngle(float yaw)
+	{
+		while (yaw > 180.f)
+			yaw -= 360.f;
+		while (yaw <= -180.f)
+			yaw += 360.f;
+		return yaw;
+	}
+
+	inline float ToFixedAngle(float yaw)
+	{
+		if (yaw < 0.0f)
+			yaw += 360.f;
+		return yaw;
+	}
+
+	inline float Saturate(float value)
+	{
+		return FMath::Clamp(value, 0.0f, 1.0f);
 	}
 
 	inline FRotator LerpAngle(FRotator a, FRotator b, float x)

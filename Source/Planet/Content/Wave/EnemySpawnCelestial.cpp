@@ -2,11 +2,10 @@
 #include "EnemySpawnCelestial.h"
 
 #include "Components/SceneComponent.h"
-#include "Camera/CameraComponent.h"
 
 #include "PlanetPawn.h"
 
-AEnemySpawnCelestial::AEnemySpawnCelestial()
+AEnemySpawnCelestial::AEnemySpawnCelestial() : cPlayerPawn(nullptr)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -16,9 +15,7 @@ AEnemySpawnCelestial::AEnemySpawnCelestial()
 AEnemySpawnCelestial* AEnemySpawnCelestial::Initialize(APawn* _targetPawn)
 {
 	cPlayerPawn = _targetPawn;
-	PlayerCamera = Cast<APlanetPawn>(_targetPawn)->Camera;
-	mIsPointsActive.Init(false, SpawnPoints.Num());
-	mIsPointsOccupied.Init(false, SpawnPoints.Num());
+	mIsPointsOccupied.Init(false, RangedSpawnPoints.Num());
 
 	FAttachmentTransformRules attachmentRules(
 		EAttachmentRule::SnapToTarget,
@@ -31,23 +28,19 @@ AEnemySpawnCelestial* AEnemySpawnCelestial::Initialize(APawn* _targetPawn)
 	return this;
 }
 
-USceneComponent* AEnemySpawnCelestial::GetRandomSpawnPoint()
+USceneComponent* AEnemySpawnCelestial::GetRandomMeleeSpawnPoint()
 {
-	updatePlayerFacingSpawnPoint();
-
-	return SpawnPoints[FMath::RandRange(0, SpawnPoints.Num() - 1)];
+	return MeleeSpawnPoints[FMath::RandRange(0, MeleeSpawnPoints.Num() - 1)];
 }
 
-USceneComponent* AEnemySpawnCelestial::GetRandomActiveSpawnPointOrNull()
+USceneComponent* AEnemySpawnCelestial::GetRandomRangedSpawnPointOrNull()
 {
-	updatePlayerFacingSpawnPoint();
-	
 	TArray<USceneComponent*> activeSpawnPoints;
-	for (int32 i = 0; i < SpawnPoints.Num(); i++)
+	for (int32 i = 0; i < RangedSpawnPoints.Num(); i++)
 	{
-		if (mIsPointsActive[i] && !mIsPointsOccupied[i])
+		if (!mIsPointsOccupied[i])
 		{
-			activeSpawnPoints.Add(SpawnPoints[i]);
+			activeSpawnPoints.Add(RangedSpawnPoints[i]);
 		}
 	}
 
@@ -74,96 +67,96 @@ USceneComponent* AEnemySpawnCelestial::GetRandomActiveSpawnPointOrNull()
 	return nullptr;
 }
 
-TArray<USceneComponent*> AEnemySpawnCelestial::GetRandomRowSpawnPoints() const
+TArray<USceneComponent*> AEnemySpawnCelestial::GetNthRowSpawnPoints(const int32& n) const
 {
-	const int32 targetRow	= FMath::RandRange(1, NumRows);
-	const int32 startIndex	= (targetRow - 1) * PointsPerRow;
-	const int32 endIndex	= targetRow * PointsPerRow;
+	check(n > 0 && n <= NumCircles);
+	const int32 startIndex	= (n - 1) * PointsPerCircle;
+	const int32 endIndex	= n * PointsPerCircle;
 
 	TArray<USceneComponent*> targetRowPoints;
-	for (int32 i = startIndex; i < endIndex && i < SpawnPoints.Num(); i++)
+	for (int32 i = startIndex; i < endIndex && i < MeleeSpawnPoints.Num(); i++)
 	{
-		targetRowPoints.Add(SpawnPoints[i]);
+		targetRowPoints.Add(MeleeSpawnPoints[i]);
 	}
 
 	return targetRowPoints;
 }
 
-TArray<USceneComponent*> AEnemySpawnCelestial::GetNthRowSpawnPoints(const int& n) const
+TArray<USceneComponent*> AEnemySpawnCelestial::GetRandomRowSpawnPoints() const
 {
-	check(n > 0 && n <= NumRows);
-	const int32 startIndex	= (n - 1) * PointsPerRow;
-	const int32 endIndex	= n * PointsPerRow;
-
-	TArray<USceneComponent*> targetRowPoints;
-	for (int32 i = startIndex; i < endIndex && i < SpawnPoints.Num(); i++)
-	{
-		targetRowPoints.Add(SpawnPoints[i]);
-	}
-
-	return targetRowPoints;
+	const int32 targetRow = FMath::RandRange(1, NumCircles);
+	return GetNthRowSpawnPoints(targetRow);
 }
 
 void AEnemySpawnCelestial::SetOccupiedSpawnPoint(USceneComponent* _spawnPoint, bool _active)
 {
-	int32 i  = SpawnPoints.Find(_spawnPoint);
+	int32 i  = RangedSpawnPoints.Find(_spawnPoint);
 	if (i != INDEX_NONE)
 	{
 		mIsPointsOccupied[i] = _active;
 	}
 }
 
-void AEnemySpawnCelestial::SetActiveAllSpawnPoints(bool _active)
-{
-	for (bool& active : mIsPointsActive)
-	{
-		active = _active;
-	}
-}
-
 void AEnemySpawnCelestial::composeSpawnPointScenes()
 {
-	Root = CreateDefaultSubobject<USceneComponent>("Root");
+	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	RootComponent = Root;
-	
+
+	MeleeSpawnPoints.Empty();
+	RangedSpawnPoints.Empty();
+
+	YawInterval = 360.0f / PointsPerCircle;
 	int32 pointIndex = 0;
-	for (int32 row = 0; row < NumRows; row++)
+
+	for (int32 num = 0; num < NumCircles; ++num)
 	{
-		float pitch = (row - (NumRows - 1) / 2.0f) * PitchInterval;
+		const float offsetMultiplier = num - (NumCircles - 1) / 2.0f;
+		const float ringRadius       = MeleeSpawnRadius + offsetMultiplier * RadiusInterval;
 
-		for (int32 pointInRow = 0; pointInRow < PointsPerRow; pointInRow++)
+		for (int32 point = 0; point < PointsPerCircle; ++point)
 		{
-			float yaw = pointInRow * YawInterval;
+			const float yawDeg = point * YawInterval;
+			const float rad    = FMath::DegreesToRadians(yawDeg);
 
-			FString spawnPointName = FString::Printf(TEXT("Spawn Point %02d"), pointIndex++ + 1);
+			const FVector position = FVector(
+				ringRadius * FMath::Cos(rad),
+				ringRadius * FMath::Sin(rad),
+				0.0f
+			);
 
-			FVector position;
-			position.X = EnemySpawnRadius * FMath::Cos(FMath::DegreesToRadians(pitch)) * FMath::Cos(FMath::DegreesToRadians(yaw));
-			position.Y = EnemySpawnRadius * FMath::Cos(FMath::DegreesToRadians(pitch)) * FMath::Sin(FMath::DegreesToRadians(yaw));
-			position.Z = EnemySpawnRadius * FMath::Sin(FMath::DegreesToRadians(pitch));
+			const FString pointName = FString::Printf(TEXT("SpawnPoint_%02d"), ++pointIndex);
+			USceneComponent* spawnPoint = CreateDefaultSubobject<USceneComponent>(*pointName);
 
-			USceneComponent* spawnPoint = CreateDefaultSubobject<USceneComponent>(*spawnPointName);
 			spawnPoint->SetupAttachment(RootComponent);
 			spawnPoint->SetRelativeLocation(position);
-            
-			FRotator rotation = (-position).Rotation();
+
+			const FRotator rotation = (-position).Rotation();
 			spawnPoint->SetRelativeRotation(rotation);
 
-			SpawnPoints.Add(spawnPoint);
+			MeleeSpawnPoints.Add(spawnPoint);
 		}
 	}
-}
 
-void AEnemySpawnCelestial::updatePlayerFacingSpawnPoint()
-{
-	check(PlayerCamera);
-	float camYaw = PlayerCamera->GetComponentRotation().Yaw;
-	
-	for (int32 i = 0; i < SpawnPoints.Num(); i++)
+	for (int32 point = 0; point < PointsPerCircle; ++point)
 	{
-		float pointYaw = SpawnPoints[i]->GetRelativeLocation().Rotation().Yaw;
-		float deltaYaw = FMath::FindDeltaAngleDegrees(camYaw, pointYaw);
-		
-		mIsPointsActive[i] = FMath::Abs(deltaYaw) <= HalfFOV;
+		const float yawDeg = point * YawInterval;
+		const float rad    = FMath::DegreesToRadians(yawDeg);
+
+		const FVector position = FVector(
+			RangedSpawnRadius * FMath::Cos(rad),
+			RangedSpawnRadius * FMath::Sin(rad),
+			0.0f
+		);
+
+		const FString pointName = FString::Printf(TEXT("SpawnPoint_%02d"), ++pointIndex);
+		USceneComponent* spawnPoint = CreateDefaultSubobject<USceneComponent>(*pointName);
+
+		spawnPoint->SetupAttachment(RootComponent);
+		spawnPoint->SetRelativeLocation(position);
+
+		const FRotator rotation = (-position).Rotation();
+		spawnPoint->SetRelativeRotation(rotation);
+
+		RangedSpawnPoints.Add(spawnPoint);
 	}
 }

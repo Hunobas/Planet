@@ -48,33 +48,40 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Wave Config")
 	float CurrentMaxFieldScore = 10.0f;
+	UPROPERTY(VisibleAnywhere, Category = "Wave Config")
+	float CurrentFieldScore = 0.0f;
+	UPROPERTY(EditAnywhere, Category = "Wave Config")
+	float SpawnInterval = 0.5f;
 
+	UWaveConfigDataAsset* CurrentLevelConfig;
 	TArray<FSpawnInfo>	Config_SpawnInfos;
 	float				Config_EnemySpawnInterval;
 	float				Config_DifficultyInterval;
-	float				Config_StartMaxScore;
-	float				Config_EndMaxScore;
-	float				Config_InflectionPoint;
-	float				Config_Inclination;
 	FRuntimeFloatCurve	Config_MaxFieldScoreCurve;
 	FEnemyScaleSetting	Config_ScaleSettings;
 
 private:
+	void spawnSingleEnemy();
 	AEnemyPawn* spawnEnemyOrNull(const TSubclassOf<AEnemyPawn>& _enemyClass, USceneComponent* _spawnPoint);
 	USceneComponent* getRandomPointForTypeOrNull(const EEnemyType& _type) const;
 	void updateMaxFieldScoreByGameTime();
+	void updateEnemyScaleByGameTime();
 	void updateSpawnableEnemyListByGameTime();
 	bool loadWaveConfigForCurrentLevel();
 	
+	UPROPERTY()
 	AEnemySpawnCelestial* mEnemySpawn;
+	UPROPERTY()
 	UObjectPoolManagerComponent* mPool;
+	UPROPERTY()
 	UEnemyFireManagerComponent* mFireManager;
+	
 	TArray<TSubclassOf<AEnemyPawn>> mRuntimeSpawnableList;
 	APawn* cTargetPlayer;
-
+	
 	FTimerHandle mWaveTimerHandle;
 	FTimerHandle mDifficultyTimerHandle;
+	FTimerHandle mEnemyScaleTimerHandle;
 	FTimerHandle mListTimerHandle;
-
-	float mCurrentFieldScore;
+	FTimerHandle mSpawnIntervalTimerHandle;
 };

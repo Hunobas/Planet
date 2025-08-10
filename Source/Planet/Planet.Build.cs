@@ -9,21 +9,30 @@ public class Planet : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[]
-			{ "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Niagara" });
+			{ "Core", "CoreUObject", "Engine", "InputCore", "UMG", "EnhancedInput", "Niagara" });
 		
         PublicIncludePaths.AddRange(new string[] {
 	        Path.Combine(ModuleDirectory, "Content"),
 	        Path.Combine(ModuleDirectory, "Content/Camera"),
-	        Path.Combine(ModuleDirectory, "Content/Pawn"),
-            Path.Combine(ModuleDirectory, "Content/Pawn/PawnMover"),
-            Path.Combine(ModuleDirectory, "Content/Pawn/PawnModule"),
-            Path.Combine(ModuleDirectory, "Content/Pawn/Enemy"),
+	        Path.Combine(ModuleDirectory, "Content/Actor"),
+	        Path.Combine(ModuleDirectory, "Content/Actor/Player"),
+            Path.Combine(ModuleDirectory, "Content/Actor/PawnMover"),
+            Path.Combine(ModuleDirectory, "Content/Actor/PawnModule"),
+            Path.Combine(ModuleDirectory, "Content/Actor/Enemy"),
+			Path.Combine(ModuleDirectory, "Content/Actor/Weapon"),
+			Path.Combine(ModuleDirectory, "Content/Actor/PassiveItem"),
+            Path.Combine(ModuleDirectory, "Content/Actor/UpdateStretegy"),
             Path.Combine(ModuleDirectory, "Content/Wave"),
-            Path.Combine(ModuleDirectory, "System")
+            Path.Combine(ModuleDirectory, "System"),
+            Path.Combine(ModuleDirectory, "System/Reward/Data"),
+            Path.Combine(ModuleDirectory, "System/Reward/Manager"),
+            Path.Combine(ModuleDirectory, "System/Reward/Applicator"),
+            Path.Combine(ModuleDirectory, "System/Reward/Type"),
+            Path.Combine(ModuleDirectory, "Data"),
+            Path.Combine(ModuleDirectory, "UI")
         });
         
-        PublicDefinitions.Add("ENABLE_DRAW_DEBUG=1");
-        PublicDefinitions.Add("DEBUG=0");
+        PublicDefinitions.Add("DEBUG=1");
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

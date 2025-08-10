@@ -3,26 +3,21 @@
 
 #include "Kismet/GameplayStatics.h"
 
-#include "../Planet.h"
 #include "EnemyFireManagerComponent.h"
 #include "WaveConfigDataAsset.h"
 #include "EnemyPawn.h"
 #include "EnemySpawnCelestial.h"
 #include "ObjectPoolManagerComponent.h"
 
-UWaveManagerComponent::UWaveManagerComponent(): Config_EnemySpawnInterval(5.0f), Config_DifficultyInterval(5.0f),
-                                                Config_StartMaxScore(0),
-                                                Config_EndMaxScore(0),
-                                                Config_InflectionPoint(PLAYTIME / 2), Config_Inclination(0),
+UWaveManagerComponent::UWaveManagerComponent(): CurrentLevelConfig(nullptr), Config_EnemySpawnInterval(5.0f),
+                                                Config_DifficultyInterval(5.0f),
                                                 mEnemySpawn(nullptr),
-                                                mPool(nullptr),
-                                                mFireManager(nullptr), cTargetPlayer(nullptr),
-                                                mCurrentFieldScore(0)
+                                                mPool(nullptr), mFireManager(nullptr),
+                                                cTargetPlayer(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-// Called when the game starts
 void UWaveManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -36,51 +31,59 @@ void UWaveManagerComponent::BeginPlay()
 	
 	check(EnemySpawnClass);
 	mEnemySpawn = GetWorld()->SpawnActor<AEnemySpawnCelestial>(EnemySpawnClass, playerTx)->Initialize(cTargetPlayer);
-	
-	if (!TryGetFirstComponentWithTag(GetOwner(), OBJECT_POOL_TAG, mPool))
-	{
-		checkf(false, TEXT("[WaveManager] 오브젝트 풀 컴포넌트 불러오기 실패."));
-	}
+
+	mPool = GetObjectPoolManager(this);
 	if (!TryGetFirstComponentWithTag(GetOwner(), FIRE_MANAGER_TAG, mFireManager))
 	{
 		checkf(false, TEXT("[WaveManager] 적 Fire Manager 컴포넌트 불러오기 실패."));
 	}
 	mFireManager->Initialize(mEnemySpawn);
 
+	CurrentFieldScore = 0;
+	
 	PlayWaveMode1();
-	// PlayWaveMode2();
+	// FTimerHandle timerHandle;
+	// GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &UWaveManagerComponent::PlayWaveMode2, 0.1f, false);
 }
 
 void UWaveManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	GetWorld()->GetTimerManager().ClearTimer(mWaveTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(mDifficultyTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(mEnemyScaleTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(mListTimerHandle);
-
+	GetWorld()->GetTimerManager().ClearTimer(mSpawnIntervalTimerHandle);
 	Super::EndPlay(EndPlayReason);
 }
 
 void UWaveManagerComponent::PlayWaveMode1()
 {
-	// updateMaxFieldScoreByGameTime();
-	updateSpawnableEnemyListByGameTime();
-	SpawnEnemyWave();
+	GetWorld()->GetTimerManager().SetTimer(
+		mDifficultyTimerHandle,
+		this,
+		&UWaveManagerComponent::updateMaxFieldScoreByGameTime,
+		Config_DifficultyInterval,
+		true,
+		0.0f
+	);
 
-	// GetWorld()->GetTimerManager().SetTimer(
-	// 	mDifficultyTimerHandle,
-	// 	this,
-	// 	&UWaveManagerComponent::updateMaxFieldScoreByGameTime,
-	// 	Config_DifficultyInterval,
-	// 	true
-	// );
+	GetWorld()->GetTimerManager().SetTimer(
+		mEnemyScaleTimerHandle,
+		this,
+		&UWaveManagerComponent::updateEnemyScaleByGameTime,
+		Config_DifficultyInterval,
+		true,
+		0.0f
+	);
 
 	GetWorld()->GetTimerManager().SetTimer(
 		mListTimerHandle,
 		this,
 		&UWaveManagerComponent::updateSpawnableEnemyListByGameTime,
 		Config_DifficultyInterval,
-		true
-		);
+		true,
+		0.0f
+	);
 	
 	GetWorld()->GetTimerManager().SetTimer(
 		mWaveTimerHandle,
@@ -95,7 +98,7 @@ void UWaveManagerComponent::PlayWaveMode2()
 {
 	updateSpawnableEnemyListByGameTime();
 
-	for (USceneComponent* spawnPoint : mEnemySpawn->GetNthRowSpawnPoints(3))
+	for (USceneComponent* spawnPoint : mEnemySpawn->RangedSpawnPoints)
 	{
 		spawnEnemyOrNull(mRuntimeSpawnableList[0], spawnPoint);
 	}
@@ -103,25 +106,23 @@ void UWaveManagerComponent::PlayWaveMode2()
 
 void UWaveManagerComponent::SpawnEnemyWave()
 {
-	check(mEnemySpawn);
-	
-	if (mRuntimeSpawnableList.IsEmpty() || mCurrentFieldScore > CurrentMaxFieldScore)
+	if (mRuntimeSpawnableList.IsEmpty() || CurrentFieldScore > CurrentMaxFieldScore)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(mSpawnIntervalTimerHandle);
+		return;
+	}
+        
+	if (GetWorld()->GetTimerManager().IsTimerActive(mSpawnIntervalTimerHandle))
 		return;
 
-	while (mCurrentFieldScore < CurrentMaxFieldScore)
-	{
-		TSubclassOf<AEnemyPawn> enemyClass = mRuntimeSpawnableList[FMath::RandRange(0, mRuntimeSpawnableList.Num() - 1)];
-		
-		EEnemyType enemyType = enemyClass.GetDefaultObject()->EnemyType;
-		USceneComponent* spawnPoint = getRandomPointForTypeOrNull(enemyType);
-
-		if (spawnPoint == nullptr)
-			continue;
-		
-		AEnemyPawn* spawnedEnemy = spawnEnemyOrNull(enemyClass, spawnPoint);
-		if (spawnedEnemy == nullptr)
-			return;
-	}
+	GetWorld()->GetTimerManager().SetTimer(
+		mSpawnIntervalTimerHandle,
+		this,
+		&UWaveManagerComponent::spawnSingleEnemy,
+		SpawnInterval,
+		true,
+		0.0f
+	);
 }
 
 void UWaveManagerComponent::SpawnEnemiesAtRandomRow(const TSubclassOf<AEnemyPawn>& _enemyClass)
@@ -141,10 +142,34 @@ void UWaveManagerComponent::SpawnEnemiesAtRandomRow(const TSubclassOf<AEnemyPawn
 
 void UWaveManagerComponent::EnemyDied(AEnemyPawn* _deadEnemy)
 {
-	mCurrentFieldScore -= _deadEnemy->RuntimeSettings.FieldScore;
+	CurrentFieldScore -= _deadEnemy->RuntimeSettings.FieldScore;
 	mPool->Release(_deadEnemy);
 
-	mFireManager->RemoveEnemy(_deadEnemy);
+	mFireManager->UnregisterRangedEnemy(_deadEnemy);
+}
+
+void UWaveManagerComponent::spawnSingleEnemy()
+{
+	if (mRuntimeSpawnableList.IsEmpty() || CurrentFieldScore > CurrentMaxFieldScore)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(mSpawnIntervalTimerHandle);
+		return;
+	}
+	
+	TSubclassOf<AEnemyPawn> enemyClass = mRuntimeSpawnableList[FMath::RandRange(0, mRuntimeSpawnableList.Num() - 1)];
+	EEnemyType enemyType = enemyClass.GetDefaultObject()->EnemyType;
+	USceneComponent* spawnPoint = getRandomPointForTypeOrNull(enemyType);
+    
+	if (spawnPoint == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[UWaveManagerComponent] 유효한 스폰 포인트 찾지 못함."));
+		GetWorld()->GetTimerManager().ClearTimer(mSpawnIntervalTimerHandle);
+	}
+	if (spawnEnemyOrNull(enemyClass, spawnPoint) == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[UWaveManagerComponent] 오브젝트 풀에서 액터 찾지 못함: %s"), *enemyClass->GetName());
+		GetWorld()->GetTimerManager().ClearTimer(mSpawnIntervalTimerHandle);
+	}
 }
 
 AEnemyPawn* UWaveManagerComponent::spawnEnemyOrNull(const TSubclassOf<AEnemyPawn>& _enemyClass, USceneComponent* _spawnPoint)
@@ -155,9 +180,11 @@ AEnemyPawn* UWaveManagerComponent::spawnEnemyOrNull(const TSubclassOf<AEnemyPawn
 
 	if (spawnedEnemy)
 	{
-		spawnedEnemy->ResetToDefaultSettings(Config_ScaleSettings, cTargetPlayer);
-		mCurrentFieldScore += spawnedEnemy->RuntimeSettings.FieldScore;
-		mFireManager->AddEnemy(spawnedEnemy, _spawnPoint);
+		spawnedEnemy->SetOwner(GetOwner());
+		spawnedEnemy->Initialize(this, cTargetPlayer);
+		CurrentFieldScore += spawnedEnemy->RuntimeSettings.FieldScore;
+
+		mFireManager->RegisterRangedEnemy(spawnedEnemy, _spawnPoint);
 	}
 	return spawnedEnemy;
 }
@@ -166,8 +193,8 @@ USceneComponent* UWaveManagerComponent::getRandomPointForTypeOrNull(const EEnemy
 {
 	switch (_type)
 	{
-		case EEnemyType::Ranged: return mEnemySpawn->GetRandomActiveSpawnPointOrNull();
-		default:				 return mEnemySpawn->GetRandomSpawnPoint();
+		case EEnemyType::Ranged: return mEnemySpawn->GetRandomRangedSpawnPointOrNull();
+		default:				 return mEnemySpawn->GetRandomMeleeSpawnPoint();
 	}
 }
 
@@ -179,9 +206,28 @@ void UWaveManagerComponent::updateMaxFieldScoreByGameTime()
 	{
 		CurrentMaxFieldScore = Config_MaxFieldScoreCurve.GetRichCurveConst()->Eval(elapsedTime);
 	}
-	else
+}
+
+void UWaveManagerComponent::updateEnemyScaleByGameTime()
+{
+	check(CurrentLevelConfig);
+	const float elapsedTime = UGameplayStatics::GetTimeSeconds(this);
+    
+	if (CurrentLevelConfig->HPScaleCurve.GetRichCurveConst())
 	{
-		CurrentMaxFieldScore = CalulateDefaultSigmoid(Config_StartMaxScore, Config_EndMaxScore, Config_Inclination, Config_InflectionPoint, elapsedTime);
+		Config_ScaleSettings.HPScale = CurrentLevelConfig->HPScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
+	}
+	if (CurrentLevelConfig->DamageScaleCurve.GetRichCurveConst())
+	{
+		Config_ScaleSettings.DamageScale = CurrentLevelConfig->DamageScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
+	}
+	if (CurrentLevelConfig->SpeedScaleCurve.GetRichCurveConst())
+	{
+		Config_ScaleSettings.SpeedScale = CurrentLevelConfig->SpeedScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
+	}
+	if (CurrentLevelConfig->XPDropScaleCurve.GetRichCurveConst())
+	{
+		Config_ScaleSettings.XPDropScale = CurrentLevelConfig->XPDropScaleCurve.GetRichCurveConst()->Eval(elapsedTime);
 	}
 }
 
@@ -212,17 +258,13 @@ bool UWaveManagerComponent::loadWaveConfigForCurrentLevel()
 		return false;
 	}
 
-	UWaveConfigDataAsset* waveConfig = WaveConfigDatas[levelIndex - 1];
+	CurrentLevelConfig = WaveConfigDatas[levelIndex - 1];
 
-	Config_SpawnInfos			= waveConfig->SpawnInfos;
-	Config_EnemySpawnInterval	= waveConfig->EnemySpawnInterval;
-	Config_DifficultyInterval	= waveConfig->DifficultyInterval;
-	Config_StartMaxScore		= waveConfig->StartMaxScore;
-	Config_EndMaxScore			= waveConfig->EndMaxScore;
-	Config_InflectionPoint		= waveConfig->InflectionPoint;
-	Config_Inclination			= waveConfig->Inclination;
-	Config_MaxFieldScoreCurve	= waveConfig->MaxFieldScoreCurve;
-	Config_ScaleSettings		= waveConfig->ScaleSettings;
+	Config_SpawnInfos			= CurrentLevelConfig->SpawnInfos;
+	Config_EnemySpawnInterval	= CurrentLevelConfig->EnemySpawnInterval;
+	Config_DifficultyInterval	= CurrentLevelConfig->DifficultyInterval;
+	Config_MaxFieldScoreCurve	= CurrentLevelConfig->MaxFieldScoreCurve;
+	Config_ScaleSettings		= CurrentLevelConfig->ScaleSettings;
 
 	return true;
 }

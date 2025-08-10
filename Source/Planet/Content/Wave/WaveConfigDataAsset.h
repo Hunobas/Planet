@@ -2,8 +2,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PlanetConst.h"
 #include "Engine/DataAsset.h"
-#include "../Planet.h"
 #include "EnemyScaleSetting.h"
 #include "WaveConfigDataAsset.generated.h"
 
@@ -19,7 +19,7 @@ struct FSpawnInfo
 	UPROPERTY(EditAnywhere, Category = "Wave Config", meta=(ClampMin="0"))
 	int32 UnlockTime = 0;
 	UPROPERTY(EditAnywhere, Category = "Wave Config", meta=(ClampMin="0"))
-	int32 LockTime = PLAYTIME;
+	int32 LockTime = PlanetConst::PLAYTIME;
 };
 
 UCLASS(Blueprintable)
@@ -35,18 +35,19 @@ public:
 	float EnemySpawnInterval = 5.f;
 	UPROPERTY(EditAnywhere, Category = "Wave Config")
 	float DifficultyInterval = 60.f;
-	UPROPERTY(EditAnywhere, Category = "Wave Config")
-	float StartMaxScore = 4.f;
-	UPROPERTY(EditAnywhere, Category = "Wave Config")
-	float EndMaxScore = 600.f;
-	UPROPERTY(EditAnywhere, Category = "Wave Config")
-	float InflectionPoint = PLAYTIME / 2;
-	UPROPERTY(EditAnywhere, Category = "Wave Config")
-	float Inclination = 0.008f;
 
 	UPROPERTY(EditAnywhere, Category = "Wave Config")
 	FRuntimeFloatCurve MaxFieldScoreCurve;
 
 	UPROPERTY(EditAnywhere, Category = "WaveConfig")
 	FEnemyScaleSetting ScaleSettings;
+
+	UPROPERTY(EditAnywhere, Category = "Enemy Scale")
+	FRuntimeFloatCurve HPScaleCurve;
+	UPROPERTY(EditAnywhere, Category = "Enemy Scale")
+	FRuntimeFloatCurve DamageScaleCurve;
+	UPROPERTY(EditAnywhere, Category = "Enemy Scale")
+	FRuntimeFloatCurve SpeedScaleCurve;
+	UPROPERTY(EditAnywhere, Category = "Enemy Scale")
+	FRuntimeFloatCurve XPDropScaleCurve;
 };
