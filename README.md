@@ -175,7 +175,7 @@ T* AcquireOrNull(const TSubclassOf<T>& _actorClass, const FTransform& _spawnTran
 
 ---
 
-### 🔴 MetaSound 연동 전투 시스템
+### ▪️ MetaSound 연동 전투 시스템
 
 **컨셉**: 배경 음악의 BPM에 맞춰 원거리 적의 공격을 트리거
 
