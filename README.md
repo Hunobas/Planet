@@ -10,7 +10,6 @@
 
 - ▶️ [**Play Demo (시스템 설명 포함)**](https://youtu.be/1-GPB7u94ic)
 - 🎮 [**직접 플레이용 빌드 다운로드**](https://drive.google.com/drive/folders/1s_h8lspvXMmB7Nm8zqnCxm9qfz-Yd-3D?usp=sharing)
-- 📄 [**TOGU 코드설명.pdf**](https://github.com/user-attachments/files/21698200/TOGU.pdf)
 - 📘 [**전체 포트폴리오**](https://github.com/Hunobas/Portfolio)
 
 ---
@@ -101,12 +100,12 @@ T* AcquireOrNull(const TSubclassOf<T>& _actorClass, const FTransform& _spawnTran
 **설계 목표**: 확장 가능한 보상 시스템 아키텍처 구축
 
 **MVC 패턴 기반 구조**
-- **Model**: `IRewardData` 인터페이스 (데이터 추상화)
-- **View**: `URewardSelectionWidget` (UMG 기반 UI)
-- **Controller**: `URewardManager` (비즈니스 로직)
+- **Model**: `IRewardData` 인터페이스
+- **View**: `URewardSelectionWidget`
+- **Controller**: `URewardManager`
 
 **확장성 확보**
-- `IRewardApplicator` 인터페이스로 적용 로직 분리
+- `URewardSelector` - `URewardManager` - `IRewardApplicator` 인터페이스 적용 및 3단계 책임 분리
 - DataTable 기반으로 신규 보상 추가 시 코드 수정 불필요
 - 디자이너가 직접 밸런싱 가능한 구조
 
