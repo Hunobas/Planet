@@ -68,30 +68,12 @@ T* AcquireOrNull(const TSubclassOf<T>& _actorClass, const FTransform& _spawnTran
 
 ---
 
-## 🧠 시스템 아키텍처
+## 🧠 시스템 아키텍처 개요 (UML 기반)
 
-### 📐 UML 기반 설계
-
-<table>
-<tr>
-<td width="50%">
-
-**리워드 시스템 구조**
-
-<img width="100%" alt="RewardSystemUML" src="https://github.com/user-attachments/assets/31e6ad5a-8174-4bc7-b887-685da3a2093e" />
-
-</td>
-<td width="50%">
-
-**오브젝트 풀링 구조**
-
-<img width="100%" alt="ObjectPoolUML" src="https://github.com/user-attachments/assets/8d5cfb42-c472-4d3d-a8bb-a8d04b06e8e9" />
-
-</td>
-</tr>
-</table>
-
-*UML 다이어그램은 실제 코드와 1:1 대응되며, SOLID 원칙에 기반해 설계되었습니다.*
+| 시스템 이름 | 구조 이미지 |
+|-------------|-------------|
+| 리워드 시스템 구조 예시 | <img width="1661" height="603" alt="RewardSystemUML" src="https://github.com/user-attachments/assets/31e6ad5a-8174-4bc7-b887-685da3a2093e" /> |
+| 오브젝트 풀링 구조 예시 | <img width="1514" height="419" alt="ObjectPoolUML" src="https://github.com/user-attachments/assets/8d5cfb42-c472-4d3d-a8bb-a8d04b06e8e9" /> |
 
 ---
 
@@ -150,21 +132,6 @@ T* AcquireOrNull(const TSubclassOf<T>& _actorClass, const FTransform& _spawnTran
 
 ---
 
-### 🔴 4. MetaSound 연동 전투 시스템
-
-**설계 목표**: 사운드와 게임플레이를 유기적으로 연결
-
-**구현 방식**
-- `ClimateFixCue` Beat 콜백에 따라 적 스폰 트리거
-- BPM 기반 웨이브 타이밍 조절
-- 음악 진행도에 따른 난이도 조절
-
-**효과**
-- 리듬에 맞춰 등장하는 적으로 긴장감 연출
-- 사운드 디자인과 게임플레이의 시너지
-
----
-
 ## 🧩 독창적인 게임 시스템
 
 ### ▪️ Planet Torque 식 DayOfWeek 시스템
@@ -186,6 +153,17 @@ T* AcquireOrNull(const TSubclassOf<T>& _actorClass, const FTransform& _spawnTran
 - 마우스 입력 강도 → 적 AI 속도 비례
 - 입력 중지 → 시간 정지 (전술적 사고 시간 제공)
 - 전투의 긴장감과 전략성 동시 확보
+
+---
+
+### 🔴 MetaSound 연동 전투 시스템
+
+**컨셉**: 배경 음악의 BPM에 맞춰 원거리 적의 공격을 트리거
+
+**구현 방식**
+- `ClimateFixCue` Beat 콜백에 따라 적 스폰 트리거
+- BPM 기반 웨이브 타이밍 조절
+- 음악 진행도에 따른 난이도 조절
 
 ---
 
