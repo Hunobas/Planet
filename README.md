@@ -52,12 +52,6 @@
 > - **적용 전**: 빈번한 GC 호출로 인한 프레임 드랍 발생
 > - **적용 후**: GC 스레드 호출 빈도가 대폭 감소하여 안정적인 프레임 유지
 
-#### 기술적 구현
-- `TCircularQueue` 기반 lock-free 구조로 멀티스레드 안전성 확보
-- `FScopeLock`을 활용한 크리티컬 섹션 보호
-- `AcquireOrNull()` / `Release()` 패턴으로 명확한 생명주기 관리
-- 실시간 디버그 UI로 풀 상태 시각화
-
 #### 성능 개선 수치
 - 적 최대 동시 생존 수: 100+ 마리
 - 프레임 안정성: 60 FPS 유지
@@ -80,6 +74,8 @@
 
 **설계 목표**: 대규모 오브젝트 생성/소멸 시 발생하는 GC 비용 최소화
 
+[[코드 보러 가기]](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/System/ObjectPoolManagerComponent.h#L34)
+
 **핵심 구현**
 - `UObjectPoolManager`: 전역 풀 관리자
 - `FPoolData`: 클래스별 풀 데이터 구조체
@@ -87,8 +83,8 @@
 - Thread-safe 구조: `FCriticalSection` 활용
 
 **주요 기능**
-- 동적 풀 크기 조절 (초기: 256, 필요 시 자동 확장)
-- BeginPlay 시점 프리로드로 런타임 부하 감소
+- 동적 풀 크기 조절 (초기: 256, [필요 시 자동 확장](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/System/ObjectPoolManagerComponent.h#L62))
+- [BeginPlay 시점 프리로드](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/System/ObjectPoolManagerComponent.cpp#L16)로 런타임 부하 감소
 - 실시간 디버그 UI로 풀 상태 모니터링
 
 ---
@@ -98,12 +94,12 @@
 **설계 목표**: 확장 가능한 보상 시스템 아키텍처 구축
 
 **MVC 패턴 기반 구조**
-- **Model**: `IRewardData` 인터페이스
-- **View**: `URewardSelectionWidget`
-- **Controller**: `URewardManager`
+- **Model**: `IRewardData` 인터페이스 [[코드 보러 가기]](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/System/Reward/Data/IRewardData.h#L14)
+- **View**: `URewardSelectionWidget` [[코드 보러 가기]](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/UI/RewardSelectionWidget.h#L17)
+- **Controller**: `URewardManager` [[코드 보러 가기]](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/System/Reward/Manager/RewardManager.h#L19)
 
 **확장성 확보**
-- `URewardSelector` - `URewardManager` - `IRewardApplicator` 인터페이스 적용 및 3단계 책임 분리
+- [`URewardSelector`](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/System/Reward/Manager/RewardSelector.h#L12) - [`URewardManager`](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/System/Reward/Manager/RewardManager.h#L19) - `[IRewardApplicator`](https://github.com/Hunobas/Planet/blob/main/Source/Planet/System/Reward/Applicator/IRewardApplicator.h#L12) 인터페이스 적용 및 3단계 책임 분리
 - DataTable 기반으로 신규 보상 추가 시 코드 수정 불필요
 - 디자이너가 직접 밸런싱 가능한 구조
 
@@ -114,9 +110,9 @@
 **설계 목표**: 프로그래머 개입 없이 디자이너가 게임 밸런싱 가능
 
 **DataAsset 구조**
-- `UWaveConfigDataAsset`: 웨이브 구성 (적 종류, 수, 타이밍)
-- `UEnemyDataAsset`: 적 스탯 (HP, 공격력, 이동속도)
-- `UPlayerDataAsset`: 플레이어 스탯 및 성장 곡선
+- [`UWaveConfigDataAsset`](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/Content/Wave/WaveConfigDataAsset.h#L26): 웨이브 구성 (적 종류, 수, 타이밍)
+- [`UEnemyDataAsset`](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/Content/Actor/Enemy/EnemyDataAsset.h#L9): 적 스탯 (HP, 공격력, 이동속도)
+- [`UPlayerDataAsset`](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/Content/Actor/Player/PlayerDataAsset.h#L9): 플레이어 스탯 및 성장 곡선
 
 **디자이너 문서**
 - 📄 [**신규 무기/아이템 추가 가이드**](https://ethereal-judo-1f1.notion.site/223486e2cdb980c5a807f920ebad70a6)
@@ -136,8 +132,10 @@
 **컨셉**: 마우스 회전으로 행성을 돌려 요일 변경
 
 **구현**
-- 마우스 회전값 누적으로 요일 전환
+- 마우스 회전값 누적으로 요일 전환 [[코드 보러 가기]](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/Content/Actor/PawnModule/DayOfWeekComponent.cpp#L22)
 - 요일별 무기/아이템 기능 활성화
+   - [[코드 보러 가기 - AWeekendShift]](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/Content/Actor/PassiveItem/WeekendShift.cpp#L53)
+   - [[코드 보러 가기 - APushPullLegsSplit]](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/Content/Actor/PassiveItem/PushPullLegsSplit.cpp#L63)
 - 전략적 타이밍 선택이 핵심
 
 ---
@@ -147,7 +145,7 @@
 **컨셉**: 플레이어 입력에 따라 시간 흐름 제어
 
 **구현**
-- 마우스 입력 강도 → 적 AI 속도 비례
+- 마우스 입력 강도 → 적 AI 속도 비례 [[코드 보러 가기]](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/Content/Actor/UpdateStretegy/InputDrivenUpdateStrategy.h#L22)
 - 입력 중지 → 시간 정지 (전술적 사고 시간 제공)
 - 전투의 긴장감과 전략성 동시 확보
 
@@ -158,8 +156,7 @@
 **컨셉**: 배경 음악의 BPM에 맞춰 원거리 적의 공격을 트리거
 
 **구현 방식**
-- `ClimateFixCue` Beat 콜백에 따라 적 스폰 트리거
-- BPM 기반 웨이브 타이밍 조절
+- `ClimateFixCue` Beat 콜백에 따라 적 공격 트리거 [[코드 보러 가기]](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/Content/Wave/EnemyFireManagerComponent.cpp#L59C34-L59C46)
 - 음악 진행도에 따른 난이도 조절
 
 ---
