@@ -26,7 +26,7 @@
 5. 🧩 독창적인 게임 시스템
    - [▪️ Planet Torque 식 DayOfWeek 시스템](#️-planet-torque-식-dayofweek-시스템)
    - [▪️ Super Hot like 시간 제어 시스템](#️-super-hot-like-시간-제어-시스템)
-   - [▪️ MetaSound 연동 전투 시스템](#-metasound-연동-전투-시스템)
+   - [▪️ MetaSound 연동 전투 시스템](#-MetaSound-연동-전투-시스템)
 6. [🔧 기술 스택](#-기술-스택)
 7. [📈 프로젝트 성과](#-프로젝트-성과-요약)
 8. [✍️ 배운 점](#️-배운-점)
