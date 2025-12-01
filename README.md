@@ -99,7 +99,7 @@
 - **Controller**: `URewardManager` [[코드 보러 가기]](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/System/Reward/Manager/RewardManager.h#L19)
 
 **확장성 확보**
-- [`URewardSelector`](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/System/Reward/Manager/RewardSelector.h#L12) - [`URewardManager`](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/System/Reward/Manager/RewardManager.h#L19) - `[IRewardApplicator`](https://github.com/Hunobas/Planet/blob/main/Source/Planet/System/Reward/Applicator/IRewardApplicator.h#L12) 인터페이스 적용 및 3단계 책임 분리
+- [`URewardSelector`](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/System/Reward/Manager/RewardSelector.h#L12) - [`URewardManager`](https://github.com/Hunobas/Planet/blob/9abc29b52a75614a9ff8170548ae4311105b9b2b/Source/Planet/System/Reward/Manager/RewardManager.h#L19) - [`IRewardApplicator`](https://github.com/Hunobas/Planet/blob/main/Source/Planet/System/Reward/Applicator/IRewardApplicator.h#L12) 인터페이스 적용 및 3단계 책임 분리
 - DataTable 기반으로 신규 보상 추가 시 코드 수정 불필요
 - 디자이너가 직접 밸런싱 가능한 구조
 
